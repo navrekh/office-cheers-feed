@@ -253,6 +253,8 @@ function Index() {
   const [, force] = useState(0);
   const [devOpen, setDevOpen] = useState(false);
   const [happyHour, setHappyHour] = useState<boolean>(false);
+  const [claimTicket, setClaimTicket] = useState<string | null>(null);
+  const [claimModalOpen, setClaimModalOpen] = useState(false);
 
   // Happy Hour Mode (16:30–18:00 local time)
   useEffect(() => {
