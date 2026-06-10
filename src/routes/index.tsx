@@ -2073,7 +2073,7 @@ const PostCard = memo(function PostCard({
         </div>
         <div className="flex items-center gap-2">
           <button
-            onClick={() => setShowComments((v) => !v)}
+            onClick={() => onOpenComments(post)}
             className="hover:text-foreground hover:underline"
           >
             {comments.length} comments
