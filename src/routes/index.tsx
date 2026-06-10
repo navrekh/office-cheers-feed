@@ -1351,15 +1351,35 @@ const PostCard = memo(function PostCard({
           <Sparkles className="size-3" /> Shared with you · spotlight
         </div>
       )}
+      {isMerchant && (
+        <div className="px-4 pt-3 pb-1 flex items-center justify-between">
+          <span className="inline-flex items-center gap-1 rounded-full border border-amber-400/60 bg-amber-500/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-amber-300 shadow-[0_0_10px_rgba(251,191,36,0.35)]">
+            <ShieldCheck className="size-3" /> Verified Pub Partner 🛡️
+          </span>
+          <span className="text-[10px] uppercase tracking-wider text-amber-300/80 font-bold">
+            Sponsored · Local
+          </span>
+        </div>
+      )}
       <div className="p-4 pb-2 flex items-start gap-3">
-        <div className="size-12 rounded-full bg-gradient-to-br from-primary/40 to-accent/40 grid place-items-center font-bold text-base shrink-0">
-          {initials(post.author_name)}
+        <div
+          className={`size-12 rounded-full grid place-items-center font-bold text-base shrink-0 ${
+            isMerchant
+              ? "bg-gradient-to-br from-amber-500/50 to-amber-300/30 text-amber-100 text-xl"
+              : "bg-gradient-to-br from-primary/40 to-accent/40"
+          }`}
+        >
+          {isMerchant ? "🍺" : initials(post.author_name)}
         </div>
         <div className="flex-1 min-w-0">
           <div className="font-semibold text-[15px] leading-tight truncate flex items-center gap-1.5">
-            <span className="truncate">{post.author_name}</span>
-            <span className="text-xs font-normal text-muted-foreground shrink-0">· 1st</span>
-            {isSim && (
+            <span className={`truncate ${isMerchant ? "text-amber-100" : ""}`}>
+              {isMerchant ? post.author_name : (post.author_name || "Anonymous Colleague 🎭")}
+            </span>
+            {!isMerchant && (
+              <span className="text-xs font-normal text-muted-foreground shrink-0">· 1st</span>
+            )}
+            {isSim && !isMerchant && (
               <span
                 className="group/sim relative inline-flex items-center gap-1 rounded-md border border-amber-400/50 bg-amber-500/10 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-amber-300 shrink-0"
                 tabIndex={0}
@@ -1375,11 +1395,11 @@ const PostCard = memo(function PostCard({
               </span>
             )}
           </div>
-          <div className="text-xs text-muted-foreground line-clamp-1">
+          <div className={`text-xs line-clamp-1 ${isMerchant ? "text-amber-200/80" : "text-muted-foreground"}`}>
             {post.author_headline}
           </div>
           <div className="text-[11px] text-muted-foreground/80 mt-0.5 flex items-center gap-1">
-            {timeAgo(post.created_at)} · <span>🌍</span>
+            {timeAgo(post.created_at)} · <span>{isMerchant ? "📣" : "🌍"}</span>
           </div>
         </div>
         <button className="text-muted-foreground hover:text-foreground p-1">
