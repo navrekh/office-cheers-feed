@@ -127,8 +127,11 @@ function Index() {
   const [submitting, setSubmitting] = useState(false);
   const [view, setView] = useState<ViewKey>("home");
   const [highlightedId, setHighlightedId] = useState<string | null>(null);
+  const [feedLoading, setFeedLoading] = useState(true);
+  const [feedError, setFeedError] = useState<string | null>(null);
   const cheeredRef = useRef<Set<string>>(new Set());
   const [, force] = useState(0);
+
 
   useEffect(() => {
     let mounted = true;
