@@ -12,6 +12,8 @@ export type MerchantDeal = {
   heading_there_count: number;
   is_active: boolean;
   updated_at: string;
+  activated_at?: string;
+  expires_at?: string;
 };
 
 // Happy hour window: 16:30 – 19:30 local. Peaks at 18:00.
