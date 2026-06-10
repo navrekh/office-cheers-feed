@@ -48,6 +48,9 @@ import {
   UserPlus,
   Check,
   Clock,
+  Rocket,
+  Volume2,
+  VolumeX,
 } from "lucide-react";
 
 export const Route = createFileRoute("/")({
