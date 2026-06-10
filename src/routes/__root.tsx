@@ -75,42 +75,41 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
 }
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
-  head: () => ({
-    meta: [
-      { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "DrinkedIn 🍻 - The Anti-Corporate Parody Feed" },
-      {
-        name: "description",
-        content:
-          "The premier network for corporate workers to log happy hours, navigate toxic productivity, and announce liquid refactoring milestones. Disagree? Let's take it offline.",
-      },
-      { name: "author", content: "DrinkedIn" },
-      { property: "og:title", content: "DrinkedIn 🍻 - The Anti-Corporate Parody Feed" },
-      {
-        property: "og:description",
-        content:
-          "The premier network for corporate workers to log happy hours, navigate toxic productivity, and announce liquid refactoring milestones. Disagree? Let's take it offline.",
-      },
-      { property: "og:type", content: "website" },
-      { property: "og:url", content: `${SITE_URL}/` },
-      { property: "og:site_name", content: "DrinkedIn" },
-      { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:title", content: "DrinkedIn 🍻 - The Anti-Corporate Parody Feed" },
-      {
-        name: "twitter:description",
-        content:
-          "The premier network for corporate workers to log happy hours, navigate toxic productivity, and announce liquid refactoring milestones. Disagree? Let's take it offline.",
-      },
-    ],
-
-    links: [
-      {
-        rel: "stylesheet",
-        href: appCss,
-      },
-    ],
-  }),
+  head: () => {
+    const title =
+      "DrinkedIn 🍻 | The Corporate Sanctuary for Anonymous Coping & Office Parody";
+    const description =
+      "Stuck in another endless cross-functional alignment meeting? Drop anonymous workplace confessions, turn simple complaints into viral influencer 'Broetry' with one click, and find verified local happy hours in your tech hub city.";
+    const ogImage = `${SITE_URL}/og-card.jpg`;
+    return {
+      meta: [
+        { charSet: "utf-8" },
+        { name: "viewport", content: "width=device-width, initial-scale=1" },
+        { title },
+        { name: "description", content: description },
+        { name: "author", content: "DrinkedIn" },
+        { name: "theme-color", content: "#0a0a0a" },
+        { property: "og:title", content: title },
+        { property: "og:description", content: description },
+        { property: "og:type", content: "website" },
+        { property: "og:url", content: `${SITE_URL}/` },
+        { property: "og:site_name", content: "DrinkedIn" },
+        { property: "og:image", content: ogImage },
+        { property: "og:image:width", content: "1200" },
+        { property: "og:image:height", content: "630" },
+        { property: "og:image:alt", content: "DrinkedIn — Broetry post preview with amber neon glow" },
+        { name: "twitter:card", content: "summary_large_image" },
+        { name: "twitter:site", content: "@drinkedin" },
+        { name: "twitter:title", content: title },
+        { name: "twitter:description", content: description },
+        { name: "twitter:image", content: ogImage },
+      ],
+      links: [
+        { rel: "stylesheet", href: appCss },
+        { rel: "icon", href: "/favicon.ico" },
+      ],
+    };
+  },
   shellComponent: RootShell,
   component: RootComponent,
   notFoundComponent: NotFoundComponent,
