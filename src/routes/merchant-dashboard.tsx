@@ -10,6 +10,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import MerchantFlashControl from "@/components/MerchantFlashControl";
 import MerchantOnboardingWizard from "@/components/MerchantOnboardingWizard";
 import BillingTab from "@/components/BillingTab";
+import LiveAmbientEqualizer from "@/components/LiveAmbientEqualizer";
 import {
   ArrowLeft,
   Beer,
