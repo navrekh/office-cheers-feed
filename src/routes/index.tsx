@@ -52,6 +52,7 @@ import {
   Plus,
   Shuffle,
   Send,
+  Loader2,
   Sparkles,
   
   MapPin,
@@ -1744,9 +1745,19 @@ function Index() {
                       <Button
                         type="submit"
                         disabled={(!body.trim() && !gifUrl && !vibeId && !attachedUrl) || submitting || uploadingPic !== null}
-                        className="rounded-full px-5 font-semibold"
+                        className="group rounded-full px-5 font-semibold text-white border-0 bg-[linear-gradient(135deg,#f59e0b_0%,#f97316_50%,#d97706_100%)] shadow-[0_6px_20px_-4px_rgba(249,115,22,0.55)] transition-all duration-200 hover:scale-[1.03] hover:shadow-[0_0_24px_4px_rgba(249,115,22,0.65),0_0_48px_8px_rgba(234,88,12,0.35)] hover:animate-pulse active:scale-100 disabled:opacity-60 disabled:hover:scale-100 disabled:hover:shadow-[0_6px_20px_-4px_rgba(249,115,22,0.55)] disabled:hover:animate-none"
                       >
-                        {submitting ? "Pouring…" : "Post 🍻"}
+                        {submitting ? (
+                          <>
+                            <Loader2 className="size-4 animate-spin" />
+                            Deploying… 🍺
+                          </>
+                        ) : (
+                          <>
+                            <Send className="size-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                            Eject to Pub 🚀
+                          </>
+                        )}
                       </Button>
                     </div>
                   </div>
