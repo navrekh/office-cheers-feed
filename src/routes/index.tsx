@@ -50,7 +50,7 @@ import {
   Shuffle,
   Send,
   Sparkles,
-  Briefcase,
+  
   MapPin,
   UserPlus,
   Check,
