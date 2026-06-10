@@ -652,6 +652,8 @@ function Index() {
     setPosts((prev) =>
       prev.map((p) => (p.id === post.id ? { ...p, cheers_count: p.cheers_count + 1 } : p))
     );
+    // Simulated posts live only in the local state — skip the live RPC for them.
+    if (isSimulatedPost(post)) return;
     await (supabase as any).rpc("increment_cheers", { post_id: post.id });
   }, [playClink]);
 
