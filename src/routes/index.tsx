@@ -154,6 +154,7 @@ type Post = {
   body_text: string;
   cheers_count: number;
   created_at: string;
+  claim_ticket?: string;
   post_type?: "user" | "merchant";
   merchant_website?: string;
   map_query_address?: string;
