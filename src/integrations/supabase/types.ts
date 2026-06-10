@@ -338,6 +338,7 @@ export type Database = {
         Returns: boolean
       }
       increment_cheers: { Args: { post_id: string }; Returns: number }
+      increment_heading_there: { Args: { p_deal_id: string }; Returns: number }
       report_post: { Args: { p_post_id: string }; Returns: undefined }
       tribunal_vote: {
         Args: { p_post_id: string; p_vote: string }
