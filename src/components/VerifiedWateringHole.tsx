@@ -81,16 +81,17 @@ export default function VerifiedWateringHole() {
     };
   }, []);
 
-  const sponsored = SPONSORED[activeCity];
+  const sponsored = MERCHANTS[activeCity][0];
   const today = todayStr();
-  const cityState = heading[activeCity];
+  const headingKey = sponsored.id;
+  const cityState = heading[headingKey];
   const alreadyChecked =
-    cityState && cityState.date === today && cityState.mine === true;
+    !!cityState && cityState.date === today && cityState.mine === true;
   const extra =
     cityState && cityState.date === today ? cityState.extra : 0;
   const headingCount = useMemo(
-    () => BASE_HEADING[activeCity] + extra + (alreadyChecked ? 0 : 0),
-    [activeCity, extra, alreadyChecked]
+    () => sponsored.base_heading + extra,
+    [sponsored.base_heading, extra]
   );
 
   function handleHeadingClick() {
