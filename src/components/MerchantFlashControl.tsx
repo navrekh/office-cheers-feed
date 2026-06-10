@@ -78,7 +78,9 @@ export default function MerchantFlashControl({ profile }: Props) {
 
   const trimmed = text.trim();
   const tooLong = trimmed.length > MAX;
-  const canSubmit = !!trimmed && !tooLong && !saving && !loading;
+  const expired =
+    !!row?.expires_at && new Date(row.expires_at).getTime() <= Date.now();
+  const canSubmit = !!trimmed && !tooLong && !saving && !loading && !expired;
 
   const counterTone = useMemo(() => {
     if (tooLong) return "text-red-300";
