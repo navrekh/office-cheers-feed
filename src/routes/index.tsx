@@ -82,6 +82,8 @@ import {
 import { useGeolocation } from "@/hooks/useGeolocation";
 import { getOrCreateSessionId, haversineKm } from "@/lib/geo";
 import { LiveWorkspaceRadar, type ProximityFilter } from "@/components/LiveWorkspaceRadar";
+import { ProximityAdDispatcher, dealCoord } from "@/components/ProximityAdDispatcher";
+import { useMerchantDeals, type MerchantDeal } from "@/lib/useMerchantDeals";
 
 // ---------- Client-side spam guard ----------
 const RATE_KEY = "drinkedin.rate.posts";
@@ -2105,11 +2107,15 @@ function Index() {
         reason={authReason}
       />
 
+      <ProximityAdDispatcher origin={geoCoords} userId={user?.id ?? null} />
+
       <NotificationsDrawer
         open={notifOpen}
         onOpenChange={setNotifOpen}
         signedIn={!!user}
         myPosts={myPosts}
+        origin={geoCoords}
+        city={selectedCity}
       />
 
       <CommentsDrawer
