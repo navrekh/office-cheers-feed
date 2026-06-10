@@ -80,24 +80,34 @@ function TrackPage() {
   const trackUrl = SITE.trackUrl(ticket);
 
   const load = useCallback(async () => {
-    const { data, error } = await (supabase as any)
-      .from("posts")
-      .select("*")
-      .eq("claim_ticket", ticket)
-      .maybeSingle();
-    if (error || !data) {
+    try {
+      const { data, error } = await (supabase as any)
+        .from("posts")
+        .select("*")
+        .eq("claim_ticket", ticket)
+        .maybeSingle();
+      if (error || !data) {
+        setNotFound(true);
+        setLoading(false);
+        return;
+      }
+      setPost(data as TrackedPost);
+      setLoading(false);
+      try {
+        const { data: cmts } = await (supabase as any)
+          .from("comments")
+          .select("*")
+          .eq("post_id", data.id)
+          .order("created_at", { ascending: true });
+        setComments((cmts as TrackedComment[] | null) ?? []);
+      } catch (err) {
+        console.warn("[DrinkedIn] track comments load failed", err);
+      }
+    } catch (err) {
+      console.warn("[DrinkedIn] track post load failed", err);
       setNotFound(true);
       setLoading(false);
-      return;
     }
-    setPost(data as TrackedPost);
-    setLoading(false);
-    const { data: cmts } = await (supabase as any)
-      .from("comments")
-      .select("*")
-      .eq("post_id", data.id)
-      .order("created_at", { ascending: true });
-    setComments((cmts as TrackedComment[] | null) ?? []);
   }, [ticket]);
 
   useEffect(() => {
