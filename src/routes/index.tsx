@@ -51,6 +51,8 @@ import {
   Rocket,
   Volume2,
   VolumeX,
+  Lightbulb,
+  AlertTriangle,
 } from "lucide-react";
 
 export const Route = createFileRoute("/")({
@@ -554,6 +556,28 @@ function Index() {
           >
             Secure your API budget now →
           </a>
+          <div className="relative group">
+            <button
+              type="button"
+              onClick={trackTokenLensClick}
+              className="inline-flex items-center gap-1 rounded-md border border-border/60 hover:border-primary/60 px-2 py-0.5 text-[11px] font-semibold text-foreground/80 hover:text-primary transition"
+              aria-label="View simulated LLM cost leak categories"
+            >
+              <AlertTriangle className="size-3" />
+              View Leaks
+            </button>
+            <div
+              role="tooltip"
+              className="pointer-events-none absolute left-1/2 top-full z-50 mt-2 w-72 -translate-x-1/2 rounded-lg border border-border bg-popover/95 backdrop-blur p-3 text-left text-[11px] leading-relaxed shadow-2xl opacity-0 translate-y-1 group-hover:opacity-100 group-hover:translate-y-0 group-focus-within:opacity-100 transition"
+            >
+              <div className="text-[10px] uppercase tracking-wider font-bold text-primary mb-1.5">Live leaks caught</div>
+              <ul className="space-y-1 text-foreground/90">
+                <li className="flex items-start gap-1.5"><span>⚠️</span><span>Runaway Agent Loops Stopped: <span className="font-bold text-primary tabular-nums">412</span></span></li>
+                <li className="flex items-start gap-1.5"><span>⚠️</span><span>Opaque Multi-Tenant Waste Caught: <span className="font-bold text-primary tabular-nums">$8,420</span></span></li>
+                <li className="flex items-start gap-1.5"><span>⚠️</span><span>Idle Sandbox API Key Leakage Blocked: <span className="font-bold text-primary tabular-nums">1,105</span></span></li>
+              </ul>
+            </div>
+          </div>
           <button
             type="button"
             onClick={() => setSoundEnabled((s) => !s)}
@@ -729,6 +753,25 @@ function Index() {
                     >
                       <Rocket className="size-3.5" />
                       Make it Broetry 🚀
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const ideas = [
+                          "My pull request got rejected so I am opening a stout at 11 AM.",
+                          "The CEO just announced a pivot to an AI-first strategy that makes no sense.",
+                          "I am currently hiding in the bathroom booth at our corporate office.",
+                          "Our scrum master just called a mandatory 4:45 PM standup on a Friday.",
+                          "I spent the last 3 hours formatting a single PowerPoint slide for a VP.",
+                        ];
+                        const pick = ideas[Math.floor(Math.random() * ideas.length)];
+                        setBody(pick);
+                        toast("Fresh idea poured 💡", { description: "Edit it, or run it through the Broetry engine." });
+                      }}
+                      className="inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 border border-accent/40 bg-accent/10 text-accent-foreground text-[11px] font-semibold hover:bg-accent/20 hover:border-accent/60 transition"
+                    >
+                      <Lightbulb className="size-3.5 text-accent" />
+                      Need an Idea? 💡
                     </button>
                   </div>
 
