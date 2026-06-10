@@ -384,85 +384,116 @@ function Index() {
 
         {/* Feed */}
         <section className="col-span-12 lg:col-span-6 space-y-3">
-          {/* Composer */}
-          <Card className="p-4 border-border">
-            <form onSubmit={submitPost} className="space-y-3">
-              <div className="flex items-start gap-3">
-                <div className="size-11 shrink-0 rounded-full bg-primary/20 grid place-items-center text-lg font-bold text-primary">
-                  {initials(authorName)}
-                </div>
-                <div className="flex-1 space-y-2 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <Input
-                      value={authorName}
-                      onChange={(e) => setAuthorName(e.target.value)}
-                      placeholder="Your corporate alias"
-                      className="h-8 text-xs bg-transparent border-dashed flex-1"
-                    />
-                    <button
-                      type="button"
-                      onClick={randomize}
-                      title="Randomize a corporate identity"
-                      className="shrink-0 inline-flex items-center gap-1 h-8 px-2.5 rounded-md text-[11px] font-semibold border border-primary/40 text-primary hover:bg-primary/15 hover:border-primary transition"
-                    >
-                      <Shuffle className="size-3.5" />
-                      Randomize
-                    </button>
+          {view === "home" && (
+            <>
+              {/* Composer */}
+              <Card className="p-4 border-border">
+                <form onSubmit={submitPost} className="space-y-3">
+                  <div className="flex items-start gap-3">
+                    <div className="size-11 shrink-0 rounded-full bg-primary/20 grid place-items-center text-lg font-bold text-primary">
+                      {initials(authorName)}
+                    </div>
+                    <div className="flex-1 space-y-2 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <Input
+                          value={authorName}
+                          onChange={(e) => setAuthorName(e.target.value)}
+                          placeholder="Your corporate alias"
+                          className="h-8 text-xs bg-transparent border-dashed flex-1"
+                        />
+                        <button
+                          type="button"
+                          onClick={randomize}
+                          title="Randomize a corporate identity"
+                          className="shrink-0 inline-flex items-center gap-1 h-8 px-2.5 rounded-md text-[11px] font-semibold border border-primary/40 text-primary hover:bg-primary/15 hover:border-primary transition"
+                        >
+                          <Shuffle className="size-3.5" />
+                          Randomize
+                        </button>
+                      </div>
+                      <Input
+                        value={authorHeadline}
+                        onChange={(e) => setAuthorHeadline(e.target.value)}
+                        placeholder="Your parody headline"
+                        className="h-8 text-xs bg-transparent border-dashed italic text-muted-foreground"
+                      />
+                      <Textarea
+                        value={body}
+                        onChange={(e) => setBody(e.target.value)}
+                        placeholder="Start a post… overshare about your 4pm Aperol."
+                        className="resize-none min-h-24 bg-muted/40 border-border rounded-xl text-[15px] focus-visible:bg-background"
+                      />
+                    </div>
                   </div>
-                  <Input
-                    value={authorHeadline}
-                    onChange={(e) => setAuthorHeadline(e.target.value)}
-                    placeholder="Your parody headline"
-                    className="h-8 text-xs bg-transparent border-dashed italic text-muted-foreground"
-                  />
-                  <Textarea
-                    value={body}
-                    onChange={(e) => setBody(e.target.value)}
-                    placeholder="Start a post… overshare about your 4pm Aperol."
-                    className="resize-none min-h-24 bg-muted/40 border-border rounded-xl text-[15px] focus-visible:bg-background"
-                  />
-                </div>
-              </div>
-              <div className="flex items-center gap-1 flex-wrap pl-14">
-                <ComposerChip icon={<ImageIcon className="size-4 text-accent" />} label="Bar pic" />
-                <ComposerChip icon={<Video className="size-4 text-primary" />} label="Tasting" />
-                <ComposerChip icon={<CalendarDays className="size-4 text-chart-3" />} label="Happy hr" />
-                <ComposerChip icon={<FileText className="size-4 text-muted-foreground" />} label="Excuse" />
-                <div className="ml-auto">
-                  <Button
-                    type="submit"
-                    disabled={!body.trim() || submitting}
-                    className="rounded-full px-5 font-semibold"
+                  <div className="flex items-center gap-1 flex-wrap pl-14">
+                    <ComposerChip icon={<ImageIcon className="size-4 text-accent" />} label="Bar pic" />
+                    <ComposerChip icon={<Video className="size-4 text-primary" />} label="Tasting" />
+                    <ComposerChip icon={<CalendarDays className="size-4 text-chart-3" />} label="Happy hr" />
+                    <ComposerChip icon={<FileText className="size-4 text-muted-foreground" />} label="Excuse" />
+                    <div className="ml-auto">
+                      <Button
+                        type="submit"
+                        disabled={!body.trim() || submitting}
+                        className="rounded-full px-5 font-semibold"
+                      >
+                        {submitting ? "Pouring…" : "Post 🍻"}
+                      </Button>
+                    </div>
+                  </div>
+                </form>
+              </Card>
+
+              {highlightedId && orderedPosts.some((p) => p.id === highlightedId) && (
+                <div className="flex items-center justify-between gap-2 px-3 py-2 rounded-md bg-primary/10 border border-primary/30 text-xs">
+                  <span className="text-foreground/90">
+                    🍻 Showing a shared post at the top.
+                  </span>
+                  <button
+                    onClick={() => {
+                      setHighlightedId(null);
+                      if (typeof window !== "undefined") {
+                        window.history.replaceState({}, "", window.location.pathname);
+                      }
+                    }}
+                    className="font-semibold text-primary hover:underline"
                   >
-                    {submitting ? "Pouring…" : "Post 🍻"}
-                  </Button>
+                    Show full feed
+                  </button>
                 </div>
+              )}
+
+              <div className="flex items-center gap-3 text-xs text-muted-foreground px-1">
+                <div className="h-px flex-1 bg-border" />
+                <span>Sort by: <span className="text-foreground font-medium">Most Tipsy ▾</span></span>
               </div>
-            </form>
-          </Card>
 
-          <div className="flex items-center gap-3 text-xs text-muted-foreground px-1">
-            <div className="h-px flex-1 bg-border" />
-            <span>Sort by: <span className="text-foreground font-medium">Most Tipsy ▾</span></span>
-          </div>
+              {orderedPosts.length === 0 && (
+                <Card className="p-8 text-center text-sm text-muted-foreground border-border">
+                  Pouring the first round…
+                </Card>
+              )}
 
-          {posts.length === 0 && (
-            <Card className="p-8 text-center text-sm text-muted-foreground border-border">
-              Pouring the first round…
-            </Card>
+              {orderedPosts.map((p) => (
+                <PostCard
+                  key={p.id}
+                  post={p}
+                  comments={commentsByPost[p.id] || []}
+                  onCheers={() => cheers(p)}
+                  onComment={(text, name) => addComment(p.id, text, name)}
+                  onShare={() => sharePost(p.id)}
+                  cheered={cheeredRef.current.has(p.id)}
+                  highlighted={p.id === highlightedId}
+                />
+              ))}
+            </>
           )}
 
-          {posts.map((p) => (
-            <PostCard
-              key={p.id}
-              post={p}
-              comments={commentsByPost[p.id] || []}
-              onCheers={() => cheers(p)}
-              onComment={(text, name) => addComment(p.id, text, name)}
-              cheered={cheeredRef.current.has(p.id)}
-            />
-          ))}
+          {view === "pubs" && <PubsView />}
+          {view === "barhop" && <BarHopView />}
+          {view === "messages" && <ComingSoonView title="Messages" emoji="📬" copy="Your DMs are too embarrassing. We're protecting you from yourself." />}
+          {view === "notifications" && <ComingSoonView title="Notifications" emoji="🔔" copy="9 people Cheered your hangover. 1 recruiter wants a 'quick coffee' (it's tequila)." />}
         </section>
+
 
         {/* Right sidebar */}
         <aside className="hidden lg:block col-span-3 space-y-4">
