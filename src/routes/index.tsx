@@ -554,10 +554,37 @@ function Index() {
                 </div>
               )}
 
-              <div className="flex items-center gap-3 text-xs text-muted-foreground px-1">
+              <div className="flex items-center gap-3 text-xs px-1">
+                <div className="inline-flex items-center rounded-full border border-border bg-card p-0.5">
+                  <button
+                    type="button"
+                    onClick={() => setSortMode("recent")}
+                    className={`px-3 py-1 rounded-full text-[11px] font-semibold transition ${
+                      sortMode === "recent"
+                        ? "bg-primary text-primary-foreground shadow"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    Recent
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setSortMode("top")}
+                    className={`px-3 py-1 rounded-full text-[11px] font-semibold transition inline-flex items-center gap-1 ${
+                      sortMode === "top"
+                        ? "bg-primary text-primary-foreground shadow"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    🏆 Top Brews
+                  </button>
+                </div>
                 <div className="h-px flex-1 bg-border" />
-                <span>Sort by: <span className="text-foreground font-medium">Most Tipsy ▾</span></span>
+                <span className="text-muted-foreground">
+                  {sortMode === "top" ? "Most Cheered 🍻" : "Freshly poured"}
+                </span>
               </div>
+
 
               {feedError && orderedPosts.length === 0 && (
                 <Card className="p-4 text-center text-xs text-primary/90 border-primary/30 bg-primary/5 animate-pulse">
