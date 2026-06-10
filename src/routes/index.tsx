@@ -126,6 +126,7 @@ async function triggerDownloadPostCard(post: { id: string; author_name: string; 
 
 
 import AchievementBadges, { ACH_KEYS, bumpAchievement } from "@/components/AchievementBadges";
+import MerchantFlashControl from "@/components/MerchantFlashControl";
 import CorporateBingo from "@/components/CorporateBingo";
 import VerifiedWateringHole from "@/components/VerifiedWateringHole";
 import HappyHourTicker from "@/components/HappyHourTicker";
