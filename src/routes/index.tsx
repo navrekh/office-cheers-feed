@@ -181,6 +181,7 @@ type Post = {
   map_query_address?: string;
   user_id?: string | null;
   is_hidden?: boolean;
+  attached_visual_url?: string | null;
   is_in_tribunal?: boolean;
   valid_votes?: number;
   misconduct_votes?: number;
@@ -278,6 +279,11 @@ function Index() {
   const [submitting, setSubmitting] = useState(false);
   const [gifUrl, setGifUrl] = useState<string | null>(null);
   const [vibeId, setVibeId] = useState<string | null>(null);
+  const [attachedUrl, setAttachedUrl] = useState<string | null>(null);
+  const [attachedPath, setAttachedPath] = useState<string | null>(null);
+  const [uploadingPic, setUploadingPic] = useState<null | "bar" | "tasting">(null);
+  const picInputRef = useRef<HTMLInputElement | null>(null);
+  const picKindRef = useRef<"bar" | "tasting">("bar");
   const [gifPickerOpen, setGifPickerOpen] = useState(false);
   const [view, setView] = useState<ViewKey>("home");
   const [highlightedId, setHighlightedId] = useState<string | null>(null);
@@ -766,6 +772,70 @@ function Index() {
 
 
 
+  async function handlePicSelected(file: File) {
+    if (!user) {
+      setAuthReason("Sign in to upload a bar pic — keeps uploads tied to a real account.");
+      setAuthModalOpen(true);
+      return;
+    }
+    if (!/^image\/(jpe?g|png)$/i.test(file.type)) {
+      toast.error("Only JPG, JPEG, or PNG files please.");
+      return;
+    }
+    if (file.size > 8 * 1024 * 1024) {
+      toast.error("That image is over 8 MB — pick a smaller pour.");
+      return;
+    }
+    const kind = picKindRef.current;
+    setUploadingPic(kind);
+    try {
+      const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
+      const path = `${user.id}/${Date.now()}_${kind}_${safeName}`;
+      const { error: upErr } = await supabase.storage
+        .from("bar_pics")
+        .upload(path, file, { cacheControl: "3600", upsert: false, contentType: file.type });
+      if (upErr) {
+        toast.error("Upload failed", { description: upErr.message });
+        return;
+      }
+      // Long-lived signed URL (~10 years) since the bucket is private but the
+      // RLS policy on storage.objects allows public read for bar_pics.
+      const { data: signed, error: signErr } = await supabase.storage
+        .from("bar_pics")
+        .createSignedUrl(path, 60 * 60 * 24 * 365 * 10);
+      if (signErr || !signed?.signedUrl) {
+        toast.error("Couldn't generate a preview link. Try again.");
+        return;
+      }
+      setAttachedPath(path);
+      setAttachedUrl(signed.signedUrl);
+      toast.success(kind === "tasting" ? "Tasting locked in 📷" : "Bar pic attached 📷");
+    } catch (e: any) {
+      toast.error("Upload failed", { description: e?.message });
+    } finally {
+      setUploadingPic(null);
+    }
+  }
+
+  function triggerPicUpload(kind: "bar" | "tasting") {
+    if (!user) {
+      setAuthReason("Sign in to upload a bar pic — keeps uploads tied to a real account.");
+      setAuthModalOpen(true);
+      return;
+    }
+    picKindRef.current = kind;
+    picInputRef.current?.click();
+  }
+
+  async function clearAttachedPic() {
+    if (attachedPath) {
+      // Best-effort delete; RLS allows the owner only.
+      void supabase.storage.from("bar_pics").remove([attachedPath]).catch(() => {});
+    }
+    setAttachedPath(null);
+    setAttachedUrl(null);
+  }
+
   async function submitPost(e: FormEvent) {
     e.preventDefault();
     if (submitting) return;
@@ -807,6 +877,7 @@ function Index() {
         body_text: composed,
         user_id: user?.id ?? null,
         post_type: "user",
+        attached_visual_url: attachedUrl ?? null,
       })
       .select()
       .single();
@@ -817,6 +888,8 @@ function Index() {
       setBody("");
       setGifUrl(null);
       setVibeId(null);
+      setAttachedUrl(null);
+      setAttachedPath(null);
       try {
         const mine: string[] = JSON.parse(localStorage.getItem(ACH_KEYS.myPosts) || "[]");
         if (!mine.includes(data.id)) {
@@ -1583,6 +1656,40 @@ function Index() {
                     </div>
                   )}
 
+                  {/* Uploaded bar pic preview */}
+                  {attachedUrl && (
+                    <div className="pl-14">
+                      <div className="relative inline-block rounded-xl overflow-hidden border border-amber-500/30 bg-black/40">
+                        <img
+                          src={attachedUrl}
+                          alt="Attached bar pic"
+                          loading="lazy"
+                          className="max-h-48 w-auto object-cover"
+                        />
+                        <button
+                          type="button"
+                          onClick={clearAttachedPic}
+                          className="absolute top-1.5 right-1.5 size-6 rounded-full bg-black/70 text-white grid place-items-center text-xs hover:bg-black"
+                          aria-label="Remove attached image"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  <input
+                    ref={picInputRef}
+                    type="file"
+                    accept="image/jpeg,image/jpg,image/png"
+                    className="hidden"
+                    onChange={(e) => {
+                      const f = e.target.files?.[0];
+                      e.target.value = "";
+                      if (f) void handlePicSelected(f);
+                    }}
+                  />
+
                   <div className="flex items-center gap-2 flex-wrap pl-14">
                     <button
                       type="button"
@@ -1590,6 +1697,22 @@ function Index() {
                       className="inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 border border-primary/40 bg-primary/10 text-primary text-[12px] font-bold hover:bg-primary/20 hover:border-primary/60 transition"
                     >
                       🎬 Add GIF
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => triggerPicUpload("bar")}
+                      disabled={uploadingPic !== null || !!attachedUrl}
+                      className="inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 border border-amber-500/40 bg-amber-500/10 text-amber-200 text-[12px] font-bold hover:bg-amber-500/20 hover:border-amber-500/60 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {uploadingPic === "bar" ? "Uploading…" : "📷 Bar pic"}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => triggerPicUpload("tasting")}
+                      disabled={uploadingPic !== null || !!attachedUrl}
+                      className="inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 border border-amber-500/40 bg-amber-500/10 text-amber-200 text-[12px] font-bold hover:bg-amber-500/20 hover:border-amber-500/60 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {uploadingPic === "tasting" ? "Uploading…" : "📷 Tasting"}
                     </button>
                     {vibeId && (
                       <span className="inline-flex items-center gap-1 rounded-full px-2 py-1 text-[10px] font-bold border border-border bg-muted/40">
@@ -1607,7 +1730,7 @@ function Index() {
                     <div className="ml-auto">
                       <Button
                         type="submit"
-                        disabled={(!body.trim() && !gifUrl && !vibeId) || submitting}
+                        disabled={(!body.trim() && !gifUrl && !vibeId && !attachedUrl) || submitting || uploadingPic !== null}
                         className="rounded-full px-5 font-semibold"
                       >
                         {submitting ? "Pouring…" : "Post 🍻"}
@@ -2090,6 +2213,19 @@ const PostCard = memo(function PostCard({
                     alt="Attached GIF"
                     loading="lazy"
                     className="w-full h-auto object-cover max-h-[420px]"
+                  />
+                </div>
+              </div>
+            )}
+            {post.attached_visual_url && !post.is_hidden && (
+              <div className="px-4 pb-3">
+                <div className="rounded-2xl overflow-hidden border border-amber-500/20 bg-black/40 shadow-[0_8px_30px_-12px_rgba(251,191,36,0.25)]">
+                  <img
+                    src={post.attached_visual_url}
+                    alt="Attached bar pic"
+                    loading="lazy"
+                    decoding="async"
+                    className="w-full h-auto object-cover max-h-[520px]"
                   />
                 </div>
               </div>
