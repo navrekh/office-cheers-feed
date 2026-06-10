@@ -10,6 +10,8 @@ export type MerchantDeal = {
   deal_text: string;
   urgency_level: number;
   heading_there_count: number;
+  verified_at_venue_count?: number;
+  commuting_count?: number;
   is_active: boolean;
   updated_at: string;
   activated_at?: string;

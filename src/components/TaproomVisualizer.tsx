@@ -27,11 +27,13 @@ export default function TaproomVisualizer() {
   }, []);
 
   const { top } = useMerchantDeals(city);
-  const baseCount = top?.heading_there_count ?? 24;
-  // Cap how many tiny avatars we render so the bar counter never overflows.
-  const seatCount = Math.min(28, Math.max(6, baseCount));
+  const verified = Math.max(0, top?.verified_at_venue_count ?? 0);
+  const commuting = Math.max(0, top?.commuting_count ?? 0);
+  // Cap visible glyphs per side so the bar never overflows.
+  const seatCount = Math.min(20, verified || Math.min(20, Math.max(4, (top?.heading_there_count ?? 12) - commuting)));
+  const commuterCount = Math.min(10, commuting);
 
-  // Track the previous count to flag NEW arrivals that should bounce-in.
+  // Track the previous count to flag NEW arrivals that should bounce-in (geofence crossings).
   const prevRef = useRef<number>(seatCount);
   const [newSeats, setNewSeats] = useState<Set<number>>(new Set());
   useEffect(() => {
@@ -57,6 +59,15 @@ export default function TaproomVisualizer() {
     [seatCount],
   );
 
+  const commuters = useMemo(
+    () =>
+      Array.from({ length: commuterCount }, (_, i) => ({
+        i,
+        persona: PERSONAS[(i + 3) % PERSONAS.length],
+      })),
+    [commuterCount],
+  );
+
   return (
     <Card className="relative overflow-hidden p-0 border-amber-400/30 bg-gradient-to-b from-zinc-950 via-amber-950/40 to-zinc-950 shadow-[0_0_40px_rgba(251,191,36,0.15)]">
       {/* Neon header bar */}
@@ -72,8 +83,9 @@ export default function TaproomVisualizer() {
             {top?.pub_name ?? "Verified Watering Hole"} · {city}
           </span>
         </div>
-        <span className="text-[10px] font-mono text-amber-300/90 tabular-nums">
-          {seatCount} seated 🍺
+        <span className="text-[10px] font-mono tabular-nums flex items-center gap-2">
+          <span className="text-emerald-300">🟢 {verified} inside</span>
+          <span className="text-sky-300/80">🏃‍♂️ {commuting} en route</span>
         </span>
       </div>
 
@@ -92,7 +104,25 @@ export default function TaproomVisualizer() {
           </span>
         </div>
 
-        {/* Avatars row sitting at the counter */}
+        {/* En-route commuters floating along the right entry edge */}
+        {commuters.length > 0 && (
+          <div className="absolute right-1 top-2 bottom-8 flex flex-col items-end gap-1 pointer-events-none">
+            {commuters.map((c) => (
+              <div
+                key={`c-${c.i}`}
+                className="flex items-center gap-1 opacity-60"
+                style={{ animation: "taproom-drop 1200ms ease-in-out infinite alternate" }}
+              >
+                <span className="text-[8px] font-bold text-sky-200/80 uppercase tracking-wider">en route</span>
+                <div className="size-5 rounded-md grid place-items-center text-[10px] bg-sky-500/10 border border-sky-300/40 text-sky-100">
+                  {c.persona}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Avatars row sitting at the counter (verified inside the geofence) */}
         <div className="absolute inset-x-3 bottom-7 flex items-end gap-1.5 overflow-x-auto no-scrollbar">
           {seats.map((s) => (
             <div
@@ -108,7 +138,7 @@ export default function TaproomVisualizer() {
                 {s.drink}
               </span>
               <div
-                className={`size-7 rounded-md grid place-items-center text-[14px] bg-gradient-to-b ${seatColor(s.i)} border border-amber-400/30 shadow-[0_0_6px_rgba(251,191,36,0.4)]`}
+                className={`size-7 rounded-md grid place-items-center text-[14px] bg-gradient-to-b ${seatColor(s.i)} border-2 border-emerald-400/80 shadow-[0_0_10px_rgba(52,211,153,0.7)]`}
               >
                 {s.persona}
               </div>

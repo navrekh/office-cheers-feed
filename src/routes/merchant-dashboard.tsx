@@ -183,7 +183,8 @@ function DashboardSkeleton() {
 
 /* ------- A. Live Analytics ------- */
 function LiveAnalyticsPanel({ pubName }: { pubName: string | null }) {
-  const [hover, setHover] = useState<number | null>(null);
+  const [verified, setVerified] = useState<number | null>(null);
+  const [commuting, setCommuting] = useState<number | null>(null);
   const [clicks, setClicks] = useState<number | null>(null);
   const [today, setToday] = useState<number | null>(null);
 
@@ -204,7 +205,7 @@ function LiveAnalyticsPanel({ pubName }: { pubName: string | null }) {
         .gte("created_at", startOfDay.toISOString());
       const dealQ = await (supabase as any)
         .from("merchant_deals")
-        .select("heading_there_count")
+        .select("verified_at_venue_count, commuting_count")
         .ilike("pub_name", pubName as string)
         .order("updated_at", { ascending: false })
         .limit(1)
@@ -212,13 +213,15 @@ function LiveAnalyticsPanel({ pubName }: { pubName: string | null }) {
       if (cancelled) return;
       setClicks(total.count ?? 0);
       setToday(todayQ.count ?? 0);
-      setHover(dealQ.data?.heading_there_count ?? 0);
+      setVerified(dealQ.data?.verified_at_venue_count ?? 0);
+      setCommuting(dealQ.data?.commuting_count ?? 0);
     }
     load();
     const id = setInterval(load, 15000);
     const channel = (supabase as any)
       .channel(`merchant-live-${pubName}`)
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "merchant_clicks" }, load)
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "merchant_deals" }, load)
       .subscribe();
     return () => {
       cancelled = true;
@@ -231,14 +234,43 @@ function LiveAnalyticsPanel({ pubName }: { pubName: string | null }) {
     <Card className="p-5 border-emerald-400/30 bg-gradient-to-br from-emerald-500/10 via-zinc-900 to-zinc-950">
       <div className="flex items-center gap-2 mb-3">
         <span className="inline-block size-2 rounded-full bg-emerald-400 animate-pulse" />
-        <h2 className="text-sm font-bold uppercase tracking-wider text-emerald-100">Live Analytics</h2>
+        <h2 className="text-sm font-bold uppercase tracking-wider text-emerald-100">Geofenced Foot-Traffic Cockpit</h2>
       </div>
-      <div className="grid grid-cols-3 gap-3">
-        <MetricTile icon={Eye} label="Hovering Now" value={hover} accent="emerald" />
+      <div className="grid grid-cols-2 gap-3 mb-3">
+        <GaugeTile
+          label="Verified Patrons on Premises 🔥"
+          sublabel="Inside the 200 m geofence"
+          value={verified}
+          accent="emerald"
+        />
+        <GaugeTile
+          label="In-Bound Commuters Incoming 🏃‍♂️"
+          sublabel="En route, not yet verified"
+          value={commuting}
+          accent="sky"
+        />
+      </div>
+      <div className="grid grid-cols-2 gap-3">
         <MetricTile icon={MousePointerClick} label='"Heading There" Total' value={clicks} accent="amber" />
-        <MetricTile icon={MousePointerClick} label="Today" value={today} accent="sky" />
+        <MetricTile icon={Eye} label="Today" value={today} accent="sky" />
       </div>
     </Card>
+  );
+}
+
+function GaugeTile({
+  label, sublabel, value, accent,
+}: { label: string; sublabel: string; value: number | null; accent: "emerald" | "sky" }) {
+  const tone = accent === "emerald"
+    ? "border-emerald-400/50 bg-emerald-500/15 text-emerald-50 shadow-[0_0_24px_rgba(52,211,153,0.25)]"
+    : "border-sky-400/50 bg-sky-500/15 text-sky-50 shadow-[0_0_24px_rgba(56,189,248,0.25)]";
+  const ring = accent === "emerald" ? "ring-emerald-400/40" : "ring-sky-400/40";
+  return (
+    <div className={`rounded-xl border p-4 ring-1 ${ring} ${tone}`}>
+      <div className="text-[10px] uppercase tracking-wider font-bold opacity-90">{label}</div>
+      <div className="text-4xl font-black mt-1 tabular-nums">{value ?? "—"}</div>
+      <div className="text-[10px] opacity-70 mt-1">{sublabel}</div>
+    </div>
   );
 }
 
