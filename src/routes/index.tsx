@@ -82,6 +82,7 @@ import {
 import { useGeolocation } from "@/hooks/useGeolocation";
 import { getOrCreateSessionId, haversineKm } from "@/lib/geo";
 import { LiveWorkspaceRadar, type ProximityFilter } from "@/components/LiveWorkspaceRadar";
+import { WorkplaceSelectorCard } from "@/components/WorkplaceSelectorCard";
 import { ProximityAdDispatcher, dealCoord } from "@/components/ProximityAdDispatcher";
 import { useMerchantDeals, type MerchantDeal } from "@/lib/useMerchantDeals";
 
