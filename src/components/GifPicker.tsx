@@ -156,7 +156,7 @@ export function GifPicker({
                 >
                   <img
                     src={it.images.fixed_height_small.url}
-                    alt={it.title || "GIF"}
+                    alt={it.title || "Reaction GIF preview"}
                     loading="lazy"
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform"
                   />
