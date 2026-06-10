@@ -829,6 +829,13 @@ function Index() {
 
   // Sort posts by selected mode, inject merchant ads at fixed slots, pin highlighted
   const orderedPosts = useMemo(() => {
+    // "My Desk" — strictly the signed-in user's own posts, newest first, no ads.
+    if (sortMode === "mine") {
+      if (!user) return [];
+      return [...posts]
+        .filter((p) => (p as any).user_id === user.id)
+        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    }
     const sorted = [...posts].sort((a, b) => {
       if (sortMode === "top") return b.cheers_count - a.cheers_count;
       return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
@@ -844,7 +851,15 @@ function Index() {
     const idx = withAds.findIndex((p) => p.id === highlightedId);
     if (idx < 0) return withAds;
     return [withAds[idx], ...withAds.slice(0, idx), ...withAds.slice(idx + 1)];
-  }, [posts, highlightedId, sortMode, selectedCity]);
+  }, [posts, highlightedId, sortMode, selectedCity, user]);
+
+  // List of the signed-in user's own posts, used by the Tickets accordion.
+  const myPosts = useMemo(() => {
+    if (!user) return [] as Post[];
+    return [...posts]
+      .filter((p) => (p as any).user_id === user.id)
+      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+  }, [posts, user]);
 
   const hangoverStatus = useMemo(() => {
     if (hangoverIndex <= 20)
