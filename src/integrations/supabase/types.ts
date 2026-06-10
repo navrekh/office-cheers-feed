@@ -351,6 +351,7 @@ export type Database = {
         Returns: boolean
       }
       claim_first_admin: { Args: never; Returns: boolean }
+      claim_merchant_role: { Args: { p_pub_name?: string }; Returns: boolean }
       delete_post_by_ticket: { Args: { ticket: string }; Returns: boolean }
       has_role: {
         Args: {
