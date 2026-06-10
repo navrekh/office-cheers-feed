@@ -51,6 +51,8 @@ import {
   Rocket,
   Volume2,
   VolumeX,
+  Lightbulb,
+  AlertTriangle,
 } from "lucide-react";
 
 export const Route = createFileRoute("/")({
