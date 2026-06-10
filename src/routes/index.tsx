@@ -549,20 +549,35 @@ function Index() {
 
   async function submitPost(e: FormEvent) {
     e.preventDefault();
-    if (!body.trim() || submitting) return;
+    if (submitting) return;
+    const sanitized = sanitizePostBody(body);
+    if (!sanitized.ok) {
+      toast.error(sanitized.reason || "That post didn't make the cut.");
+      return;
+    }
+    const rate = checkRateLimit();
+    if (!rate.ok) {
+      setSubmitting(true);
+      toast.error("Whoa there, colleague! Your blood alcohol content or posting speed is too high for HR. Take a sip of water and try again in 30 seconds. 🍻");
+      setTimeout(() => setSubmitting(false), Math.min(rate.retryInMs, 30_000));
+      return;
+    }
     setSubmitting(true);
     const { data, error } = await (supabase as any)
       .from("posts")
       .insert({
         author_name: anonymous ? ANON_NAME : (authorName || "Anonymous Intern"),
         author_headline: anonymous ? ANON_HEADLINE : (authorHeadline || "Specializing in Liquid Refactoring"),
-        body_text: body.trim(),
+        body_text: sanitized.clean,
       })
       .select()
       .single();
     if (!error && data) {
+      recordPostTimestamp();
       setPosts((prev) => (prev.some((p) => p.id === data.id) ? prev : [data as Post, ...prev]));
       setBody("");
+    } else if (error) {
+      toast.error("Couldn't post that round. Try again in a sec.");
     }
     setSubmitting(false);
   }
