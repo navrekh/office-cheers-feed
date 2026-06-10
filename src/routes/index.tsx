@@ -658,7 +658,16 @@ function Index() {
   async function submitPost(e: FormEvent) {
     e.preventDefault();
     if (submitting) return;
-    if (!requireAuth("Sign in to post — your alias stays anonymous in the feed, but we need a verified session on the backend.")) return;
+    if (!user) {
+      // Stash the draft so it survives the Magic-Link round-trip / Google redirect.
+      try {
+        const draft = { body, gifUrl, vibeId, anonymous, authorName, authorHeadline, autoSubmit: true, ts: Date.now() };
+        localStorage.setItem(PENDING_DRAFT_KEY, JSON.stringify(draft));
+      } catch {}
+      setAuthReason("Sign in to post — your draft is saved and will publish the moment your session activates.");
+      setAuthModalOpen(true);
+      return;
+    }
     // Allow body-less posts when a vibe or GIF is attached — the visual carries the post.
     const hasVisual = !!(gifUrl || vibeId);
     const bodyForSanitize = body.trim() ? body : hasVisual ? "🍻" : body;
