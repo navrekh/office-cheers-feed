@@ -1161,7 +1161,7 @@ function PostCard({
         <ActionBtn onClick={onShare} label="Share" icon={<Share2 className="size-5" />} />
         <ActionBtn
           onClick={() => {
-            downloadPostAsImage(post);
+            void triggerDownloadPostCard(post);
             toast.success("Post card downloading 🍻");
           }}
           label="Download"
