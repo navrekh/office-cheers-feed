@@ -236,6 +236,18 @@ function initials(name: string) {
 
 type ViewKey = "home" | "barhop" | "pubs" | "messages" | "notifications";
 
+const PENDING_DRAFT_KEY = "drinkedin.pendingDraft.v1";
+type PendingDraft = {
+  body: string;
+  gifUrl: string | null;
+  vibeId: string | null;
+  anonymous: boolean;
+  authorName: string;
+  authorHeadline: string;
+  autoSubmit: boolean;
+  ts: number;
+};
+
 function Index() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [commentsByPost, setCommentsByPost] = useState<Record<string, Comment[]>>({});
