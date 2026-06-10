@@ -7,6 +7,7 @@ import {
   subscribeCity,
   type CityKey,
 } from "@/lib/cityStore";
+import { useMerchantDeals } from "@/lib/useMerchantDeals";
 
 export default function HappyHourTicker() {
   const [city, setCity] = useState<CityKey>("Bangalore");
@@ -16,7 +17,10 @@ export default function HappyHourTicker() {
     return subscribeCity(setCity);
   }, []);
 
-  const deal = FLASH_DEALS[city];
+  const { top } = useMerchantDeals(city);
+  const deal = top?.deal_text ?? FLASH_DEALS[city];
+  // Key on deal string so React swaps DOM nodes and re-runs the fade animation.
+  const dealKey = `${city}:${deal}`;
 
   return (
     <div className="relative w-full border-b border-amber-400/30 bg-gradient-to-r from-amber-950/60 via-amber-900/50 to-amber-950/60 overflow-hidden">
@@ -34,13 +38,16 @@ export default function HappyHourTicker() {
           ))}
         </select>
         <span className="shrink-0 text-[10px] font-black uppercase tracking-widest text-amber-300 drop-shadow-[0_0_6px_rgba(251,191,36,0.7)] animate-pulse">
-          LIVE
+          {top?.urgency_level === 3 ? "🚨 URGENT" : "LIVE"}
         </span>
         <div
           className="relative flex-1 overflow-hidden h-5"
           aria-live="polite"
         >
-          <div className="absolute inset-y-0 whitespace-nowrap flex items-center text-[11px] font-medium text-amber-100/95 drinkedin-marquee">
+          <div
+            key={dealKey}
+            className="absolute inset-y-0 whitespace-nowrap flex items-center text-[11px] font-medium text-amber-100/95 drinkedin-marquee drinkedin-deal-fade"
+          >
             <span className="px-8">{deal}</span>
             <span className="px-8">{deal}</span>
             <span className="px-8">{deal}</span>
