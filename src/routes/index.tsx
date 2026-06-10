@@ -228,6 +228,21 @@ function Index() {
     window.addEventListener("drinkedin:bingo-win", onBingo as EventListener);
     return () => window.removeEventListener("drinkedin:bingo-win", onBingo as EventListener);
   }, []);
+
+  // Legendary Asset badge: any of my posts crosses 100 cheers
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (localStorage.getItem(ACH_KEYS.legendary) === "1") return;
+    let mine: string[] = [];
+    try { mine = JSON.parse(localStorage.getItem(ACH_KEYS.myPosts) || "[]"); } catch {}
+    if (!mine.length) return;
+    const hit = posts.some((p) => mine.includes(p.id) && p.cheers_count >= 100);
+    if (hit) {
+      bumpAchievement("legendary", true);
+      toast.success("🏆 Legendary Asset unlocked!", { description: "One of your posts broke 100 cheers." });
+    }
+  }, [posts]);
+
   const [mockOutage, setMockOutage] = useState(false);
   const logoPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
