@@ -206,6 +206,28 @@ function Index() {
   const [loopCount, setLoopCount] = useState<number>(1847);
   const [, force] = useState(0);
   const [devOpen, setDevOpen] = useState(false);
+  const [happyHour, setHappyHour] = useState<boolean>(false);
+
+  // Happy Hour Mode (16:30–18:00 local time)
+  useEffect(() => {
+    function tick() { setHappyHour(isHappyHourNow()); }
+    tick();
+    const id = setInterval(tick, 30_000);
+    return () => clearInterval(id);
+  }, []);
+
+  // Bingo-win listener: pre-fill composer with a humblebrag draft
+  useEffect(() => {
+    function onBingo(e: Event) {
+      const draft = ((e as CustomEvent).detail as any)?.draft as string | undefined;
+      if (draft) {
+        setBody(draft);
+        toast.success("BINGO! 🎯", { description: "Draft loaded into your composer." });
+      }
+    }
+    window.addEventListener("drinkedin:bingo-win", onBingo as EventListener);
+    return () => window.removeEventListener("drinkedin:bingo-win", onBingo as EventListener);
+  }, []);
   const [mockOutage, setMockOutage] = useState(false);
   const logoPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
