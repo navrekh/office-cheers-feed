@@ -955,7 +955,7 @@ function Index() {
       void notifyAdminNewPost({
         data: {
           snippet: sanitized.clean.slice(0, 200),
-          author: anonymous ? "Anonymous" : (authorName || "Anonymous Intern"),
+          author: anonymous ? "Anonymous" : resolvedName,
         },
       }).catch(() => {});
     } else if (error) {
