@@ -14,6 +14,30 @@ export type Database = {
   }
   public: {
     Tables: {
+      advertiser_leads: {
+        Row: {
+          city: string
+          contact_info: string
+          created_at: string
+          id: string
+          pub_name: string
+        }
+        Insert: {
+          city: string
+          contact_info: string
+          created_at?: string
+          id?: string
+          pub_name: string
+        }
+        Update: {
+          city?: string
+          contact_info?: string
+          created_at?: string
+          id?: string
+          pub_name?: string
+        }
+        Relationships: []
+      }
       comments: {
         Row: {
           author_name: string

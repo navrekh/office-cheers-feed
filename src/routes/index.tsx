@@ -111,6 +111,7 @@ async function triggerDownloadPostCard(post: { id: string; author_name: string; 
 
 import AchievementBadges, { ACH_KEYS, bumpAchievement } from "@/components/AchievementBadges";
 import CorporateBingo from "@/components/CorporateBingo";
+import VerifiedWateringHole from "@/components/VerifiedWateringHole";
 
 function isHappyHourNow(d: Date = new Date()): boolean {
   const minutes = d.getHours() * 60 + d.getMinutes();
@@ -1188,6 +1189,9 @@ function Index() {
 
           <CorporateBingo />
 
+          <VerifiedWateringHole />
+
+
 
 
           <p className="text-[10px] text-muted-foreground/60 px-2 leading-relaxed">
@@ -1572,6 +1576,8 @@ function PubsView() {
 
   return (
     <div className="space-y-3 animate-in fade-in duration-300">
+      <VerifiedWateringHole />
+
       <Card className="p-5 border-border bg-gradient-to-br from-card via-card to-primary/5">
         <div className="flex items-center gap-3">
           <div className="size-11 rounded-xl bg-primary/20 grid place-items-center text-primary">
