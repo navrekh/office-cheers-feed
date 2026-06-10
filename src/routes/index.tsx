@@ -349,11 +349,12 @@ function Index() {
     if (cheeredRef.current.has(post.id)) return;
     cheeredRef.current.add(post.id);
     force((n) => n + 1);
+    playClink();
     setPosts((prev) =>
       prev.map((p) => (p.id === post.id ? { ...p, cheers_count: p.cheers_count + 1 } : p))
     );
     await (supabase as any).rpc("increment_cheers", { post_id: post.id });
-  }, []);
+  }, [playClink]);
 
   const addComment = useCallback(async (postId: string, text: string, name: string) => {
     const trimmed = text.trim();
