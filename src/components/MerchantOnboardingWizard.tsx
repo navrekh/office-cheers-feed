@@ -378,7 +378,7 @@ function Step2(props: {
 /* ---------------- STEP 3 ---------------- */
 function Step3(props: {
   file: File | null; preview: string | null;
-  fileInputRef: React.RefObject<HTMLInputElement>;
+  fileInputRef: React.RefObject<HTMLInputElement | null>;
   onPick: (f: File | null) => void;
   dragOver: boolean; setDragOver: (v: boolean) => void;
   onDrop: (e: React.DragEvent) => void;
