@@ -44,6 +44,42 @@ export type Database = {
         }
         Relationships: []
       }
+      billing_requests: {
+        Row: {
+          amount_inr: number
+          created_at: string
+          id: string
+          note: string | null
+          pub_name: string | null
+          status: string
+          transaction_timestamp: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount_inr?: number
+          created_at?: string
+          id?: string
+          note?: string | null
+          pub_name?: string | null
+          status?: string
+          transaction_timestamp?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount_inr?: number
+          created_at?: string
+          id?: string
+          note?: string | null
+          pub_name?: string | null
+          status?: string
+          transaction_timestamp?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       check_ins: {
         Row: {
           activity: string
