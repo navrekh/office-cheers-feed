@@ -129,6 +129,11 @@ export default function VerifiedWateringHole({
     setPopping(true);
     window.setTimeout(() => setPopping(false), 500);
     toast.success(`You're heading to ${sponsored.name} 🏃‍♂️🍻`);
+    if (userId) {
+      void (supabase as any)
+        .from("merchant_clicks")
+        .insert({ pub_id: sponsored.name, user_id: userId, city: activeCity });
+    }
   }
 
   function resetForm() {
