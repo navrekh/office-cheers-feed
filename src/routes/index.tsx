@@ -330,13 +330,28 @@ function Index() {
   }, []);
 
 
-  // Sort posts with highlighted one pinned at top
+  // Sort posts by selected mode, then pin highlighted post at top
   const orderedPosts = useMemo(() => {
-    if (!highlightedId) return posts;
-    const idx = posts.findIndex((p) => p.id === highlightedId);
-    if (idx < 0) return posts;
-    return [posts[idx], ...posts.slice(0, idx), ...posts.slice(idx + 1)];
-  }, [posts, highlightedId]);
+    const sorted = [...posts].sort((a, b) => {
+      if (sortMode === "top") return b.cheers_count - a.cheers_count;
+      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+    });
+    if (!highlightedId) return sorted;
+    const idx = sorted.findIndex((p) => p.id === highlightedId);
+    if (idx < 0) return sorted;
+    return [sorted[idx], ...sorted.slice(0, idx), ...sorted.slice(idx + 1)];
+  }, [posts, highlightedId, sortMode]);
+
+  const hangoverStatus = useMemo(() => {
+    if (hangoverIndex <= 20)
+      return { label: "Dangerously Sober", copy: "High risk of replying to emails on time.", tone: "text-chart-3 border-chart-3/40 bg-chart-3/10" };
+    if (hangoverIndex <= 50)
+      return { label: "Functional Synergy", copy: "Navigating Slack with a moderate buzz.", tone: "text-primary border-primary/40 bg-primary/10" };
+    if (hangoverIndex <= 80)
+      return { label: "Liquid Architecture", copy: "Camera off during regional alignment calls.", tone: "text-accent border-accent/40 bg-accent/10" };
+    return { label: "Total System Outage", copy: "Submitting PTO retroactively.", tone: "text-destructive border-destructive/40 bg-destructive/10" };
+  }, [hangoverIndex]);
+
 
 
   return (
