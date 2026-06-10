@@ -146,6 +146,7 @@ import AuthModal from "@/components/AuthModal";
 import CommentsDrawer from "@/components/CommentsDrawer";
 import { useAuth, emailPrefix, signOut, corporateCodename } from "@/lib/useAuth";
 import { useProfile, isRlsDenied, RLS_DENIED_MESSAGE } from "@/lib/useProfile";
+import { downloadBroetryCard } from "@/lib/downloadBroetryCard";
 import { reportPost as reportPostRpc, tribunalVote as tribunalVoteRpc } from "@/lib/tribunal";
 import BeerTipPopover from "@/components/BeerTipPopover";
 import { Skeleton } from "@/components/ui/skeleton";
