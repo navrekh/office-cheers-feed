@@ -340,10 +340,12 @@ function Index() {
             href="https://tokenlens.co.in/"
             target="_blank"
             rel="noopener noreferrer"
+            onClick={trackTokenLensClick}
             className="inline-flex items-center gap-1 font-bold text-primary hover:text-primary/80 underline decoration-primary/50 decoration-2 underline-offset-4 transition"
           >
             Check out my real engineering tool: TokenLens →
           </a>
+
         </div>
       </div>
 
