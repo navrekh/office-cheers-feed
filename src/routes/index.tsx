@@ -786,6 +786,7 @@ function Index() {
       .single();
     if (!error && data) {
       recordPostTimestamp();
+      try { localStorage.removeItem(PENDING_DRAFT_KEY); } catch {}
       setPosts((prev) => (prev.some((p) => p.id === data.id) ? prev : [data as Post, ...prev]));
       setBody("");
       setGifUrl(null);
