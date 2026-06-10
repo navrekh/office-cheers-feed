@@ -1846,6 +1846,23 @@ function Index() {
         signedIn={!!user}
         myPosts={myPosts}
       />
+
+      <CommentsDrawer
+        open={!!activeCommentPostId}
+        onOpenChange={(v) => { if (!v) setActiveCommentPostId(null); }}
+        postId={activeCommentPostId}
+        postTitle={(() => {
+          const p = posts.find((x) => x.id === activeCommentPostId);
+          return p ? snippetOf(p.body_text) : null;
+        })()}
+        comments={activeCommentPostId ? (commentsByPost[activeCommentPostId] || []) : []}
+        signedIn={!!user}
+        onRequireAuth={() => {
+          setAuthReason("Sign in to drop a reply 💬 — keeps our breakroom spam-free.");
+          setAuthModalOpen(true);
+        }}
+        onSubmit={(pid, text) => addComment(pid, text)}
+      />
     </div>
   );
 }
