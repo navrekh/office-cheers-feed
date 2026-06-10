@@ -44,6 +44,21 @@ export function emailPrefix(email?: string | null): string {
   return at > 0 ? email.slice(0, at) : email;
 }
 
+/** Deterministic funny corporate codename derived from the email prefix. */
+export function corporateCodename(email?: string | null): string {
+  const prefix = emailPrefix(email);
+  const adjectives = [
+    "Colleague", "Synergy", "Stakeholder", "Intern", "Coworker",
+    "Manager", "Consultant", "Operative", "Specialist", "Associate",
+    "Director", "Analyst", "Strategist", "Liaison",
+  ];
+  let hash = 0;
+  for (let i = 0; i < prefix.length; i++) hash = (hash * 31 + prefix.charCodeAt(i)) >>> 0;
+  const word = adjectives[hash % adjectives.length];
+  const num = (hash % 899) + 100; // 100–998
+  return `${word}_${num}`;
+}
+
 export async function signOut() {
   await supabase.auth.signOut();
 }

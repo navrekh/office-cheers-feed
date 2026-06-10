@@ -64,16 +64,16 @@ export default function AuthModal({ open, onOpenChange, reason }: Props) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md border-amber-500/30 bg-gradient-to-br from-zinc-950 via-zinc-900 to-zinc-950 shadow-[0_0_60px_rgba(251,191,36,0.15)]">
+      <DialogContent className="sm:max-w-md border-amber-500/30 bg-gradient-to-br from-zinc-950/90 via-zinc-900/90 to-zinc-950/90 backdrop-blur-xl shadow-[0_0_80px_rgba(251,191,36,0.2)]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-xl">
             <span className="inline-grid place-items-center size-9 rounded-lg bg-amber-500/15 border border-amber-500/40 text-amber-300">
               <ShieldCheck className="size-5" />
             </span>
-            Sign in to keep drinking 🍻
+            Join the Breakroom 🍻
           </DialogTitle>
-          <DialogDescription className="text-muted-foreground">
-            {reason || "We use sign-in to protect the platform from spam and liability — but your feed stays 100% anonymous to other users."}
+          <DialogDescription className="text-muted-foreground leading-relaxed">
+            {reason || "To keep our corporate sanctuary safe and brand-verified, sign in with your email or Google account. Your public posts remain 100% anonymous."}
           </DialogDescription>
         </DialogHeader>
 
@@ -120,8 +120,8 @@ export default function AuthModal({ open, onOpenChange, reason }: Props) {
                   required
                 />
               </div>
-              <Button type="submit" disabled={sending} className="w-full h-11 font-semibold">
-                {sending ? "Sending link…" : "Email me a magic link ✨"}
+              <Button type="submit" disabled={sending} className="w-full h-11 font-semibold bg-amber-500 hover:bg-amber-400 text-zinc-950">
+                {sending ? "Sending link…" : "Send Magic Link ✉️"}
               </Button>
             </form>
           )}

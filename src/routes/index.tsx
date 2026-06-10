@@ -131,7 +131,8 @@ import VerifiedWateringHole from "@/components/VerifiedWateringHole";
 import HappyHourTicker from "@/components/HappyHourTicker";
 import ClaimTicketModal from "@/components/ClaimTicketModal";
 import AuthModal from "@/components/AuthModal";
-import { useAuth, emailPrefix, signOut } from "@/lib/useAuth";
+import { useAuth, emailPrefix, signOut, corporateCodename } from "@/lib/useAuth";
+import { Skeleton } from "@/components/ui/skeleton";
 import { LogOut } from "lucide-react";
 
 function isHappyHourNow(d: Date = new Date()): boolean {
@@ -259,7 +260,7 @@ function Index() {
   const [happyHour, setHappyHour] = useState<boolean>(false);
   const [claimTicket, setClaimTicket] = useState<string | null>(null);
   const [claimModalOpen, setClaimModalOpen] = useState(false);
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authReason, setAuthReason] = useState<string | undefined>(undefined);
   function requireAuth(reason?: string): boolean {
@@ -270,6 +271,7 @@ function Index() {
   }
   // Auto-fill composer alias from the signed-in user's email prefix (never the full email)
   const userAlias = user ? emailPrefix(user.email) : null;
+  const userCodename = user ? corporateCodename(user.email) : null;
 
   // Happy Hour Mode (16:30–18:00 local time)
   useEffect(() => {
@@ -737,6 +739,11 @@ function Index() {
   const addComment = useCallback(async (postId: string, text: string, name: string) => {
     const trimmed = text.trim();
     if (!trimmed) return;
+    if (!user) {
+      setAuthReason("Sign in to drop a comment 💬 — keeps our breakroom spam-free.");
+      setAuthModalOpen(true);
+      return;
+    }
     const optimistic: Comment = {
       id: `tmp-${Date.now()}-${Math.random()}`,
       post_id: postId,
@@ -759,7 +766,7 @@ function Index() {
         [postId]: (prev[postId] || []).map((c) => (c.id === optimistic.id ? (data as Comment) : c)),
       }));
     }
-  }, []);
+  }, [user]);
 
   function randomize() {
     const id = randomIdentity();
@@ -974,27 +981,35 @@ function Index() {
           <Card className="overflow-hidden p-0 border-border">
             <div className="h-16 bg-gradient-to-br from-primary/40 via-accent/50 to-primary/30" />
             <div className="px-4 pb-4 -mt-8">
-              <div className="size-16 rounded-full bg-card border-4 border-card ring-2 ring-primary/40 grid place-items-center text-2xl shadow">
-                {user ? "🍻" : "🎭"}
+              <div className={`size-16 rounded-full bg-card border-4 border-card grid place-items-center text-2xl shadow transition ${user ? "ring-2 ring-primary/40" : "ring-2 ring-zinc-700/60 grayscale"}`}>
+                {authLoading ? "…" : user ? "🍻" : "🕵️‍♂️"}
               </div>
-              {user ? (
+              {authLoading ? (
+                <div className="mt-2 space-y-2">
+                  <Skeleton className="h-4 w-3/4" />
+                  <Skeleton className="h-3 w-2/3" />
+                  <Skeleton className="h-3 w-1/2" />
+                </div>
+              ) : user ? (
                 <>
                   <h3 className="mt-2 font-semibold text-base leading-tight">
-                    Welcome, <span className="text-primary">{userAlias}</span> 🍻
+                    Welcome, <span className="text-primary">{userCodename}</span> 🍺
                   </h3>
-                  <p className="text-xs text-muted-foreground mt-1 leading-snug">
-                    Verified session · feed alias stays anonymous
-                  </p>
-                  <p className="text-[11px] text-muted-foreground/80 mt-1 inline-flex items-center gap-1">
-                    <ShieldCheck className="size-3 text-amber-400" />
-                    Legally protected · publicly anonymous
+                  <div className="mt-1.5 inline-flex items-center gap-1 rounded-full border border-emerald-500/40 bg-emerald-500/10 px-2 py-0.5 text-[10px] font-semibold text-emerald-300">
+                    <ShieldCheck className="size-3" />
+                    Verified Session ✔️
+                  </div>
+                  <p className="text-[11px] text-muted-foreground/80 mt-2 leading-snug">
+                    Signed in as <span className="font-mono text-foreground/70">{userAlias}</span> · feed alias stays anonymous
                   </p>
                 </>
               ) : (
                 <>
-                  <h3 className="mt-2 font-semibold text-base leading-tight">Incognito Guest 🎭</h3>
-                  <p className="text-xs text-muted-foreground mt-1 leading-snug line-clamp-2">
-                    Sign in to post, cheers, and track your shareable content.
+                  <h3 className="mt-2 font-semibold text-base leading-tight text-foreground/90">
+                    Status: Off-the-Clock <span className="text-muted-foreground">Preview Mode</span> 🕵️‍♂️
+                  </h3>
+                  <p className="text-[11px] text-muted-foreground mt-1 leading-snug">
+                    Browsing anonymously. Sign in to post, cheers, and claim your stash.
                   </p>
                   <button
                     type="button"
@@ -1002,9 +1017,9 @@ function Index() {
                       setAuthReason("Sign in to unlock posting, cheering, and your private dashboards.");
                       setAuthModalOpen(true);
                     }}
-                    className="mt-2 inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-[11px] font-semibold border border-primary/40 bg-primary/10 text-primary hover:bg-primary/20 transition"
+                    className="mt-3 w-full inline-flex items-center justify-center gap-1.5 rounded-md px-3 py-2 text-[12px] font-bold text-zinc-950 bg-amber-400 hover:bg-amber-300 border border-amber-300/60 shadow-[0_0_20px_rgba(251,191,36,0.45)] hover:shadow-[0_0_28px_rgba(251,191,36,0.65)] transition"
                   >
-                    Sign in 🍻
+                    Sign In to Post 🚀
                   </button>
                 </>
               )}
@@ -1353,7 +1368,7 @@ function Index() {
             </>
           )}
 
-          {view === "pubs" && <PubsView />}
+          {view === "pubs" && <PubsView requireAuth={requireAuth} />}
           {view === "barhop" && <BarHopView />}
           {view === "messages" && <ComingSoonView title="Messages" emoji="📬" copy="Your DMs are too embarrassing. We're protecting you from yourself." />}
           {view === "notifications" && <NotificationsView />}
@@ -1391,7 +1406,7 @@ function Index() {
 
           <CorporateBingo />
 
-          <VerifiedWateringHole />
+          <VerifiedWateringHole onRequireAuth={() => requireAuth("Sign in before sponsoring a slot — keeps merchant leads verified.")} />
 
 
 
@@ -1840,7 +1855,7 @@ function CopeItem({ tag, title, stat }: { tag: string; title: string; stat: stri
 // ============================================================
 
 
-function PubsView() {
+function PubsView({ requireAuth }: { requireAuth: (reason?: string) => boolean }) {
   const [selectedCity, setSelectedCityLocal] = useState<CityKey>("Bangalore");
   useEffect(() => {
     setSelectedCityLocal(getSelectedCity());
@@ -1884,7 +1899,7 @@ function PubsView() {
 
   return (
     <div className="space-y-3 animate-in fade-in duration-300">
-      <VerifiedWateringHole />
+      <VerifiedWateringHole onRequireAuth={() => requireAuth("Sign in before sponsoring a slot — keeps merchant leads verified.")} />
 
       <Card className="p-5 border-amber-400/30 bg-gradient-to-br from-amber-950/30 via-card to-card">
         <div className="flex items-center gap-3">
