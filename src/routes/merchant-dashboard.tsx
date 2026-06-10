@@ -105,6 +105,18 @@ function MerchantDashboardPage() {
           <SubscriptionClock pubName={profile.pub_name} onRefresh={refresh} />
         </aside>
       </main>
+
+      {needsOnboarding && (
+        <MerchantOnboardingWizard
+          userId={user!.id}
+          profile={profile}
+          onComplete={async () => {
+            await refresh();
+            setReloadKey((k) => k + 1);
+            setNeedsOnboarding(false);
+          }}
+        />
+      )}
     </div>
   );
 }
