@@ -732,7 +732,7 @@ function Index() {
     // Simulated + merchant posts live only in local state — skip the live RPC.
     if (isSimulatedPost(post) || post.post_type === "merchant" || post.id.startsWith("merchant-")) return;
     await (supabase as any).rpc("increment_cheers", { post_id: post.id });
-  }, [playClink]);
+  }, [playClink, user]);
 
   const addComment = useCallback(async (postId: string, text: string, name: string) => {
     const trimmed = text.trim();
