@@ -99,7 +99,7 @@ export function WorkplaceSelectorCard({ userId, onSaved }: Props) {
     <Card className="relative overflow-hidden border-fuchsia-500/30 bg-gradient-to-br from-fuchsia-950/40 via-zinc-950 to-zinc-950 p-4 animate-fade-in shadow-[0_0_28px_-8px_rgba(217,70,239,0.45)]">
       <div className="flex items-start gap-3">
         <div className="size-10 shrink-0 rounded-full grid place-items-center bg-fuchsia-500/15 border border-fuchsia-400/40 text-fuchsia-200">
-          <Mask className="size-5" />
+          <VenetianMask className="size-5" />
         </div>
         <div className="min-w-0 flex-1">
           <div className="text-[11px] font-bold uppercase tracking-wider text-fuchsia-200/90">
