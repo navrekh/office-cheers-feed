@@ -1327,12 +1327,26 @@ function Index() {
                   >
                     🏆 Top Brews
                   </button>
+                  {user && (
+                    <button
+                      type="button"
+                      onClick={() => setSortMode("mine")}
+                      className={`px-3 py-1 rounded-full text-[11px] font-semibold transition inline-flex items-center gap-1 ${
+                        sortMode === "mine"
+                          ? "bg-amber-400 text-zinc-950 shadow-[0_0_14px_rgba(251,191,36,0.5)]"
+                          : "text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      <Briefcase className="size-3" /> My Desk 💼
+                    </button>
+                  )}
                 </div>
                 <div className="h-px flex-1 bg-border" />
                 <span className="text-muted-foreground">
-                  {sortMode === "top" ? "Most Cheered 🍻" : "Freshly poured"}
+                  {sortMode === "top" ? "Most Cheered 🍻" : sortMode === "mine" ? "Your timeline 💼" : "Freshly poured"}
                 </span>
               </div>
+
 
 
               {feedError && orderedPosts.length === 0 && (
