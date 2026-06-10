@@ -64,7 +64,7 @@ export default function AuthModal({ open, onOpenChange, reason }: Props) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md border-amber-500/30 bg-gradient-to-br from-zinc-950 via-zinc-900 to-zinc-950 shadow-[0_0_60px_rgba(251,191,36,0.15)]">
+      <DialogContent className="sm:max-w-md border-amber-500/30 bg-gradient-to-br from-zinc-950/90 via-zinc-900/90 to-zinc-950/90 backdrop-blur-xl shadow-[0_0_80px_rgba(251,191,36,0.2)]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-xl">
             <span className="inline-grid place-items-center size-9 rounded-lg bg-amber-500/15 border border-amber-500/40 text-amber-300">
