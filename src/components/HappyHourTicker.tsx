@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   CITIES,
   FLASH_DEALS,
@@ -8,9 +8,14 @@ import {
   type CityKey,
 } from "@/lib/cityStore";
 import { useMerchantDeals } from "@/lib/useMerchantDeals";
+import { supabase } from "@/integrations/supabase/client";
+import CityCampaignModal from "@/components/CityCampaignModal";
 
 export default function HappyHourTicker() {
   const [city, setCity] = useState<CityKey>("Bangalore");
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalCity, setModalCity] = useState<CityKey>("Bangalore");
+  const checked = useRef<Set<string>>(new Set());
 
   useEffect(() => {
     setCity(getSelectedCity());
@@ -19,8 +24,30 @@ export default function HappyHourTicker() {
 
   const { top } = useMerchantDeals(city);
   const deal = top?.deal_text ?? FLASH_DEALS[city];
-  // Key on deal string so React swaps DOM nodes and re-runs the fade animation.
   const dealKey = `${city}:${deal}`;
+
+  // After any city change, ping `get_city_status` and pop the lock modal
+  // when there are fewer than 3 active paying merchants in that region.
+  // We dedupe per session to avoid nagging on every dropdown change.
+  useEffect(() => {
+    if (checked.current.has(city)) return;
+    checked.current.add(city);
+    let cancelled = false;
+    (async () => {
+      try {
+        const { data, error } = await (supabase as any).rpc("get_city_status", { p_city: city });
+        if (cancelled || error || !Array.isArray(data) || data.length === 0) return;
+        const row = data[0] as { active_merchants: number; launched: boolean };
+        if (!row.launched && row.active_merchants < 3) {
+          setModalCity(city);
+          setModalOpen(true);
+        }
+      } catch {
+        /* network hiccup — silent */
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [city]);
 
   return (
     <div className="relative w-full border-b border-amber-400/30 bg-gradient-to-r from-amber-950/60 via-amber-900/50 to-amber-950/60 overflow-hidden">
@@ -37,6 +64,14 @@ export default function HappyHourTicker() {
             </option>
           ))}
         </select>
+        <button
+          type="button"
+          onClick={() => { setModalCity(city); setModalOpen(true); }}
+          className="shrink-0 h-5 px-1.5 text-[10px] font-bold uppercase tracking-wider rounded bg-fuchsia-500/20 border border-fuchsia-400/60 text-fuchsia-100 hover:bg-fuchsia-500/30"
+          title="Vote to unlock more cities"
+        >
+          🗳️ Unlock
+        </button>
         <span className="shrink-0 text-[10px] font-black uppercase tracking-widest text-amber-300 drop-shadow-[0_0_6px_rgba(251,191,36,0.7)] animate-pulse">
           {top?.urgency_level === 3 ? "🚨 URGENT" : "LIVE"}
         </span>
@@ -54,6 +89,7 @@ export default function HappyHourTicker() {
           </div>
         </div>
       </div>
+      <CityCampaignModal open={modalOpen} onOpenChange={setModalOpen} city={modalCity} />
     </div>
   );
 }
