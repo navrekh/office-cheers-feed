@@ -471,7 +471,17 @@ function Index() {
         if (!mounted) return;
         if (postsRes.error) throw postsRes.error;
         if (commentsRes.error) throw commentsRes.error;
-        if (postsRes.data) setPosts(postsRes.data as Post[]);
+        if (postsRes.data) {
+          const real = postsRes.data as Post[];
+          // Simulated Corporate Pulse: if the global feed is sparse, hydrate
+          // with 30 historical mock posts so the timeline never feels empty.
+          if (real.length < 20) {
+            const sims = generateHistoricalSimulatedFeed(30) as unknown as Post[];
+            setPosts([...real, ...sims]);
+          } else {
+            setPosts(real);
+          }
+        }
         if (commentsRes.data) {
           const grouped: Record<string, Comment[]> = {};
           (commentsRes.data as Comment[]).forEach((c) => {
