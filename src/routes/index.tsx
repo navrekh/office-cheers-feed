@@ -287,10 +287,12 @@ function Index() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [commentsByPost, setCommentsByPost] = useState<Record<string, Comment[]>>({});
   const [body, setBody] = useState("");
-  const [authorName, setAuthorName] = useState("Alex Morgan");
-  const [authorHeadline, setAuthorHeadline] = useState(
-    "Senior Program Manager | Specialize in Liquid Refactoring"
-  );
+  // Identity is resolved from the live Supabase session below. `authorName`
+  // is ONLY populated when the user explicitly types a custom pseudonym
+  // (Priority 1). Otherwise the cascade falls through to email prefix →
+  // "Anonymous Guest". No mock seed names live here anymore.
+  const [authorName, setAuthorName] = useState("");
+  const [authorHeadline, setAuthorHeadline] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [gifUrl, setGifUrl] = useState<string | null>(null);
   const [vibeId, setVibeId] = useState<string | null>(null);
@@ -383,8 +385,8 @@ function Index() {
       const { data, error } = await (supabase as any)
         .from("posts")
         .insert({
-          author_name: draft!.anonymous ? "Anonymous Colleague" : (draft!.authorName || "Anonymous Intern"),
-          author_headline: draft!.anonymous ? "Incognito | Drinking to Cope" : (draft!.authorHeadline || "Specializing in Liquid Refactoring"),
+          author_name: draft!.anonymous ? "Anonymous Colleague" : (draft!.authorName?.trim() || `${emailPrefix(user.email)} 🎭`),
+          author_headline: draft!.anonymous ? "Incognito | Drinking to Cope" : (draft!.authorHeadline?.trim() || "Signed in · feed alias stays anonymous"),
           body_text: composed,
           user_id: user.id,
         })
@@ -629,8 +631,25 @@ function Index() {
 
   const ANON_NAME = "Anonymous Colleague";
   const ANON_HEADLINE = "Incognito | Drinking to Cope";
-  const displayName = anonymous ? ANON_NAME : authorName;
-  const displayHeadline = anonymous ? ANON_HEADLINE : authorHeadline;
+  const GUEST_NAME = "Anonymous Guest 🕵️‍♂️";
+
+  // Cascading identity resolution — runs on every render so the moment
+  // `onAuthStateChange` fires inside useAuth and updates `user`, this
+  // recomputes and the composer + sidebar flip to the new pseudonym
+  // without any manual reload.
+  //   P1: user-typed custom alias (anything in the Input box)
+  //   P2: local-part of the verified auth email (e.g. dev_guy99 🎭)
+  //   P3: logged-out fallback → Anonymous Guest 🕵️‍♂️
+  const typedAlias = authorName.trim();
+  const resolvedName = typedAlias
+    ? typedAlias
+    : user
+      ? `${emailPrefix(user.email)} 🎭`
+      : GUEST_NAME;
+  const resolvedHeadline = authorHeadline.trim() || (user ? "Signed in · feed alias stays anonymous" : "Off-the-clock preview mode");
+
+  const displayName = anonymous ? ANON_NAME : resolvedName;
+  const displayHeadline = anonymous ? ANON_HEADLINE : resolvedHeadline;
 
 
 
@@ -888,8 +907,8 @@ function Index() {
     const { data, error } = await (supabase as any)
       .from("posts")
       .insert({
-        author_name: anonymous ? ANON_NAME : (authorName || "Anonymous Intern"),
-        author_headline: anonymous ? ANON_HEADLINE : (authorHeadline || "Specializing in Liquid Refactoring"),
+        author_name: anonymous ? ANON_NAME : resolvedName,
+        author_headline: anonymous ? ANON_HEADLINE : (authorHeadline.trim() || resolvedHeadline),
         body_text: composed,
         user_id: user?.id ?? null,
         post_type: "user",
@@ -936,7 +955,7 @@ function Index() {
       void notifyAdminNewPost({
         data: {
           snippet: sanitized.clean.slice(0, 200),
-          author: anonymous ? "Anonymous" : (authorName || "Anonymous Intern"),
+          author: anonymous ? "Anonymous" : resolvedName,
         },
       }).catch(() => {});
     } else if (error) {
@@ -1636,14 +1655,14 @@ function Index() {
                 <form onSubmit={submitPost} className="space-y-3">
                   <div className="flex items-start gap-3">
                     <div className={`size-11 shrink-0 rounded-full grid place-items-center text-lg font-bold transition-colors ${anonymous ? "bg-muted text-muted-foreground" : "bg-primary/20 text-primary"}`}>
-                      {anonymous ? "🎭" : initials(authorName)}
+                      {anonymous ? "🎭" : initials(resolvedName.replace(/[^\p{L}\p{N}\s]/gu, "").trim() || "AG")}
                     </div>
                     <div className="flex-1 space-y-2 min-w-0">
                       <div className="flex items-center gap-2">
                         <Input
                           value={displayName}
                           onChange={(e) => setAuthorName(e.target.value)}
-                          placeholder="Your corporate alias"
+                          placeholder={user ? `${emailPrefix(user.email)} 🎭` : GUEST_NAME}
                           disabled={anonymous}
                           className="h-8 text-xs bg-transparent border-dashed flex-1 disabled:opacity-70"
                         />
@@ -1668,7 +1687,7 @@ function Index() {
                       <Textarea
                         value={body}
                         onChange={(e) => setBody(e.target.value)}
-                        placeholder={anonymous ? "Spill the corporate tea anonymously…" : "Start a post… overshare about your 4pm Aperol."}
+                        placeholder={anonymous ? "Spill the corporate tea anonymously…" : `What's the tea, ${resolvedName}? Drop an anonymous workplace confession... 🤫`}
                         className="resize-none min-h-24 bg-muted/40 border-border rounded-xl text-[15px] focus-visible:bg-background"
                       />
                     </div>
