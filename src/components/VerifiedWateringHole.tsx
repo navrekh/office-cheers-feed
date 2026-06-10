@@ -81,6 +81,7 @@ export default function VerifiedWateringHole({
   const [heading, setHeading] = useState<HeadingState>({});
   const [popping, setPopping] = useState(false);
   const [highlighted, setHighlighted] = useState(false);
+  const [liveExtra, setLiveExtra] = useState<number>(0);
 
   useEffect(() => {
     setActiveCity(getSelectedCity());
@@ -102,14 +103,58 @@ export default function VerifiedWateringHole({
   const cityState = heading[headingKey];
   const alreadyChecked =
     !!cityState && cityState.date === today && cityState.mine === true;
-  const extra =
-    cityState && cityState.date === today ? cityState.extra : 0;
+
+  // Live cross-device counter from the backend merchant_clicks table
+  useEffect(() => {
+    let cancelled = false;
+    const startOfDay = new Date();
+    startOfDay.setHours(0, 0, 0, 0);
+    const sinceIso = startOfDay.toISOString();
+
+    async function refresh() {
+      try {
+        const { count, error } = await (supabase as any)
+          .from("merchant_clicks")
+          .select("id", { count: "exact", head: true })
+          .eq("pub_id", sponsored.name)
+          .gte("created_at", sinceIso);
+        if (cancelled) return;
+        if (!error && typeof count === "number") setLiveExtra(count);
+      } catch (err) {
+        console.warn("[DrinkedIn] heading-count refresh failed", err);
+      }
+    }
+    setLiveExtra(0);
+    void refresh();
+
+    const channel = (supabase as any)
+      .channel(`merchant-clicks-${sponsored.id}`)
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "merchant_clicks", filter: `pub_id=eq.${sponsored.name}` },
+        (payload: any) => {
+          const created = payload?.new?.created_at as string | undefined;
+          if (!created || created >= sinceIso) {
+            setLiveExtra((n) => n + 1);
+            setPopping(true);
+            window.setTimeout(() => setPopping(false), 500);
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      cancelled = true;
+      try { (supabase as any).removeChannel(channel); } catch {}
+    };
+  }, [sponsored.id, sponsored.name]);
+
   const headingCount = useMemo(
-    () => sponsored.base_heading + extra,
-    [sponsored.base_heading, extra]
+    () => sponsored.base_heading + liveExtra,
+    [sponsored.base_heading, liveExtra]
   );
 
-  function handleHeadingClick() {
+  async function handleHeadingClick() {
     if (alreadyChecked) {
       toast("You're already on the list for tonight 🍻", {
         description: "Come back tomorrow to check in again.",
@@ -130,9 +175,17 @@ export default function VerifiedWateringHole({
     window.setTimeout(() => setPopping(false), 500);
     toast.success(`You're heading to ${sponsored.name} 🏃‍♂️🍻`);
     if (userId) {
-      void (supabase as any)
-        .from("merchant_clicks")
-        .insert({ pub_id: sponsored.name, user_id: userId, city: activeCity });
+      try {
+        const { error } = await (supabase as any)
+          .from("merchant_clicks")
+          .insert({ pub_id: sponsored.name, user_id: userId, city: activeCity });
+        if (error) throw error;
+      } catch (err) {
+        console.warn("[DrinkedIn] merchant click insert failed", err);
+      }
+    } else {
+      // Anonymous preview-mode click: locally bump so the user sees feedback.
+      setLiveExtra((n) => n + 1);
     }
   }
 
