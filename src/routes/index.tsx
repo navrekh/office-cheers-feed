@@ -139,7 +139,10 @@ function Index() {
   const [feedLoading, setFeedLoading] = useState(true);
   const [feedError, setFeedError] = useState<string | null>(null);
   const cheeredRef = useRef<Set<string>>(new Set());
+  const [hangoverIndex, setHangoverIndex] = useState<number>(37);
+  const [sortMode, setSortMode] = useState<"recent" | "top">("recent");
   const [, force] = useState(0);
+
 
 
   useEffect(() => {
