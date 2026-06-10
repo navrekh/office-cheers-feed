@@ -114,6 +114,55 @@ function MerchantDashboardPage() {
   );
 }
 
+type TabKey = "analytics" | "billing";
+
+function DashboardTabs({
+  userId, profile, onRefresh,
+}: { userId: string; profile: import("@/lib/useProfile").Profile; onRefresh: () => void }) {
+  const [tab, setTab] = useState<TabKey>("analytics");
+  return (
+    <main className="max-w-6xl mx-auto px-4 py-6 space-y-5">
+      <div role="tablist" className="inline-flex p-1 rounded-lg bg-zinc-900/70 border border-border gap-1">
+        <TabButton active={tab === "analytics"} onClick={() => setTab("analytics")} label="Live Foot-Traffic Analytics 📡" />
+        <TabButton active={tab === "billing"} onClick={() => setTab("billing")} label="Subscription & Billing 💳" />
+      </div>
+
+      {tab === "analytics" ? (
+        <div className="grid gap-5 lg:grid-cols-3 animate-fade-in">
+          <section className="lg:col-span-2 space-y-5">
+            <LiveAnalyticsPanel pubName={profile.pub_name} />
+            <MerchantFlashControl profile={profile} />
+            <MediaWorkspace userId={userId} pubName={profile.pub_name} />
+          </section>
+          <aside className="space-y-5">
+            <SubscriptionClock pubName={profile.pub_name} onRefresh={onRefresh} />
+          </aside>
+        </div>
+      ) : (
+        <BillingTab userId={userId} pubName={profile.pub_name} />
+      )}
+    </main>
+  );
+}
+
+function TabButton({ active, onClick, label }: { active: boolean; onClick: () => void; label: string }) {
+  return (
+    <button
+      role="tab"
+      aria-selected={active}
+      onClick={onClick}
+      className={`px-3 sm:px-4 h-9 rounded-md text-[12px] font-bold transition ${
+        active
+          ? "bg-amber-500 text-amber-950 shadow-[0_0_18px_rgba(251,191,36,0.45)]"
+          : "text-muted-foreground hover:text-foreground hover:bg-zinc-800/60"
+      }`}
+    >
+      {label}
+    </button>
+  );
+}
+
+
 function DashboardSkeleton() {
   return (
     <div className="min-h-screen bg-zinc-950 p-6">
