@@ -1435,7 +1435,10 @@ function Index() {
           ) : (
             <button
               type="button"
-              onClick={() => setAuthOpen(true)}
+              onClick={() => {
+                setAuthReason("Sign in to unlock posting, Cheers, and your personal Desk.");
+                setAuthModalOpen(true);
+              }}
               className="w-full inline-flex items-center justify-center gap-2 rounded-md px-3 py-2 text-[12px] font-medium text-amber-200/90 hover:text-amber-100 border border-amber-500/30 hover:border-amber-400/50 bg-amber-500/5 hover:bg-amber-500/10 transition"
             >
               <KeyRound className="size-3.5" />
