@@ -732,6 +732,25 @@ function Index() {
                       <Rocket className="size-3.5" />
                       Make it Broetry 🚀
                     </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const ideas = [
+                          "My pull request got rejected so I am opening a stout at 11 AM.",
+                          "The CEO just announced a pivot to an AI-first strategy that makes no sense.",
+                          "I am currently hiding in the bathroom booth at our corporate office.",
+                          "Our scrum master just called a mandatory 4:45 PM standup on a Friday.",
+                          "I spent the last 3 hours formatting a single PowerPoint slide for a VP.",
+                        ];
+                        const pick = ideas[Math.floor(Math.random() * ideas.length)];
+                        setBody(pick);
+                        toast("Fresh idea poured 💡", { description: "Edit it, or run it through the Broetry engine." });
+                      }}
+                      className="inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 border border-accent/40 bg-accent/10 text-accent-foreground text-[11px] font-semibold hover:bg-accent/20 hover:border-accent/60 transition"
+                    >
+                      <Lightbulb className="size-3.5 text-accent" />
+                      Need an Idea? 💡
+                    </button>
                   </div>
 
                   <div className="flex items-center gap-1 flex-wrap pl-14">
