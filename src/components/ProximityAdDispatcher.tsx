@@ -173,13 +173,9 @@ function fireProximityToast(
                       user_id: userId,
                       city: deal.city,
                     });
-                  void (supabase as any)
-                    .from("merchant_deals")
-                    .update({
-                      heading_there_count:
-                        (deal.heading_there_count || 0) + 1,
-                    })
-                    .eq("id", deal.id);
+                  void (supabase as any).rpc("increment_heading_there", {
+                    p_deal_id: deal.id,
+                  });
                 }
                 toast.success(`Locked in at ${deal.pub_name} 🍻`, {
                   description: "Your avatar just dropped into the live taproom.",
