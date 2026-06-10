@@ -907,8 +907,8 @@ function Index() {
     const { data, error } = await (supabase as any)
       .from("posts")
       .insert({
-        author_name: anonymous ? ANON_NAME : (authorName || "Anonymous Intern"),
-        author_headline: anonymous ? ANON_HEADLINE : (authorHeadline || "Specializing in Liquid Refactoring"),
+        author_name: anonymous ? ANON_NAME : resolvedName,
+        author_headline: anonymous ? ANON_HEADLINE : (authorHeadline.trim() || resolvedHeadline),
         body_text: composed,
         user_id: user?.id ?? null,
         post_type: "user",
