@@ -21,6 +21,8 @@ import {
   MERCHANTS,
   type CityKey,
 } from "@/lib/cityStore";
+import type { Profile } from "@/lib/useProfile";
+import MerchantAdDashboard from "@/components/MerchantAdDashboard";
 
 const leadSchema = z.object({
   pub_name: z.string().trim().min(1, "Pub name is required").max(120),
