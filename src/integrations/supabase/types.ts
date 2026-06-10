@@ -80,6 +80,7 @@ export type Database = {
           created_at: string
           id: string
           is_author_view: boolean
+          user_id: string | null
         }
         Insert: {
           author_headline?: string
@@ -90,6 +91,7 @@ export type Database = {
           created_at?: string
           id?: string
           is_author_view?: boolean
+          user_id?: string | null
         }
         Update: {
           author_headline?: string
@@ -100,6 +102,7 @@ export type Database = {
           created_at?: string
           id?: string
           is_author_view?: boolean
+          user_id?: string | null
         }
         Relationships: []
       }

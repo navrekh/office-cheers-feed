@@ -130,6 +130,9 @@ import CorporateBingo from "@/components/CorporateBingo";
 import VerifiedWateringHole from "@/components/VerifiedWateringHole";
 import HappyHourTicker from "@/components/HappyHourTicker";
 import ClaimTicketModal from "@/components/ClaimTicketModal";
+import AuthModal from "@/components/AuthModal";
+import { useAuth, emailPrefix, signOut } from "@/lib/useAuth";
+import { LogOut } from "lucide-react";
 
 function isHappyHourNow(d: Date = new Date()): boolean {
   const minutes = d.getHours() * 60 + d.getMinutes();
@@ -256,6 +259,17 @@ function Index() {
   const [happyHour, setHappyHour] = useState<boolean>(false);
   const [claimTicket, setClaimTicket] = useState<string | null>(null);
   const [claimModalOpen, setClaimModalOpen] = useState(false);
+  const { user } = useAuth();
+  const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [authReason, setAuthReason] = useState<string | undefined>(undefined);
+  function requireAuth(reason?: string): boolean {
+    if (user) return true;
+    setAuthReason(reason);
+    setAuthModalOpen(true);
+    return false;
+  }
+  // Auto-fill composer alias from the signed-in user's email prefix (never the full email)
+  const userAlias = user ? emailPrefix(user.email) : null;
 
   // Happy Hour Mode (16:30–18:00 local time)
   useEffect(() => {
@@ -638,6 +652,7 @@ function Index() {
   async function submitPost(e: FormEvent) {
     e.preventDefault();
     if (submitting) return;
+    if (!requireAuth("Sign in to post — your alias stays anonymous in the feed, but we need a verified session on the backend.")) return;
     // Allow body-less posts when a vibe or GIF is attached — the visual carries the post.
     const hasVisual = !!(gifUrl || vibeId);
     const bodyForSanitize = body.trim() ? body : hasVisual ? "🍻" : body;
@@ -664,6 +679,7 @@ function Index() {
         author_name: anonymous ? ANON_NAME : (authorName || "Anonymous Intern"),
         author_headline: anonymous ? ANON_HEADLINE : (authorHeadline || "Specializing in Liquid Refactoring"),
         body_text: composed,
+        user_id: user?.id ?? null,
       })
       .select()
       .single();
@@ -700,6 +716,11 @@ function Index() {
   }
 
   const cheers = useCallback(async (post: Post) => {
+    if (!user) {
+      setAuthReason("Sign in to send a Cheers 🍻 — it keeps our metrics honest and your feed personalized.");
+      setAuthModalOpen(true);
+      return;
+    }
     if (cheeredRef.current.has(post.id)) return;
     cheeredRef.current.add(post.id);
     force((n) => n + 1);
@@ -711,7 +732,7 @@ function Index() {
     // Simulated + merchant posts live only in local state — skip the live RPC.
     if (isSimulatedPost(post) || post.post_type === "merchant" || post.id.startsWith("merchant-")) return;
     await (supabase as any).rpc("increment_cheers", { post_id: post.id });
-  }, [playClink]);
+  }, [playClink, user]);
 
   const addComment = useCallback(async (postId: string, text: string, name: string) => {
     const trimmed = text.trim();
@@ -954,15 +975,39 @@ function Index() {
             <div className="h-16 bg-gradient-to-br from-primary/40 via-accent/50 to-primary/30" />
             <div className="px-4 pb-4 -mt-8">
               <div className="size-16 rounded-full bg-card border-4 border-card ring-2 ring-primary/40 grid place-items-center text-2xl shadow">
-                🍺
+                {user ? "🍻" : "🎭"}
               </div>
-              <h3 className="mt-2 font-semibold text-base leading-tight">{authorName}</h3>
-              <p className="text-xs text-muted-foreground mt-1 leading-snug line-clamp-2">
-                {authorHeadline}
-              </p>
-              <p className="text-[11px] text-muted-foreground/80 mt-1">
-                📍 Brewlyn, NY · BigCorp Holdings
-              </p>
+              {user ? (
+                <>
+                  <h3 className="mt-2 font-semibold text-base leading-tight">
+                    Welcome, <span className="text-primary">{userAlias}</span> 🍻
+                  </h3>
+                  <p className="text-xs text-muted-foreground mt-1 leading-snug">
+                    Verified session · feed alias stays anonymous
+                  </p>
+                  <p className="text-[11px] text-muted-foreground/80 mt-1 inline-flex items-center gap-1">
+                    <ShieldCheck className="size-3 text-amber-400" />
+                    Legally protected · publicly anonymous
+                  </p>
+                </>
+              ) : (
+                <>
+                  <h3 className="mt-2 font-semibold text-base leading-tight">Incognito Guest 🎭</h3>
+                  <p className="text-xs text-muted-foreground mt-1 leading-snug line-clamp-2">
+                    Sign in to post, cheers, and track your shareable content.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setAuthReason("Sign in to unlock posting, cheering, and your private dashboards.");
+                      setAuthModalOpen(true);
+                    }}
+                    className="mt-2 inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-[11px] font-semibold border border-primary/40 bg-primary/10 text-primary hover:bg-primary/20 transition"
+                  >
+                    Sign in 🍻
+                  </button>
+                </>
+              )}
             </div>
             <div className="border-t border-border px-4 py-3 space-y-2.5">
               <div className="flex items-center justify-between gap-2">
@@ -1011,6 +1056,22 @@ function Index() {
               <li className="hover:text-foreground cursor-pointer"># OOO_AtTheBar</li>
             </ul>
           </Card>
+
+          {user && (
+            <button
+              type="button"
+              onClick={async () => {
+                await signOut();
+                toast("Logged out. The bar is closing… for now. 🚪", {
+                  description: "Your session token has been cleared.",
+                });
+              }}
+              className="w-full inline-flex items-center justify-center gap-2 rounded-md px-3 py-2 text-[12px] font-medium text-muted-foreground hover:text-foreground border border-border/60 hover:border-border bg-card/40 hover:bg-muted/40 transition"
+            >
+              <LogOut className="size-3.5" />
+              Logout 🚪
+            </button>
+          )}
         </aside>
 
         {/* Feed */}
@@ -1353,6 +1414,12 @@ function Index() {
         open={claimModalOpen}
         ticket={claimTicket}
         onOpenChange={setClaimModalOpen}
+      />
+
+      <AuthModal
+        open={authModalOpen}
+        onOpenChange={setAuthModalOpen}
+        reason={authReason}
       />
     </div>
   );
