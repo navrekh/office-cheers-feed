@@ -63,7 +63,7 @@ export function useMerchantDeals(city: CityKey) {
     load();
 
     const channel = supabase
-      .channel(`public:merchant_deals:${city}`)
+      .channel(`public:merchant_deals:${city}:${Math.random().toString(36).slice(2)}`)
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "merchant_deals" },

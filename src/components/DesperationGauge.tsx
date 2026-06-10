@@ -36,11 +36,13 @@ function zoneFor(score: number, d = new Date()): Zone {
 }
 
 export default function DesperationGauge() {
+  const [mounted, setMounted] = useState(false);
   const [tick, setTick] = useState(0);
   const [recentCheers, setRecentCheers] = useState(0);
 
   // Re-render every 30s so the gauge breathes through the day.
   useEffect(() => {
+    setMounted(true);
     const i = setInterval(() => setTick((n) => n + 1), 30_000);
     return () => clearInterval(i);
   }, []);
@@ -75,7 +77,8 @@ export default function DesperationGauge() {
   }, []);
 
   const { score, zone, angle } = useMemo(() => {
-    const now = new Date();
+    // SSR-safe baseline: midday neutral until client has mounted.
+    const now = mounted ? new Date() : new Date(2026, 0, 1, 12, 0, 0);
     const t = timeOfDayScore(now);
     const cheerBoost = Math.min(0.2, recentCheers / 500);
     const score = Math.min(1, t + cheerBoost);
@@ -84,7 +87,7 @@ export default function DesperationGauge() {
     const angle = -90 + score * 180;
     return { score, zone, angle };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tick, recentCheers]);
+  }, [tick, recentCheers, mounted]);
 
   // Trigger ambient page glow when critical.
   useEffect(() => {
