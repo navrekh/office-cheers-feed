@@ -1053,7 +1053,7 @@ function ComposerChip({ icon, label }: { icon: React.ReactNode; label: string })
   );
 }
 
-function PostCard({
+const PostCard = memo(function PostCard({
   post,
   comments,
   onCheers,
@@ -1064,9 +1064,9 @@ function PostCard({
 }: {
   post: Post;
   comments: Comment[];
-  onCheers: () => void;
-  onComment: (text: string, name: string) => void;
-  onShare: () => void;
+  onCheers: (post: Post) => void;
+  onComment: (postId: string, text: string, name: string) => void;
+  onShare: (postId: string) => void;
   cheered: boolean;
   highlighted?: boolean;
 }) {
@@ -1079,7 +1079,7 @@ function PostCard({
       setPopKey((k) => k + 1);
       setBumpKey((k) => k + 1);
     }
-    onCheers();
+    onCheers(post);
   }
 
   return (
