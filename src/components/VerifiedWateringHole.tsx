@@ -18,6 +18,7 @@ import {
   subscribeCity,
   subscribeAdPreview,
   triggerAdPreview,
+  MERCHANTS,
   type CityKey,
 } from "@/lib/cityStore";
 
@@ -31,51 +32,7 @@ const leadSchema = z.object({
     .max(240, "Keep contact info under 240 characters"),
 });
 
-// Per-city sponsored pub (mock) shown in the ad card.
-const SPONSORED: Record<CityKey, { name: string; area: string; deal: string }> = {
-  Bangalore: {
-    name: "Toit Bangalore · Indiranagar",
-    area: "100 Feet Road · 1.2km away",
-    deal: "2+1 on all house crafts for IT pros who flash their DrinkedIn feed at the bar.",
-  },
-  Gurgaon: {
-    name: "Striker Pub & Brewery · Cyberhub",
-    area: "DLF Cyber City · 0.8km away",
-    deal: "1+1 pitchers before 7 PM for anyone showing a red CI build on screen.",
-  },
-  Hyderabad: {
-    name: "Prost Brewpub · HITEC City",
-    area: "Jubilee Enclave · 1.5km away",
-    deal: "Buy-1-get-1 wheat beers for badge-flashing engineers till 8 PM.",
-  },
-  Pune: {
-    name: "Independence Brewing Co. · Koregaon Park",
-    area: "Mundhwa Rd · 2.1km away",
-    deal: "₹199 pints for the next 30 developers through the door.",
-  },
-  Mumbai: {
-    name: "The Bar Stock Exchange · BKC",
-    area: "Bandra Kurla Complex · 1.0km away",
-    deal: "Live ticker pricing on lagers until your sprint ends.",
-  },
-  Delhi: {
-    name: "Social Offline · Aerocity",
-    area: "Worldmark 1 · 1.8km away",
-    deal: "First round comped for anyone with a failed deploy on their laptop.",
-  },
-};
-
-// Per-city baseline counters so the number feels grounded, not random.
-const BASE_HEADING: Record<CityKey, number> = {
-  Bangalore: 47,
-  Gurgaon: 38,
-  Hyderabad: 29,
-  Pune: 22,
-  Mumbai: 41,
-  Delhi: 31,
-};
-
-const HEADING_KEY = "drinkedin.headingThere.v1"; // { [city]: { date: 'YYYY-MM-DD', extra: number, mine: boolean } }
+const HEADING_KEY = "drinkedin.headingThere.v1";
 
 function todayStr() {
   return new Date().toISOString().slice(0, 10);
@@ -124,16 +81,17 @@ export default function VerifiedWateringHole() {
     };
   }, []);
 
-  const sponsored = SPONSORED[activeCity];
+  const sponsored = MERCHANTS[activeCity][0];
   const today = todayStr();
-  const cityState = heading[activeCity];
+  const headingKey = sponsored.id;
+  const cityState = heading[headingKey];
   const alreadyChecked =
-    cityState && cityState.date === today && cityState.mine === true;
+    !!cityState && cityState.date === today && cityState.mine === true;
   const extra =
     cityState && cityState.date === today ? cityState.extra : 0;
   const headingCount = useMemo(
-    () => BASE_HEADING[activeCity] + extra + (alreadyChecked ? 0 : 0),
-    [activeCity, extra, alreadyChecked]
+    () => sponsored.base_heading + extra,
+    [sponsored.base_heading, extra]
   );
 
   function handleHeadingClick() {
@@ -145,7 +103,7 @@ export default function VerifiedWateringHole() {
     }
     const next: HeadingState = {
       ...heading,
-      [activeCity]: {
+      [headingKey]: {
         date: today,
         extra: (cityState?.date === today ? cityState.extra : 0) + 1,
         mine: true,
@@ -155,7 +113,7 @@ export default function VerifiedWateringHole() {
     saveHeading(next);
     setPopping(true);
     window.setTimeout(() => setPopping(false), 500);
-    toast.success(`You're heading to ${sponsored.name.split(" · ")[0]} 🏃‍♂️🍻`);
+    toast.success(`You're heading to ${sponsored.name} 🏃‍♂️🍻`);
   }
 
   function resetForm() {

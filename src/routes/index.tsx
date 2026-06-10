@@ -50,7 +50,7 @@ import {
   Shuffle,
   Send,
   Sparkles,
-  Briefcase,
+  
   MapPin,
   UserPlus,
   Check,
@@ -61,7 +61,20 @@ import {
   Lightbulb,
   AlertTriangle,
   Download,
+  ExternalLink,
+  Navigation,
+  ShieldCheck,
+  Users as UsersIcon,
 } from "lucide-react";
+import {
+  CITIES,
+  MERCHANTS,
+  getSelectedCity,
+  subscribeCity,
+  mapsDirectionsUrl,
+  type CityKey,
+  type Merchant,
+} from "@/lib/cityStore";
 
 // ---------- Client-side spam guard ----------
 const RATE_KEY = "drinkedin.rate.posts";
@@ -137,7 +150,24 @@ type Post = {
   body_text: string;
   cheers_count: number;
   created_at: string;
+  post_type?: "user" | "merchant";
+  merchant_website?: string;
+  map_query_address?: string;
 };
+
+function merchantToPost(m: Merchant, city: CityKey): Post {
+  return {
+    id: `merchant-${m.id}`,
+    author_name: m.name,
+    author_headline: `Verified Pub Partner 🛡️ · ${m.area} · ${city}`,
+    body_text: `🔥 Tonight's Happy Hour Alert\n\n${m.deal}\n\nShow this DrinkedIn feed at the bar to redeem.`,
+    cheers_count: m.base_heading * 3,
+    created_at: new Date().toISOString(),
+    post_type: "merchant",
+    merchant_website: m.website,
+    map_query_address: m.map_query_address,
+  };
+}
 
 type Comment = {
   id: string;
@@ -654,8 +684,8 @@ function Index() {
     setPosts((prev) =>
       prev.map((p) => (p.id === post.id ? { ...p, cheers_count: p.cheers_count + 1 } : p))
     );
-    // Simulated posts live only in the local state — skip the live RPC for them.
-    if (isSimulatedPost(post)) return;
+    // Simulated + merchant posts live only in local state — skip the live RPC.
+    if (isSimulatedPost(post) || post.post_type === "merchant" || post.id.startsWith("merchant-")) return;
     await (supabase as any).rpc("increment_cheers", { post_id: post.id });
   }, [playClink]);
 
@@ -734,17 +764,31 @@ function Index() {
 
 
 
-  // Sort posts by selected mode, then pin highlighted post at top
+  // Track selected tech hub city for merchant feed injection
+  const [selectedCity, setSelectedCityState] = useState<CityKey>("Bangalore");
+  useEffect(() => {
+    setSelectedCityState(getSelectedCity());
+    return subscribeCity(setSelectedCityState);
+  }, []);
+
+  // Sort posts by selected mode, inject merchant ads at fixed slots, pin highlighted
   const orderedPosts = useMemo(() => {
     const sorted = [...posts].sort((a, b) => {
       if (sortMode === "top") return b.cheers_count - a.cheers_count;
       return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
     });
-    if (!highlightedId) return sorted;
-    const idx = sorted.findIndex((p) => p.id === highlightedId);
-    if (idx < 0) return sorted;
-    return [sorted[idx], ...sorted.slice(0, idx), ...sorted.slice(idx + 1)];
-  }, [posts, highlightedId, sortMode]);
+
+    // Inject merchant ads for the active city at slots 2 and 6
+    const merchants = MERCHANTS[selectedCity] ?? [];
+    const withAds: Post[] = [...sorted];
+    if (merchants[0]) withAds.splice(Math.min(2, withAds.length), 0, merchantToPost(merchants[0], selectedCity));
+    if (merchants[1]) withAds.splice(Math.min(6, withAds.length), 0, merchantToPost(merchants[1], selectedCity));
+
+    if (!highlightedId) return withAds;
+    const idx = withAds.findIndex((p) => p.id === highlightedId);
+    if (idx < 0) return withAds;
+    return [withAds[idx], ...withAds.slice(0, idx), ...withAds.slice(idx + 1)];
+  }, [posts, highlightedId, sortMode, selectedCity]);
 
   const hangoverStatus = useMemo(() => {
     if (hangoverIndex <= 20)
@@ -1290,23 +1334,52 @@ const PostCard = memo(function PostCard({
   }
 
   const isSim = isSimulatedPost(post);
+  const isMerchant = post.post_type === "merchant";
 
   return (
-    <Card className={`border-border overflow-hidden animate-fade-in ${highlighted ? "post-spotlight" : ""}`}>
+    <Card
+      className={`overflow-hidden animate-fade-in ${
+        highlighted ? "post-spotlight" : ""
+      } ${
+        isMerchant
+          ? "border-amber-400/60 bg-gradient-to-br from-amber-950/40 via-amber-900/15 to-card shadow-[0_0_24px_rgba(251,191,36,0.18)]"
+          : "border-border"
+      }`}
+    >
       {highlighted && (
         <div className="px-4 pt-2 pb-1 text-[10px] uppercase tracking-wider text-primary font-bold flex items-center gap-1.5">
           <Sparkles className="size-3" /> Shared with you · spotlight
         </div>
       )}
+      {isMerchant && (
+        <div className="px-4 pt-3 pb-1 flex items-center justify-between">
+          <span className="inline-flex items-center gap-1 rounded-full border border-amber-400/60 bg-amber-500/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-amber-300 shadow-[0_0_10px_rgba(251,191,36,0.35)]">
+            <ShieldCheck className="size-3" /> Verified Pub Partner 🛡️
+          </span>
+          <span className="text-[10px] uppercase tracking-wider text-amber-300/80 font-bold">
+            Sponsored · Local
+          </span>
+        </div>
+      )}
       <div className="p-4 pb-2 flex items-start gap-3">
-        <div className="size-12 rounded-full bg-gradient-to-br from-primary/40 to-accent/40 grid place-items-center font-bold text-base shrink-0">
-          {initials(post.author_name)}
+        <div
+          className={`size-12 rounded-full grid place-items-center font-bold text-base shrink-0 ${
+            isMerchant
+              ? "bg-gradient-to-br from-amber-500/50 to-amber-300/30 text-amber-100 text-xl"
+              : "bg-gradient-to-br from-primary/40 to-accent/40"
+          }`}
+        >
+          {isMerchant ? "🍺" : initials(post.author_name)}
         </div>
         <div className="flex-1 min-w-0">
           <div className="font-semibold text-[15px] leading-tight truncate flex items-center gap-1.5">
-            <span className="truncate">{post.author_name}</span>
-            <span className="text-xs font-normal text-muted-foreground shrink-0">· 1st</span>
-            {isSim && (
+            <span className={`truncate ${isMerchant ? "text-amber-100" : ""}`}>
+              {isMerchant ? post.author_name : (post.author_name || "Anonymous Colleague 🎭")}
+            </span>
+            {!isMerchant && (
+              <span className="text-xs font-normal text-muted-foreground shrink-0">· 1st</span>
+            )}
+            {isSim && !isMerchant && (
               <span
                 className="group/sim relative inline-flex items-center gap-1 rounded-md border border-amber-400/50 bg-amber-500/10 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-amber-300 shrink-0"
                 tabIndex={0}
@@ -1322,11 +1395,11 @@ const PostCard = memo(function PostCard({
               </span>
             )}
           </div>
-          <div className="text-xs text-muted-foreground line-clamp-1">
+          <div className={`text-xs line-clamp-1 ${isMerchant ? "text-amber-200/80" : "text-muted-foreground"}`}>
             {post.author_headline}
           </div>
           <div className="text-[11px] text-muted-foreground/80 mt-0.5 flex items-center gap-1">
-            {timeAgo(post.created_at)} · <span>🌍</span>
+            {timeAgo(post.created_at)} · <span>{isMerchant ? "📣" : "🌍"}</span>
           </div>
         </div>
         <button className="text-muted-foreground hover:text-foreground p-1">
@@ -1361,6 +1434,31 @@ const PostCard = memo(function PostCard({
           <span>{Math.floor(post.cheers_count / 12)} reposts</span>
         </div>
       </div>
+
+      {isMerchant && (post.merchant_website || post.map_query_address) && (
+        <div className="px-4 pb-3 grid grid-cols-2 gap-2">
+          {post.merchant_website && (
+            <a
+              href={post.merchant_website}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center gap-1.5 h-9 rounded-md border border-amber-400/50 bg-amber-500/10 hover:bg-amber-500/20 text-amber-100 text-[12px] font-semibold transition"
+            >
+              <ExternalLink className="size-3.5" /> Visit Website 🌐
+            </a>
+          )}
+          {post.map_query_address && (
+            <a
+              href={mapsDirectionsUrl(post.map_query_address)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center gap-1.5 h-9 rounded-md bg-amber-500 hover:bg-amber-400 text-amber-950 text-[12px] font-bold transition"
+            >
+              <Navigation className="size-3.5" /> Get Directions 📍
+            </a>
+          )}
+        </div>
+      )}
 
       <div className="border-t border-border grid grid-cols-4 px-2 py-1">
         <ActionBtn
@@ -1532,141 +1630,168 @@ function CopeItem({ tag, title, stat }: { tag: string; title: string; stat: stri
 }
 
 // ============================================================
-// Pubs view (parody Jobs board)
+// Pubs view — trending neighborhood watering holes (city-filtered)
 // ============================================================
-const PUB_JOBS = [
-  {
-    title: "Lead Happy Hour Architect",
-    company: "Brewstack Inc.",
-    location: "Remote · Anywhere with a tap",
-    salary: "$160k + Unlimited IPA",
-    type: "Full-time",
-    tags: ["Remote", "Senior", "Pints/PR"],
-    posted: "2h",
-  },
-  {
-    title: "Senior Post-Mortem Email Drafter",
-    company: "Latework Labs",
-    location: "Hybrid · 2 days at the bar",
-    salary: "$145k + Whiskey stipend",
-    type: "Hybrid",
-    tags: ["Hybrid", "Writing", "Damage control"],
-    posted: "5h",
-  },
-  {
-    title: "VP of Liquid Infrastructure",
-    company: "Synergy & Sons LLC",
-    location: "On-site · Must bring own flask",
-    salary: "$220k + Equity in keg",
-    type: "Executive",
-    tags: ["Leadership", "Onsite", "BYOF"],
-    posted: "1d",
-  },
-  {
-    title: "Principal Engineer, Beer-Driven Development",
-    company: "Stack Overpour",
-    location: "Remote · Pacific Pint Time",
-    salary: "$190k + Sabbatical at vineyard",
-    type: "Full-time",
-    tags: ["Remote", "Engineering"],
-    posted: "1d",
-  },
-];
+
 
 function PubsView() {
-  const [applied, setApplied] = useState<string | null>(null);
+  const [selectedCity, setSelectedCityLocal] = useState<CityKey>("Bangalore");
+  useEffect(() => {
+    setSelectedCityLocal(getSelectedCity());
+    return subscribeCity(setSelectedCityLocal);
+  }, []);
+
+  const merchants = MERCHANTS[selectedCity] ?? [];
+
+  // Per-merchant "tech workers here tonight" counter (localStorage-backed,
+  // shared with the Heading-There-Tonight check-in on the sidebar ad).
+  const [heading, setHeading] = useState<Record<string, { date: string; extra: number; mine: boolean }>>({});
+  useEffect(() => {
+    try {
+      setHeading(JSON.parse(localStorage.getItem("drinkedin.headingThere.v1") || "{}"));
+    } catch {}
+  }, [selectedCity]);
+
+  const today = new Date().toISOString().slice(0, 10);
+
+  function checkIn(m: Merchant) {
+    const state = heading[m.id];
+    const alreadyChecked = state && state.date === today && state.mine === true;
+    if (alreadyChecked) {
+      toast("You're already on the list for tonight 🍻", {
+        description: "Come back tomorrow to check in again.",
+      });
+      return;
+    }
+    const next = {
+      ...heading,
+      [m.id]: {
+        date: today,
+        extra: (state?.date === today ? state.extra : 0) + 1,
+        mine: true,
+      },
+    };
+    setHeading(next);
+    try { localStorage.setItem("drinkedin.headingThere.v1", JSON.stringify(next)); } catch {}
+    toast.success(`You're heading to ${m.name} 🏃‍♂️🍻`);
+  }
 
   return (
     <div className="space-y-3 animate-in fade-in duration-300">
       <VerifiedWateringHole />
 
-      <Card className="p-5 border-border bg-gradient-to-br from-card via-card to-primary/5">
+      <Card className="p-5 border-amber-400/30 bg-gradient-to-br from-amber-950/30 via-card to-card">
         <div className="flex items-center gap-3">
-          <div className="size-11 rounded-xl bg-primary/20 grid place-items-center text-primary">
-            <Briefcase className="size-5" />
+          <div className="size-11 rounded-xl bg-amber-500/20 grid place-items-center text-amber-300">
+            <Beer className="size-5" />
           </div>
-          <div>
-            <h2 className="text-lg font-bold">Pubs · Jobs</h2>
+          <div className="flex-1 min-w-0">
+            <h2 className="text-lg font-bold leading-tight">
+              Trending Neighborhood Watering Holes
+            </h2>
             <p className="text-xs text-muted-foreground">
-              Roles that prefer their KPIs poured, not measured.
+              Live in <span className="text-amber-300 font-semibold">{selectedCity}</span> — change your tech hub from the top ticker.
             </p>
           </div>
+          <select
+            aria-label="Filter by city"
+            value={selectedCity}
+            onChange={(e) => {
+              import("@/lib/cityStore").then((m) => m.setSelectedCity(e.target.value as CityKey));
+            }}
+            className="hidden sm:block h-8 text-xs bg-muted/40 border border-border rounded-md px-2 cursor-pointer hover:border-amber-400/50"
+          >
+            {CITIES.map((c) => (
+              <option key={c} value={c}>{c}</option>
+            ))}
+          </select>
         </div>
       </Card>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        {PUB_JOBS.map((job) => (
-          <Card
-            key={job.title}
-            className="p-4 border-border hover:border-primary/50 transition group flex flex-col"
-          >
-            <div className="flex items-start gap-3 mb-2">
-              <div className="size-10 rounded-md bg-gradient-to-br from-primary/30 to-accent/30 grid place-items-center text-lg shrink-0">
-                🍺
+        {merchants.map((m) => {
+          const state = heading[m.id];
+          const extra = state && state.date === today ? state.extra : 0;
+          const count = m.base_heading + extra;
+          const checked = !!state && state.date === today && state.mine === true;
+          return (
+            <Card
+              key={m.id}
+              className="p-4 border-amber-400/40 bg-gradient-to-br from-amber-950/25 via-card to-card hover:border-amber-300/60 transition flex flex-col shadow-[0_0_18px_rgba(251,191,36,0.12)]"
+            >
+              <div className="flex items-start gap-3 mb-2">
+                <div className="size-10 rounded-md bg-gradient-to-br from-amber-500/40 to-amber-300/20 grid place-items-center text-lg shrink-0">
+                  🍺
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-1.5 mb-0.5">
+                    <span className="inline-flex items-center gap-1 rounded-full border border-amber-400/60 bg-amber-500/15 px-1.5 py-0 text-[9px] font-bold uppercase tracking-wider text-amber-300">
+                      <ShieldCheck className="size-2.5" /> Verified
+                    </span>
+                  </div>
+                  <h3 className="font-bold text-[15px] leading-tight text-amber-100 truncate">
+                    {m.name}
+                  </h3>
+                  <p className="text-[11px] text-muted-foreground mt-0.5 flex items-center gap-1">
+                    <MapPin className="size-3" /> {m.area}
+                  </p>
+                </div>
               </div>
-              <div className="min-w-0 flex-1">
-                <h3 className="font-semibold text-[15px] leading-tight group-hover:text-primary transition">
-                  {job.title}
-                </h3>
-                <p className="text-xs text-muted-foreground mt-0.5">{job.company}</p>
-              </div>
-            </div>
 
-            <div className="text-xs text-muted-foreground space-y-1 mb-3">
-              <div className="flex items-center gap-1.5">
-                <MapPin className="size-3" /> {job.location}
+              <div className="rounded-md border border-amber-400/30 bg-amber-500/5 p-2.5 mb-3">
+                <div className="text-[10px] uppercase tracking-wider font-bold text-amber-300 mb-1">
+                  🔥 Flash Happy Hour
+                </div>
+                <p className="text-[12px] leading-snug text-foreground/90">
+                  {m.deal}
+                </p>
               </div>
-              <div className="flex items-center gap-1.5">
-                <Sparkles className="size-3 text-primary" /> {job.salary}
-              </div>
-            </div>
 
-            <div className="flex flex-wrap gap-1 mb-3">
-              {job.tags.map((t) => (
-                <span
-                  key={t}
-                  className="text-[10px] px-2 py-0.5 rounded-full bg-muted/60 text-muted-foreground"
-                >
-                  {t}
+              <div className="flex items-center gap-1.5 text-[11px] text-amber-200/90 mb-3">
+                <UsersIcon className="size-3" />
+                <span>
+                  <span className="font-bold text-amber-100">{count}</span> tech workers here tonight
                 </span>
-              ))}
-            </div>
+              </div>
 
-            <div className="mt-auto flex items-center justify-between">
-              <span className="text-[11px] text-muted-foreground">Posted {job.posted} ago</span>
-              <Button
-                size="sm"
-                onClick={() => setApplied(job.title)}
-                className="rounded-full h-8 px-4 font-semibold"
-              >
-                Quick Apply
-              </Button>
-            </div>
-          </Card>
-        ))}
+              <div className="mt-auto grid grid-cols-2 gap-2">
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={() => checkIn(m)}
+                  disabled={checked}
+                  className={`h-9 text-[12px] font-bold ${
+                    checked
+                      ? "bg-emerald-500/20 hover:bg-emerald-500/20 text-emerald-200 border border-emerald-400/40 cursor-default"
+                      : "bg-amber-500 hover:bg-amber-400 text-amber-950"
+                  }`}
+                >
+                  {checked ? "On the list ✓" : "I'm heading 🏃‍♂️"}
+                </Button>
+                <a
+                  href={mapsDirectionsUrl(m.map_query_address)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center gap-1.5 h-9 rounded-md border border-amber-400/50 bg-amber-500/10 hover:bg-amber-500/20 text-amber-100 text-[12px] font-semibold transition"
+                >
+                  <Navigation className="size-3.5" /> Get Directions 📍
+                </a>
+              </div>
+
+              {m.website && (
+                <a
+                  href={m.website}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-2 inline-flex items-center justify-center gap-1.5 h-8 rounded-md text-[11px] font-semibold text-amber-300 hover:text-amber-100 hover:underline"
+                >
+                  <ExternalLink className="size-3" /> Visit Website 🌐
+                </a>
+              )}
+            </Card>
+          );
+        })}
       </div>
-
-      <Dialog open={!!applied} onOpenChange={(o) => !o && setApplied(null)}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <span className="text-2xl">🍻</span> Application submitted!
-            </DialogTitle>
-            <DialogDescription className="pt-2 leading-relaxed">
-              Go grab a drink while HR ignores this. You'll receive a templated
-              rejection email in 6–8 weeks. Best of luck out there, champ.
-            </DialogDescription>
-          </DialogHeader>
-          {applied && (
-            <p className="text-xs text-muted-foreground italic">
-              Applied to: <span className="text-foreground font-medium">{applied}</span>
-            </p>
-          )}
-          <Button onClick={() => setApplied(null)} className="rounded-full mt-2">
-            Pour me one
-          </Button>
-        </DialogContent>
-      </Dialog>
 
       <Suspense
         fallback={
