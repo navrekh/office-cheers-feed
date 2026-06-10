@@ -654,7 +654,7 @@ function PostCard({
           onClick={() => setShowComments((v) => !v)}
           active={showComments}
         />
-        <ActionBtn label="Share" icon={<Share2 className="size-5" />} />
+        <ActionBtn onClick={onShare} label="Share" icon={<Share2 className="size-5" />} />
       </div>
 
       {showComments && (
