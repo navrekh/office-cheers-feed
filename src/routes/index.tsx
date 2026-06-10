@@ -647,12 +647,16 @@ function Index() {
       return;
     }
     setSubmitting(true);
+    const composed = encodePostMeta(
+      { vibe: vibeId || undefined, gif: gifUrl || undefined },
+      sanitized.clean
+    );
     const { data, error } = await (supabase as any)
       .from("posts")
       .insert({
         author_name: anonymous ? ANON_NAME : (authorName || "Anonymous Intern"),
         author_headline: anonymous ? ANON_HEADLINE : (authorHeadline || "Specializing in Liquid Refactoring"),
-        body_text: sanitized.clean,
+        body_text: composed,
       })
       .select()
       .single();
@@ -660,6 +664,8 @@ function Index() {
       recordPostTimestamp();
       setPosts((prev) => (prev.some((p) => p.id === data.id) ? prev : [data as Post, ...prev]));
       setBody("");
+      setGifUrl(null);
+      setVibeId(null);
       try {
         const mine: string[] = JSON.parse(localStorage.getItem(ACH_KEYS.myPosts) || "[]");
         if (!mine.includes(data.id)) {
