@@ -120,8 +120,8 @@ export default function AuthModal({ open, onOpenChange, reason }: Props) {
                   required
                 />
               </div>
-              <Button type="submit" disabled={sending} className="w-full h-11 font-semibold">
-                {sending ? "Sending link…" : "Email me a magic link ✨"}
+              <Button type="submit" disabled={sending} className="w-full h-11 font-semibold bg-amber-500 hover:bg-amber-400 text-zinc-950">
+                {sending ? "Sending link…" : "Send Magic Link ✉️"}
               </Button>
             </form>
           )}
