@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { Card } from "@/components/ui/card";
-import { Radio, Loader2, Compass } from "lucide-react";
+import { Radio, Loader2, Compass, MapPinOff, Beer } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { haversineKm, type LatLng } from "@/lib/geo";
+import { applyJitter, haversineKm, type LatLng } from "@/lib/geo";
 
 type CheckIn = {
   id: string;
@@ -13,18 +13,95 @@ type CheckIn = {
   expires_at: string;
 };
 
+export type ProximityFilter = "tech-park" | "lunch-dash" | "city";
+
+export type RadarPost = {
+  id: string;
+  latitude?: number | null;
+  longitude?: number | null;
+  created_at: string;
+  author_name?: string;
+};
+
+export type RadarMerchant = {
+  id: string;
+  name: string;
+  area: string;
+};
+
 type Props = {
   origin: LatLng | null;
   geoStatus: "idle" | "prompting" | "granted" | "denied" | "unavailable";
+  posts: RadarPost[];
+  merchants: RadarMerchant[];
+  proximity: ProximityFilter;
+  onProximityChange: (p: ProximityFilter) => void;
 };
 
-const WINDOW_MS = 3 * 60 * 60 * 1000; // last 3 hours
+const WINDOW_MS = 3 * 60 * 60 * 1000;
+const FILTER_KM: Record<ProximityFilter, number> = {
+  "tech-park": 0.5,
+  "lunch-dash": 2,
+  city: 25,
+};
 
-export function LiveWorkspaceRadar({ origin, geoStatus }: Props) {
+// Deterministic hash → number in [0, 1)
+function hash01(s: string, salt = 0): number {
+  let h = 2166136261 ^ salt;
+  for (let i = 0; i < s.length; i++) {
+    h ^= s.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return ((h >>> 0) % 100000) / 100000;
+}
+
+// Synthesize a fuzzy lat/lng for a merchant near the origin so it can be
+// plotted on the sonar grid. Deterministic per merchant id + then jittered
+// so exact desk coordinates can never be reverse-engineered from blips.
+function merchantCoord(origin: LatLng, id: string): LatLng {
+  const bearing = hash01(id, 1) * 2 * Math.PI;
+  const distKm = 0.3 + hash01(id, 2) * 2.2; // 0.3 – 2.5 km
+  const dLat = (distKm / 111.32) * Math.cos(bearing);
+  const dLng =
+    (distKm / (111.32 * Math.cos((origin.latitude * Math.PI) / 180))) *
+    Math.sin(bearing);
+  return applyJitter({
+    latitude: origin.latitude + dLat,
+    longitude: origin.longitude + dLng,
+  });
+}
+
+// Project a coordinate onto the radar canvas (0..1 x/y, origin at 0.5,0.5).
+function project(origin: LatLng, target: LatLng, maxKm: number) {
+  const distKm = haversineKm(origin, target);
+  if (!isFinite(distKm)) return null;
+  // Bearing (true north up). atan2(east, north).
+  const dLat = target.latitude - origin.latitude;
+  const dLng =
+    (target.longitude - origin.longitude) *
+    Math.cos((origin.latitude * Math.PI) / 180);
+  const angle = Math.atan2(dLng, dLat); // 0 = north, +pi/2 = east
+  const r = Math.min(1, distKm / maxKm);
+  const x = 0.5 + (r * 0.46) * Math.sin(angle);
+  const y = 0.5 - (r * 0.46) * Math.cos(angle);
+  return { x, y, distKm };
+}
+
+function metersLabel(km: number): string {
+  if (km < 1) return `${Math.max(50, Math.round((km * 1000) / 50) * 50)}m`;
+  return `${km.toFixed(1)}km`;
+}
+
+export function LiveWorkspaceRadar({
+  origin,
+  geoStatus,
+  posts,
+  merchants,
+  proximity,
+  onProximityChange,
+}: Props) {
   const [checkins, setCheckins] = useState<CheckIn[]>([]);
-  const [tickerIdx, setTickerIdx] = useState(0);
 
-  // Initial fetch + realtime stream
   useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -38,7 +115,6 @@ export function LiveWorkspaceRadar({ origin, geoStatus }: Props) {
         .limit(250);
       if (!cancelled && data) setCheckins(data as CheckIn[]);
     })();
-
     const channel = supabase
       .channel("drinkedin-radar")
       .on(
@@ -50,105 +126,121 @@ export function LiveWorkspaceRadar({ origin, geoStatus }: Props) {
         }
       )
       .subscribe();
-
     return () => {
       cancelled = true;
       supabase.removeChannel(channel);
     };
   }, []);
 
-  // Compute proximity buckets relative to current origin
-  const { extreme, nearby, total } = useMemo(() => {
-    if (!origin) return { extreme: [] as CheckIn[], nearby: [] as CheckIn[], total: 0 };
-    const fresh = checkins.filter(
-      (c) => Date.now() - new Date(c.created_at).getTime() <= WINDOW_MS
+  const maxKm = FILTER_KM[proximity];
+
+  // Build blip list
+  const { postBlips, merchantBlips } = useMemo(() => {
+    if (!origin) return { postBlips: [], merchantBlips: [] };
+    const cutoff = Date.now() - WINDOW_MS;
+
+    const postBlips = posts
+      .filter(
+        (p) =>
+          p.latitude != null &&
+          p.longitude != null &&
+          new Date(p.created_at).getTime() >= cutoff
+      )
+      .map((p) => {
+        const proj = project(
+          origin,
+          { latitude: p.latitude as number, longitude: p.longitude as number },
+          maxKm
+        );
+        if (!proj) return null;
+        return { id: p.id, ...proj, name: p.author_name || "Anonymous Colleague" };
+      })
+      .filter(Boolean)
+      .filter((b) => (b as any).distKm <= maxKm) as Array<{
+      id: string;
+      x: number;
+      y: number;
+      distKm: number;
+      name: string;
+    }>;
+
+    // Also surface anonymous check-ins as colleague blips (no PII).
+    const checkinBlips = checkins
+      .filter((c) => Date.now() - new Date(c.created_at).getTime() <= WINDOW_MS)
+      .map((c) => {
+        const proj = project(
+          origin,
+          { latitude: c.latitude, longitude: c.longitude },
+          maxKm
+        );
+        if (!proj) return null;
+        return {
+          id: `ci-${c.id}`,
+          ...proj,
+          name: "Anonymous Colleague",
+        };
+      })
+      .filter(Boolean)
+      .filter((b) => (b as any).distKm <= maxKm) as typeof postBlips;
+
+    const merchantBlips = merchants
+      .map((m) => {
+        const coord = merchantCoord(origin, m.id);
+        const proj = project(origin, coord, maxKm);
+        if (!proj) return null;
+        return { id: m.id, name: m.name, area: m.area, ...proj };
+      })
+      .filter(Boolean)
+      .filter((b) => (b as any).distKm <= maxKm) as Array<{
+      id: string;
+      name: string;
+      area: string;
+      x: number;
+      y: number;
+      distKm: number;
+    }>;
+
+    return {
+      postBlips: [...postBlips, ...checkinBlips].slice(0, 40),
+      merchantBlips: merchantBlips.slice(0, 12),
+    };
+  }, [origin, posts, checkins, merchants, maxKm]);
+
+  // ---------- Permission fallback ----------
+  if (geoStatus === "denied" || geoStatus === "unavailable") {
+    return (
+      <Card
+        role="status"
+        aria-label="Radar offline"
+        className="relative overflow-hidden border-amber-500/30 bg-gradient-to-br from-amber-950/40 via-zinc-950 to-zinc-950 px-4 py-3 animate-fade-in"
+      >
+        <div className="flex items-center gap-3">
+          <div className="size-9 shrink-0 rounded-full grid place-items-center bg-amber-500/15 border border-amber-400/40 text-amber-200">
+            <MapPinOff className="size-4" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="text-[11px] font-bold uppercase tracking-wider text-amber-300/90">
+              Live Workspace Radar 🛰️ · offline
+            </div>
+            <p className="text-[12.5px] leading-snug text-muted-foreground">
+              📍 Exact radar offline. Defaulting to standard corporate feed context — use the city selector in the header to switch tech hubs.
+            </p>
+          </div>
+        </div>
+      </Card>
     );
-    const ex: CheckIn[] = [];
-    const nx: CheckIn[] = [];
-    for (const c of fresh) {
-      const d = haversineKm(origin, { latitude: c.latitude, longitude: c.longitude });
-      if (d <= 0.5) ex.push(c);
-      else if (d <= 2.0) nx.push(c);
-    }
-    return { extreme: ex, nearby: nx, total: fresh.length };
-  }, [checkins, origin]);
+  }
 
-  // Build ticker messages
-  const tickers = useMemo(() => {
-    const msgs: { tone: "red" | "yellow" | "neutral"; text: string }[] = [];
-    if (extreme.length > 0) {
-      const c = extreme[0];
-      const distKm = origin
-        ? haversineKm(origin, { latitude: c.latitude, longitude: c.longitude })
-        : 0;
-      const meters = Math.max(50, Math.round(distKm * 1000 / 50) * 50);
-      const verb =
-        c.activity === "posting"
-          ? "just posted a coping story"
-          : c.activity === "commenting"
-            ? "is venting in the comments"
-            : c.activity === "checked_in"
-              ? "checked into a pub"
-              : "is browsing deals";
-      msgs.push({
-        tone: "red",
-        text: `🔴 Extreme Proximity: A Colleague ${verb} ~${meters}m away in your tech park!`,
-      });
-    }
-    if (nearby.length > 0) {
-      const browsing = nearby.filter((c) => c.activity === "browsing_deals").length;
-      const posting = nearby.filter((c) => c.activity === "posting").length;
-      if (browsing > 0) {
-        msgs.push({
-          tone: "yellow",
-          text: `🟡 Nearby: ${browsing} tech professional${browsing === 1 ? " is" : "s are"} currently browsing happy hour deals within your corporate sector.`,
-        });
-      }
-      if (posting > 0) {
-        msgs.push({
-          tone: "yellow",
-          text: `🟡 Nearby: ${posting} colleague${posting === 1 ? " just dropped" : "s just dropped"} a fresh DrinkedIn post within 2 km.`,
-        });
-      }
-    }
-    if (msgs.length === 0) {
-      msgs.push({
-        tone: "neutral",
-        text:
-          geoStatus === "granted"
-            ? `🛰️ Scanning your corporate sector… ${total} signal${total === 1 ? "" : "s"} in the last 3h.`
-            : geoStatus === "denied"
-              ? "🛰️ Radar offline — enable browser location to triangulate nearby colleagues."
-              : "🛰️ Calibrating radar…",
-      });
-    }
-    return msgs;
-  }, [extreme, nearby, total, origin, geoStatus]);
-
-  // Cycle ticker every 5s without re-rendering the panel layout
-  useEffect(() => {
-    if (tickers.length <= 1) return;
-    const id = setInterval(() => setTickerIdx((i) => (i + 1) % tickers.length), 5000);
-    return () => clearInterval(id);
-  }, [tickers.length]);
-
-  const current = tickers[tickerIdx % tickers.length];
-  const toneClass =
-    current.tone === "red"
-      ? "text-red-300"
-      : current.tone === "yellow"
-        ? "text-amber-200"
-        : "text-muted-foreground";
+  // ---------- Active sonar ----------
+  const calibrating = !origin;
 
   return (
     <Card
-      className="relative overflow-hidden border-amber-500/30 bg-gradient-to-br from-amber-950/40 via-zinc-950 to-zinc-950 shadow-[0_0_24px_-6px_rgba(251,191,36,0.45)]"
+      className="relative overflow-hidden border-amber-500/30 bg-gradient-to-br from-emerald-950/30 via-zinc-950 to-zinc-950 shadow-[0_0_28px_-8px_rgba(16,185,129,0.45)] animate-fade-in"
       aria-label="Live Workspace Radar"
     >
-      {/* Glow sweep */}
-      <div className="pointer-events-none absolute -top-1/2 left-1/2 size-[150%] -translate-x-1/2 rounded-full bg-[radial-gradient(circle,rgba(251,191,36,0.18),transparent_55%)] animate-pulse" />
-      <div className="relative px-4 py-3 flex items-center gap-3">
-        <div className="relative size-9 shrink-0 rounded-full grid place-items-center bg-amber-500/15 border border-amber-400/40 text-amber-200 shadow-[0_0_18px_rgba(251,191,36,0.4)]">
+      <div className="relative px-4 pt-3 pb-2 flex items-center gap-3">
+        <div className="relative size-9 shrink-0 rounded-full grid place-items-center bg-emerald-500/15 border border-emerald-400/40 text-emerald-200 shadow-[0_0_18px_rgba(16,185,129,0.4)]">
           {geoStatus === "prompting" ? (
             <Loader2 className="size-4 animate-spin" />
           ) : origin ? (
@@ -156,25 +248,120 @@ export function LiveWorkspaceRadar({ origin, geoStatus }: Props) {
           ) : (
             <Compass className="size-4" />
           )}
-          <span className="absolute inset-0 rounded-full ring-2 ring-amber-400/50 animate-ping" aria-hidden />
+          <span className="absolute inset-0 rounded-full ring-2 ring-emerald-400/50 animate-ping" aria-hidden />
         </div>
         <div className="min-w-0 flex-1">
-          <div className="text-[11px] font-bold uppercase tracking-wider text-amber-300/90 flex items-center gap-2">
+          <div className="text-[11px] font-bold uppercase tracking-wider text-emerald-200/90">
             Live Workspace Radar 🛰️
-            <span className="text-[10px] font-medium normal-case text-muted-foreground">
-              {extreme.length + nearby.length} nearby · {total} in 3h
-            </span>
           </div>
-          {/* Fixed-height ticker line so swapping text never reflows the page */}
-          <div className="mt-0.5 h-10 sm:h-6 relative overflow-hidden">
-            <p
-              key={tickerIdx}
-              className={`absolute inset-0 text-[12.5px] leading-snug ${toneClass} animate-fade-in`}
-            >
-              {current.text}
-            </p>
-          </div>
+          <p className="text-[12px] leading-snug text-muted-foreground">
+            {calibrating
+              ? "🛰️ Calibrating sonar… requesting your high-accuracy fix."
+              : `${postBlips.length} colleague signal${postBlips.length === 1 ? "" : "s"} · ${merchantBlips.length} verified watering hole${merchantBlips.length === 1 ? "" : "s"} within ${metersLabel(maxKm)}.`}
+          </p>
         </div>
+      </div>
+
+      {/* Sonar Canvas */}
+      <div className="relative mx-auto my-2 aspect-square w-[78%] max-w-[320px]">
+        {/* Outer ring */}
+        <div className="absolute inset-0 rounded-full border border-emerald-400/30 bg-[radial-gradient(circle,rgba(16,185,129,0.10),rgba(0,0,0,0.6)_70%)]" />
+        {/* Concentric range rings */}
+        <div className="absolute inset-[12%] rounded-full border border-emerald-400/15" />
+        <div className="absolute inset-[28%] rounded-full border border-emerald-400/15" />
+        <div className="absolute inset-[44%] rounded-full border border-emerald-400/20" />
+        {/* Crosshairs */}
+        <div className="absolute inset-x-0 top-1/2 h-px bg-emerald-400/15" />
+        <div className="absolute inset-y-0 left-1/2 w-px bg-emerald-400/15" />
+
+        {/* Rotating sonar sweep */}
+        <div
+          className="pointer-events-none absolute inset-0 rounded-full overflow-hidden"
+          aria-hidden
+        >
+          <div
+            className="absolute inset-0 origin-center"
+            style={{
+              background:
+                "conic-gradient(from 0deg, rgba(16,185,129,0) 0deg, rgba(16,185,129,0) 300deg, rgba(16,185,129,0.55) 355deg, rgba(110,231,183,0.85) 360deg, rgba(16,185,129,0) 360deg)",
+              animation: "spin 3.5s linear infinite",
+              maskImage: "radial-gradient(circle, black 70%, transparent 72%)",
+              WebkitMaskImage: "radial-gradient(circle, black 70%, transparent 72%)",
+            }}
+          />
+        </div>
+
+        {/* Range label */}
+        <div className="absolute bottom-1 right-1 text-[9px] font-mono text-emerald-300/60 tabular-nums">
+          R: {metersLabel(maxKm)}
+        </div>
+
+        {/* Center "You" dot */}
+        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 group">
+          <span className="block size-3 rounded-full bg-emerald-300 shadow-[0_0_14px_rgba(110,231,183,0.95)]" />
+          <span className="absolute inset-0 rounded-full ring-2 ring-emerald-300/70 animate-ping" aria-hidden />
+          <span className="absolute left-1/2 top-full mt-1 -translate-x-1/2 whitespace-nowrap rounded bg-zinc-900/95 px-1.5 py-0.5 text-[9px] font-mono text-emerald-200 border border-emerald-500/30 opacity-0 group-hover:opacity-100 transition pointer-events-none">
+            Your Cubicle (You)
+          </span>
+        </div>
+
+        {/* Colleague (amber) blips */}
+        {postBlips.map((b) => (
+          <div
+            key={b.id}
+            className="absolute -translate-x-1/2 -translate-y-1/2 group"
+            style={{ left: `${b.x * 100}%`, top: `${b.y * 100}%` }}
+          >
+            <span className="block size-2 rounded-full bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.9)] animate-pulse" />
+            <div className="pointer-events-none absolute left-1/2 -translate-x-1/2 bottom-full mb-1 whitespace-nowrap rounded bg-zinc-900/95 px-2 py-1 text-[10px] text-amber-100 border border-amber-500/40 opacity-0 group-hover:opacity-100 transition z-10 shadow-lg">
+              🎭 Anonymous Colleague — {metersLabel(b.distKm)} away
+            </div>
+          </div>
+        ))}
+
+        {/* Merchant (beer mug) blips */}
+        {merchantBlips.map((b) => (
+          <div
+            key={b.id}
+            className="absolute -translate-x-1/2 -translate-y-1/2 group"
+            style={{ left: `${b.x * 100}%`, top: `${b.y * 100}%` }}
+          >
+            <span className="relative grid place-items-center size-4 rounded-full bg-amber-500/80 border border-amber-200 shadow-[0_0_10px_rgba(251,191,36,1)] animate-pulse">
+              <Beer className="size-2.5 text-zinc-950" strokeWidth={3} />
+            </span>
+            <div className="pointer-events-none absolute left-1/2 -translate-x-1/2 bottom-full mb-1 whitespace-nowrap rounded bg-zinc-900/95 px-2 py-1 text-[10px] text-amber-100 border border-amber-400/50 opacity-0 group-hover:opacity-100 transition z-10 shadow-lg">
+              🍻 Verified Watering Hole: {b.name} — {metersLabel(b.distKm)} away
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Proximity filter chips */}
+      <div className="px-3 pb-3 pt-1 flex flex-wrap items-center justify-center gap-1.5">
+        {(
+          [
+            { key: "tech-park", label: "Immediate Tech Park (< 500m)" },
+            { key: "lunch-dash", label: "Lunchtime Dash (< 2km)" },
+            { key: "city", label: "Happy Hour Radius (Entire City)" },
+          ] as Array<{ key: ProximityFilter; label: string }>
+        ).map((chip) => {
+          const active = proximity === chip.key;
+          return (
+            <button
+              key={chip.key}
+              type="button"
+              onClick={() => onProximityChange(chip.key)}
+              aria-pressed={active}
+              className={`text-[10.5px] font-mono uppercase tracking-wide px-2.5 py-1 rounded-full border transition hover-scale ${
+                active
+                  ? "bg-emerald-400 text-zinc-950 border-emerald-300 shadow-[0_0_12px_rgba(16,185,129,0.6)]"
+                  : "bg-zinc-900/60 text-emerald-200/80 border-emerald-500/30 hover:border-emerald-400/60 hover:text-emerald-100"
+              }`}
+            >
+              {chip.label}
+            </button>
+          );
+        })}
       </div>
     </Card>
   );
