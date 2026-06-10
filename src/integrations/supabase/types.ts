@@ -324,6 +324,7 @@ export type Database = {
       profiles: {
         Row: {
           created_at: string
+          declared_company: string | null
           flash_deal_text: string | null
           id: string
           latitude: number | null
@@ -332,6 +333,7 @@ export type Database = {
           merchant_website: string | null
           pub_name: string | null
           role: Database["public"]["Enums"]["app_role"]
+          tech_park_zone: string | null
           updated_at: string
           upi_vpa: string | null
           verified_hub_city: string | null
@@ -339,6 +341,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          declared_company?: string | null
           flash_deal_text?: string | null
           id: string
           latitude?: number | null
@@ -347,6 +350,7 @@ export type Database = {
           merchant_website?: string | null
           pub_name?: string | null
           role?: Database["public"]["Enums"]["app_role"]
+          tech_park_zone?: string | null
           updated_at?: string
           upi_vpa?: string | null
           verified_hub_city?: string | null
@@ -354,6 +358,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          declared_company?: string | null
           flash_deal_text?: string | null
           id?: string
           latitude?: number | null
@@ -362,6 +367,7 @@ export type Database = {
           merchant_website?: string | null
           pub_name?: string | null
           role?: Database["public"]["Enums"]["app_role"]
+          tech_park_zone?: string | null
           updated_at?: string
           upi_vpa?: string | null
           verified_hub_city?: string | null

@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
 import { Card } from "@/components/ui/card";
 import { Radio, Loader2, Compass, MapPinOff, Beer } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { applyJitter, haversineKm, type LatLng } from "@/lib/geo";
+import { getScrubbedRadarBlips, type ScrubbedBlip } from "@/lib/radar.functions";
 
 type CheckIn = {
   id: string;
@@ -101,6 +103,8 @@ export function LiveWorkspaceRadar({
   onProximityChange,
 }: Props) {
   const [checkins, setCheckins] = useState<CheckIn[]>([]);
+  const [serverBlips, setServerBlips] = useState<ScrubbedBlip[]>([]);
+  const fetchScrubbedBlips = useServerFn(getScrubbedRadarBlips);
 
   useEffect(() => {
     let cancelled = false;
@@ -134,37 +138,59 @@ export function LiveWorkspaceRadar({
 
   const maxKm = FILTER_KM[proximity];
 
+  // Fetch scrubbed (no-PII, no-company) post blips from the server.
+  // Server returns only distance + bearing + color — the wire never carries
+  // declared_company, user_id, or raw coordinates for the post authors.
+  useEffect(() => {
+    if (!origin) {
+      setServerBlips([]);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetchScrubbedBlips({
+          data: {
+            latitude: origin.latitude,
+            longitude: origin.longitude,
+            maxKm,
+          },
+        });
+        if (!cancelled) setServerBlips(res.blips);
+      } catch {
+        if (!cancelled) setServerBlips([]);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [origin?.latitude, origin?.longitude, maxKm, posts.length, fetchScrubbedBlips]);
+
   // Build blip list
   const { postBlips, merchantBlips } = useMemo(() => {
     if (!origin) return { postBlips: [], merchantBlips: [] };
-    const cutoff = Date.now() - WINDOW_MS;
 
-    const postBlips = posts
-      .filter(
-        (p) =>
-          p.latitude != null &&
-          p.longitude != null &&
-          new Date(p.created_at).getTime() >= cutoff
-      )
-      .map((p) => {
-        const proj = project(
-          origin,
-          { latitude: p.latitude as number, longitude: p.longitude as number },
-          maxKm
-        );
-        if (!proj) return null;
-        return { id: p.id, ...proj, name: p.author_name || "Anonymous Colleague" };
-      })
-      .filter(Boolean)
-      .filter((b) => (b as any).distKm <= maxKm) as Array<{
-      id: string;
-      x: number;
-      y: number;
-      distKm: number;
-      name: string;
-    }>;
+    // Convert server-scrubbed (distance, bearing, color) into canvas coords.
+    const postBlips = serverBlips
+      .filter((b) => b.distKm <= maxKm)
+      .map((b) => {
+        const r = Math.min(1, b.distKm / maxKm);
+        const x = 0.5 + r * 0.46 * Math.sin(b.bearingRad);
+        const y = 0.5 - r * 0.46 * Math.cos(b.bearingRad);
+        return {
+          id: b.id,
+          x,
+          y,
+          distKm: b.distKm,
+          color: b.color,
+          name:
+            b.color === "cyan"
+              ? "Direct Colleague"
+              : "Nearby Professional",
+        };
+      });
 
-    // Also surface anonymous check-ins as colleague blips (no PII).
+    // Anonymous check-ins still render as amber "nearby" blips (no PII).
     const checkinBlips = checkins
       .filter((c) => Date.now() - new Date(c.created_at).getTime() <= WINDOW_MS)
       .map((c) => {
@@ -177,7 +203,8 @@ export function LiveWorkspaceRadar({
         return {
           id: `ci-${c.id}`,
           ...proj,
-          name: "Anonymous Colleague",
+          color: "amber" as const,
+          name: "Nearby Professional",
         };
       })
       .filter(Boolean)
@@ -204,7 +231,9 @@ export function LiveWorkspaceRadar({
       postBlips: [...postBlips, ...checkinBlips].slice(0, 40),
       merchantBlips: merchantBlips.slice(0, 12),
     };
-  }, [origin, posts, checkins, merchants, maxKm]);
+  }, [origin, serverBlips, checkins, merchants, maxKm]);
+
+
 
   // ---------- Permission fallback ----------
   if (geoStatus === "denied" || geoStatus === "unavailable") {
@@ -305,19 +334,35 @@ export function LiveWorkspaceRadar({
           </span>
         </div>
 
-        {/* Colleague (amber) blips */}
-        {postBlips.map((b) => (
-          <div
-            key={b.id}
-            className="absolute -translate-x-1/2 -translate-y-1/2 group"
-            style={{ left: `${b.x * 100}%`, top: `${b.y * 100}%` }}
-          >
-            <span className="block size-2 rounded-full bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.9)] animate-pulse" />
-            <div className="pointer-events-none absolute left-1/2 -translate-x-1/2 bottom-full mb-1 whitespace-nowrap rounded bg-zinc-900/95 px-2 py-1 text-[10px] text-amber-100 border border-amber-500/40 opacity-0 group-hover:opacity-100 transition z-10 shadow-lg">
-              🎭 Anonymous Colleague — {metersLabel(b.distKm)} away
+        {/* Colleague blips — cyan = same declared company, amber = nearby */}
+        {postBlips.map((b) => {
+          const cyan = b.color === "cyan";
+          return (
+            <div
+              key={b.id}
+              className="absolute -translate-x-1/2 -translate-y-1/2 group"
+              style={{ left: `${b.x * 100}%`, top: `${b.y * 100}%` }}
+            >
+              <span
+                className={
+                  cyan
+                    ? "block size-2.5 rounded-full bg-cyan-300 shadow-[0_0_12px_rgba(34,211,238,1)] animate-pulse ring-1 ring-cyan-200/80"
+                    : "block size-2 rounded-full bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.9)] animate-pulse"
+                }
+              />
+              <div
+                className={`pointer-events-none absolute left-1/2 -translate-x-1/2 bottom-full mb-1 whitespace-nowrap rounded px-2 py-1 text-[10px] opacity-0 group-hover:opacity-100 transition z-10 shadow-lg bg-zinc-900/95 ${
+                  cyan
+                    ? "text-cyan-100 border border-cyan-400/50"
+                    : "text-amber-100 border border-amber-500/40"
+                }`}
+              >
+                {cyan ? "🎯 Direct Colleague" : "🎭 Nearby Professional"} — {metersLabel(b.distKm)} away
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
+
 
         {/* Merchant (beer mug) blips */}
         {merchantBlips.map((b) => (

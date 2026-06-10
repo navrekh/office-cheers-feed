@@ -82,6 +82,7 @@ import {
 import { useGeolocation } from "@/hooks/useGeolocation";
 import { getOrCreateSessionId, haversineKm } from "@/lib/geo";
 import { LiveWorkspaceRadar, type ProximityFilter } from "@/components/LiveWorkspaceRadar";
+import { WorkplaceSelectorCard } from "@/components/WorkplaceSelectorCard";
 import { ProximityAdDispatcher, dealCoord } from "@/components/ProximityAdDispatcher";
 import { useMerchantDeals, type MerchantDeal } from "@/lib/useMerchantDeals";
 
@@ -1695,6 +1696,14 @@ function Index() {
         <section className="col-span-12 lg:col-span-6 space-y-3">
           {view === "home" && (
             <>
+              {/* First-time employees: pick a corporate mask before the feed */}
+              {user && profile?.role === "employee" && !profile?.declared_company && (
+                <WorkplaceSelectorCard
+                  userId={user.id}
+                  onSaved={() => void refreshProfile()}
+                />
+              )}
+
               {/* Live Workspace Radar — proximity-aware ambient ticker */}
               <LiveWorkspaceRadar
                 origin={geoCoords}
@@ -1714,6 +1723,7 @@ function Index() {
                 proximity={proximity}
                 onProximityChange={setProximity}
               />
+
 
               {/* Composer */}
               <Card className="p-4 border-border">
