@@ -70,10 +70,10 @@ export default function AuthModal({ open, onOpenChange, reason }: Props) {
             <span className="inline-grid place-items-center size-9 rounded-lg bg-amber-500/15 border border-amber-500/40 text-amber-300">
               <ShieldCheck className="size-5" />
             </span>
-            Sign in to keep drinking 🍻
+            Join the Breakroom 🍻
           </DialogTitle>
-          <DialogDescription className="text-muted-foreground">
-            {reason || "We use sign-in to protect the platform from spam and liability — but your feed stays 100% anonymous to other users."}
+          <DialogDescription className="text-muted-foreground leading-relaxed">
+            {reason || "To keep our corporate sanctuary safe and brand-verified, sign in with your email or Google account. Your public posts remain 100% anonymous."}
           </DialogDescription>
         </DialogHeader>
 
