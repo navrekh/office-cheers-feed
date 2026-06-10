@@ -385,8 +385,8 @@ function Index() {
       const { data, error } = await (supabase as any)
         .from("posts")
         .insert({
-          author_name: draft!.anonymous ? "Anonymous Colleague" : (draft!.authorName || "Anonymous Intern"),
-          author_headline: draft!.anonymous ? "Incognito | Drinking to Cope" : (draft!.authorHeadline || "Specializing in Liquid Refactoring"),
+          author_name: draft!.anonymous ? "Anonymous Colleague" : (draft!.authorName?.trim() || `${emailPrefix(user.email)} 🎭`),
+          author_headline: draft!.anonymous ? "Incognito | Drinking to Cope" : (draft!.authorHeadline?.trim() || "Signed in · feed alias stays anonymous"),
           body_text: composed,
           user_id: user.id,
         })
