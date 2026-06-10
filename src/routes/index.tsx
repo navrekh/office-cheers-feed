@@ -101,6 +101,14 @@ async function triggerDownloadPostCard(post: { id: string; author_name: string; 
   mod.downloadPostAsImage(post);
 }
 
+
+import AchievementBadges, { ACH_KEYS, bumpAchievement } from "@/components/AchievementBadges";
+import CorporateBingo from "@/components/CorporateBingo";
+
+function isHappyHourNow(d: Date = new Date()): boolean {
+  const minutes = d.getHours() * 60 + d.getMinutes();
+  return minutes >= 16 * 60 + 30 && minutes < 18 * 60;
+}
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
