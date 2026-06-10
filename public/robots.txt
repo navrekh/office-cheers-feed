@@ -1,10 +1,13 @@
 User-agent: *
 Allow: /
+Disallow: /track/
 
 User-agent: Googlebot
 Allow: /
+Disallow: /track/
 
 User-agent: Bingbot
 Allow: /
+Disallow: /track/
 
 Sitemap: https://drinkedin.me/sitemap.xml

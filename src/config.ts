@@ -12,6 +12,7 @@ export const SITE = {
   name: "DrinkedIn",
   url: SITE_URL,
   shareUrl: (postId: string) => `${SITE_URL}/?post=${postId}`,
+  trackUrl: (ticket: string) => `${SITE_URL}/track/${ticket}`,
 } as const;
 
 export const TOKENLENS = {

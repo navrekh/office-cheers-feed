@@ -76,24 +76,30 @@ export type Database = {
           author_name: string
           body_text: string
           cheers_count: number
+          claim_ticket: string
           created_at: string
           id: string
+          is_author_view: boolean
         }
         Insert: {
           author_headline?: string
           author_name: string
           body_text: string
           cheers_count?: number
+          claim_ticket?: string
           created_at?: string
           id?: string
+          is_author_view?: boolean
         }
         Update: {
           author_headline?: string
           author_name?: string
           body_text?: string
           cheers_count?: number
+          claim_ticket?: string
           created_at?: string
           id?: string
+          is_author_view?: boolean
         }
         Relationships: []
       }
@@ -102,6 +108,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      delete_post_by_ticket: { Args: { ticket: string }; Returns: boolean }
       increment_cheers: { Args: { post_id: string }; Returns: number }
     }
     Enums: {

@@ -129,6 +129,7 @@ import AchievementBadges, { ACH_KEYS, bumpAchievement } from "@/components/Achie
 import CorporateBingo from "@/components/CorporateBingo";
 import VerifiedWateringHole from "@/components/VerifiedWateringHole";
 import HappyHourTicker from "@/components/HappyHourTicker";
+import ClaimTicketModal from "@/components/ClaimTicketModal";
 
 function isHappyHourNow(d: Date = new Date()): boolean {
   const minutes = d.getHours() * 60 + d.getMinutes();
@@ -153,6 +154,7 @@ type Post = {
   body_text: string;
   cheers_count: number;
   created_at: string;
+  claim_ticket?: string;
   post_type?: "user" | "merchant";
   merchant_website?: string;
   map_query_address?: string;
@@ -252,6 +254,8 @@ function Index() {
   const [, force] = useState(0);
   const [devOpen, setDevOpen] = useState(false);
   const [happyHour, setHappyHour] = useState<boolean>(false);
+  const [claimTicket, setClaimTicket] = useState<string | null>(null);
+  const [claimModalOpen, setClaimModalOpen] = useState(false);
 
   // Happy Hour Mode (16:30–18:00 local time)
   useEffect(() => {
@@ -677,6 +681,11 @@ function Index() {
         }
       } catch {}
       if (anonymous) bumpAchievement("whistleblower", true);
+      // Surface the unique claim ticket so the author can track the post from any device.
+      if ((data as any).claim_ticket) {
+        setClaimTicket((data as any).claim_ticket as string);
+        setClaimModalOpen(true);
+      }
       // Optional admin webhook (Slack/Discord). No-op unless ADMIN_WEBHOOK_URL is set on the server.
       void notifyAdminNewPost({
         data: {
@@ -1339,6 +1348,12 @@ function Index() {
           <DevConsole onClose={() => setDevOpen(false)} />
         </Suspense>
       )}
+
+      <ClaimTicketModal
+        open={claimModalOpen}
+        ticket={claimTicket}
+        onOpenChange={setClaimModalOpen}
+      />
     </div>
   );
 }
