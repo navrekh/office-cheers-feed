@@ -882,6 +882,68 @@ function Index() {
     }
   }, [user]);
 
+  const reportPost = useCallback(async (post: Post) => {
+    if (isSimulatedPost(post) || post.post_type === "merchant" || post.id.startsWith("merchant-")) {
+      toast("Merchant ads can't be sent to the tribunal 🛡️");
+      return;
+    }
+    if (!user) {
+      setAuthReason("Sign in to flag a post — keeps our tribunal honest.");
+      setAuthModalOpen(true);
+      return;
+    }
+    setPosts((prev) =>
+      prev.map((p) => (p.id === post.id ? { ...p, is_in_tribunal: true } : p))
+    );
+    const res = await reportPostRpc(post.id);
+    if (!res.ok) {
+      toast.error("Couldn't file your report. Try again in a sec.");
+      return;
+    }
+    toast("🚨 Sent to the HR Tribunal ⚖️", {
+      description: "Three Gross Misconduct votes and this post is auto-scrubbed.",
+    });
+  }, [user]);
+
+  const voteTribunal = useCallback(async (post: Post, vote: "valid" | "misconduct") => {
+    if (!user) {
+      setAuthReason("Sign in to cast a tribunal vote — one vote per colleague.");
+      setAuthModalOpen(true);
+      return;
+    }
+    const res = await tribunalVoteRpc(post.id, vote);
+    if (!res.ok) {
+      if (isRlsDenied(res.error)) toast.error(RLS_DENIED_MESSAGE);
+      else toast.error("Vote didn't go through. Try again in a sec.");
+      return;
+    }
+    if (res.data) {
+      setPosts((prev) =>
+        prev.map((p) =>
+          p.id === post.id
+            ? {
+                ...p,
+                valid_votes: res.data!.valid_votes,
+                misconduct_votes: res.data!.misconduct_votes,
+                is_hidden: res.data!.is_hidden,
+              }
+            : p
+        )
+      );
+      if (res.data.is_hidden) {
+        toast("🛑 Scrubbed from the feed", {
+          description: "The tribunal has spoken — post permanently hidden.",
+        });
+      } else if (vote === "valid") {
+        toast.success("Valid coping mechanism 🍺");
+      } else {
+        toast(`Gross Misconduct strike ${res.data.misconduct_votes}/3 🛑`);
+      }
+    }
+  }, [user]);
+
+
+
   function randomize() {
     const id = randomIdentity();
     setAuthorName(id.name);
