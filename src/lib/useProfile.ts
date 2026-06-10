@@ -11,6 +11,7 @@ export type Profile = {
   map_query_address: string | null;
   merchant_website: string | null;
   flash_deal_text: string | null;
+  upi_vpa: string | null;
 };
 
 /**
