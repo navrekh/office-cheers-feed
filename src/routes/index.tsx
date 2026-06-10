@@ -1263,6 +1263,11 @@ function Index() {
                       </AccordionContent>
                     </AccordionItem>
                   </Accordion>
+                  <UpiVpaEditor
+                    userId={user.id}
+                    initial={profile?.upi_vpa ?? null}
+                    onSaved={() => void refreshProfile()}
+                  />
                 </>
               ) : (
                 <>
