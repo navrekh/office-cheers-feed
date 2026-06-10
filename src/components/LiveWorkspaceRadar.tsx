@@ -103,6 +103,7 @@ export function LiveWorkspaceRadar({
   proximity,
   onProximityChange,
 }: Props) {
+  const t = useT();
   const [checkins, setCheckins] = useState<CheckIn[]>([]);
   const [serverBlips, setServerBlips] = useState<ScrubbedBlip[]>([]);
   const fetchScrubbedBlips = useServerFn(getScrubbedRadarBlips);
@@ -256,7 +257,7 @@ export function LiveWorkspaceRadar({
           </div>
           <div className="min-w-0 flex-1">
             <div className="text-[11px] font-bold uppercase tracking-wider text-amber-300/90">
-              Live Workspace Radar 🛰️ · offline
+              {t("radar.offline")}
             </div>
             <p className="text-[12.5px] leading-snug text-muted-foreground">
               📍 Exact radar offline. Defaulting to standard corporate feed context — use the city selector in the header to switch tech hubs.
@@ -288,7 +289,7 @@ export function LiveWorkspaceRadar({
         </div>
         <div className="min-w-0 flex-1">
           <div className="text-[11px] font-bold uppercase tracking-wider text-emerald-200/90">
-            Live Workspace Radar 🛰️
+            {t("radar.title")}
           </div>
           <p className="text-[12px] leading-snug text-muted-foreground">
             {calibrating
