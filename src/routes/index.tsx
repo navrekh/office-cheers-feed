@@ -881,6 +881,7 @@ function Index() {
               <span className="text-muted-foreground">Saved </span>
               <span className="font-semibold">🍷 Wine cellar bookmarks</span>
             </div>
+            <AchievementBadges />
           </Card>
 
           <Card className="p-4 border-border">
