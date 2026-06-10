@@ -12,6 +12,8 @@ export type MerchantDeal = {
   heading_there_count: number;
   is_active: boolean;
   updated_at: string;
+  activated_at?: string;
+  expires_at?: string;
 };
 
 // Happy hour window: 16:30 – 19:30 local. Peaks at 18:00.
@@ -51,7 +53,8 @@ export function useMerchantDeals(city: CityKey) {
           .from("merchant_deals")
           .select("*")
           .eq("city", city)
-          .eq("is_active", true);
+          .eq("is_active", true)
+          .gt("expires_at", new Date().toISOString());
         if (!cancelled && !error && data) setDeals(data as MerchantDeal[]);
       } catch {
         /* offline fallback handled by caller */
