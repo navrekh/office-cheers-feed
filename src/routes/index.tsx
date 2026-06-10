@@ -1415,6 +1415,12 @@ function Index() {
         ticket={claimTicket}
         onOpenChange={setClaimModalOpen}
       />
+
+      <AuthModal
+        open={authModalOpen}
+        onOpenChange={setAuthModalOpen}
+        reason={authReason}
+      />
     </div>
   );
 }
