@@ -149,6 +149,12 @@ export function LiveWorkspaceRadar({
     let cancelled = false;
     (async () => {
       try {
+        // Guard: server fn requires auth. Skip silently for anonymous viewers.
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+          if (!cancelled) setServerBlips([]);
+          return;
+        }
         const res = await fetchScrubbedBlips({
           data: {
             latitude: origin.latitude,
