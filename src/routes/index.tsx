@@ -1750,6 +1750,10 @@ function Index() {
                 </form>
               </Card>
 
+              <TaproomVisualizer />
+
+
+
               <GifPicker
                 open={gifPickerOpen}
                 onOpenChange={setGifPickerOpen}
