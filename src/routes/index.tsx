@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState, useRef, useMemo, useCallback, lazy, Suspense, memo, type FormEvent } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { SITE, TOKENLENS } from "@/config";
@@ -334,6 +334,34 @@ function Index() {
     setAuthModalOpen(true);
     return false;
   }
+
+  // Post-OAuth merchant claim + role-based redirect
+  const navigate = useNavigate();
+  const merchantRedirectRef = useRef(false);
+  useEffect(() => {
+    if (!user || merchantRedirectRef.current) return;
+    let pending: string | null = null;
+    try { pending = sessionStorage.getItem("pending_merchant_claim"); } catch {}
+    if (pending) {
+      merchantRedirectRef.current = true;
+      try { sessionStorage.removeItem("pending_merchant_claim"); } catch {}
+      const pubName = pending === "1" ? null : pending;
+      (supabase as any).rpc("claim_merchant_role", { p_pub_name: pubName }).then(({ error }: any) => {
+        if (error) {
+          toast.error("Couldn't activate merchant portal", { description: error.message });
+          return;
+        }
+        toast.success("Merchant portal unlocked 🍻");
+        navigate({ to: "/merchant-dashboard" });
+      });
+      return;
+    }
+    if (profile?.role === "merchant") {
+      merchantRedirectRef.current = true;
+      navigate({ to: "/merchant-dashboard" });
+    }
+  }, [user, profile?.role, navigate]);
+
   // Auto-fill composer alias from the signed-in user's email prefix (never the full email)
   const userAlias = user ? emailPrefix(user.email) : null;
   const userCodename = user ? corporateCodename(user.email) : null;

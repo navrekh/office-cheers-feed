@@ -1,32 +1,60 @@
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
+import { useNavigate } from "@tanstack/react-router";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
-import { Mail, Lock, ShieldCheck } from "lucide-react";
+import { Mail, Lock, ShieldCheck, Briefcase, Beer, ArrowLeft } from "lucide-react";
+
+type Intent = "employee" | "merchant";
+type Mode = "signin" | "signup";
 
 type Props = {
   open: boolean;
   onOpenChange: (v: boolean) => void;
   reason?: string;
+  defaultIntent?: Intent;
 };
 
-type Mode = "signin" | "signup";
-
-export default function AuthModal({ open, onOpenChange, reason }: Props) {
+export default function AuthModal({ open, onOpenChange, reason, defaultIntent }: Props) {
+  const navigate = useNavigate();
+  const [intent, setIntent] = useState<Intent | null>(defaultIntent ?? null);
   const [mode, setMode] = useState<Mode>("signup");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [pubName, setPubName] = useState("");
   const [busy, setBusy] = useState(false);
   const [googleBusy, setGoogleBusy] = useState(false);
 
+  useEffect(() => {
+    if (open) setIntent(defaultIntent ?? null);
+  }, [open, defaultIntent]);
+
+  async function finalizeIntent(currentIntent: Intent) {
+    if (currentIntent === "merchant") {
+      const { error } = await (supabase as any).rpc("claim_merchant_role", {
+        p_pub_name: pubName.trim() || null,
+      });
+      if (error) {
+        toast.error("Couldn't activate merchant portal", { description: error.message });
+        return;
+      }
+      toast.success("Merchant portal unlocked 🍻");
+      onOpenChange(false);
+      navigate({ to: "/merchant-dashboard" });
+    } else {
+      onOpenChange(false);
+    }
+  }
+
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
+    if (!intent) return;
     const clean = email.trim().toLowerCase();
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(clean)) {
-      toast.error("That doesn't look like a real email. Try again sober.");
+      toast.error("That doesn't look like a real email.");
       return;
     }
     if (password.length < 8) {
@@ -47,10 +75,8 @@ export default function AuthModal({ open, onOpenChange, reason }: Props) {
           return;
         }
         if (data.session) {
-          toast.success("You're in 🍻", { description: "Account created. Pouring you a session…" });
-          onOpenChange(false);
+          await finalizeIntent(intent);
         } else {
-          // Should not happen with auto-confirm enabled, but handle gracefully.
           toast.success("Account created", { description: "Sign in to continue." });
           setMode("signin");
         }
@@ -60,8 +86,7 @@ export default function AuthModal({ open, onOpenChange, reason }: Props) {
           toast.error("Sign in failed", { description: error.message });
           return;
         }
-        toast.success("Welcome back 🍻");
-        onOpenChange(false);
+        await finalizeIntent(intent);
       }
     } finally {
       setBusy(false);
@@ -69,6 +94,10 @@ export default function AuthModal({ open, onOpenChange, reason }: Props) {
   }
 
   async function handleGoogle() {
+    if (!intent) return;
+    if (intent === "merchant" && typeof window !== "undefined") {
+      sessionStorage.setItem("pending_merchant_claim", pubName.trim() || "1");
+    }
     setGoogleBusy(true);
     try {
       const result = await lovable.auth.signInWithOAuth("google", {
@@ -82,7 +111,7 @@ export default function AuthModal({ open, onOpenChange, reason }: Props) {
         return;
       }
       if (result.redirected) return;
-      onOpenChange(false);
+      await finalizeIntent(intent);
     } catch (e: any) {
       toast.error("Google sign-in failed", { description: e?.message });
     } finally {
@@ -92,96 +121,160 @@ export default function AuthModal({ open, onOpenChange, reason }: Props) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md border-amber-500/30 bg-gradient-to-br from-zinc-950/90 via-zinc-900/90 to-zinc-950/90 backdrop-blur-xl shadow-[0_0_80px_rgba(251,191,36,0.2)]">
+      <DialogContent className="sm:max-w-2xl border-amber-500/30 bg-gradient-to-br from-zinc-950/90 via-zinc-900/90 to-zinc-950/90 backdrop-blur-xl shadow-[0_0_80px_rgba(251,191,36,0.2)]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-xl">
             <span className="inline-grid place-items-center size-9 rounded-lg bg-amber-500/15 border border-amber-500/40 text-amber-300">
               <ShieldCheck className="size-5" />
             </span>
-            Join the Breakroom 🍻
+            {intent ? (
+              <>
+                <button
+                  onClick={() => setIntent(null)}
+                  className="text-muted-foreground hover:text-foreground transition"
+                  aria-label="Back"
+                >
+                  <ArrowLeft className="size-4" />
+                </button>
+                {intent === "employee" ? "Corporate Employee 👔" : "Pub & Restaurant Owner 🍻"}
+              </>
+            ) : (
+              <>Pick your entrance 🍻</>
+            )}
           </DialogTitle>
           <DialogDescription className="text-muted-foreground leading-relaxed">
-            {reason ||
-              "Use a personal email — never your work address. Your public posts always stay 100% anonymous behind a corporate alias."}
+            {reason || (intent
+              ? intent === "employee"
+                ? "Use a personal email — never your work address. Posts always stay 100% anonymous."
+                : "Merchant accounts unlock the live flash deal control room and venue media manager."
+              : "Two doors, one breakroom. Choose the side that fits.")}
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4 pt-2">
-          {/* Google */}
-          <Button
-            type="button"
-            onClick={handleGoogle}
-            disabled={googleBusy}
-            variant="outline"
-            className="w-full h-11 gap-2 border-border bg-card hover:bg-muted/60 font-semibold"
-          >
-            <GoogleGlyph />
-            {googleBusy ? "Opening Google…" : "Continue with Google"}
-          </Button>
-
-          <div className="flex items-center gap-2 text-[10px] uppercase tracking-wider text-muted-foreground">
-            <div className="h-px flex-1 bg-border" />
-            or with personal email
-            <div className="h-px flex-1 bg-border" />
-          </div>
-
-          <form onSubmit={handleSubmit} className="space-y-2">
-            <div className="relative">
-              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-              <Input
-                type="email"
-                placeholder="you@gmail.com (personal — not work)"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                autoComplete="email"
-                className="pl-9 h-11"
-                required
-              />
-            </div>
-            <div className="relative">
-              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-              <Input
-                type="password"
-                placeholder={mode === "signup" ? "Create a password (min 8 chars)" : "Your password"}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                autoComplete={mode === "signup" ? "new-password" : "current-password"}
-                className="pl-9 h-11"
-                minLength={8}
-                required
-              />
-            </div>
-            <Button
-              type="submit"
-              disabled={busy}
-              className="w-full h-11 font-semibold bg-amber-500 hover:bg-amber-400 text-zinc-950"
+        {!intent ? (
+          <div className="grid sm:grid-cols-2 gap-3 pt-2">
+            <button
+              type="button"
+              onClick={() => setIntent("employee")}
+              className="group text-left rounded-xl border border-sky-400/30 bg-gradient-to-br from-sky-500/10 via-sky-500/5 to-transparent p-5 hover:border-sky-300/60 hover:bg-sky-500/15 transition shadow-[0_0_30px_rgba(56,189,248,0.08)]"
             >
-              {busy
-                ? mode === "signup"
-                  ? "Creating account…"
-                  : "Signing in…"
-                : mode === "signup"
-                ? "Create account 🍻"
-                : "Sign in 🚪"}
+              <div className="inline-grid place-items-center size-10 rounded-lg bg-sky-500/20 border border-sky-400/40 text-sky-200 mb-3">
+                <Briefcase className="size-5" />
+              </div>
+              <h3 className="font-bold text-base text-sky-100">Corporate Employee 👔</h3>
+              <p className="text-[12px] text-sky-100/70 mt-1 leading-relaxed">
+                Enter the anonymous breakroom to cope, vent, and find local happy hours.
+              </p>
+              <div className="mt-4 inline-flex items-center justify-center w-full h-9 rounded-md bg-sky-500 text-sky-950 font-bold text-[12px] group-hover:bg-sky-400 transition">
+                Continue to Breakroom →
+              </div>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setIntent("merchant")}
+              className="group text-left rounded-xl border border-amber-400/40 bg-gradient-to-br from-amber-500/10 via-red-500/5 to-transparent p-5 hover:border-amber-300/70 hover:bg-amber-500/15 transition shadow-[0_0_30px_rgba(251,191,36,0.12)]"
+            >
+              <div className="inline-grid place-items-center size-10 rounded-lg bg-amber-500/20 border border-amber-400/40 text-amber-200 mb-3">
+                <Beer className="size-5" />
+              </div>
+              <h3 className="font-bold text-base text-amber-100">Pub & Restaurant Owner 🍻</h3>
+              <p className="text-[12px] text-amber-100/70 mt-1 leading-relaxed">
+                Deploy live flash deals, capture local foot traffic, and manage your ₹599/week sponsorship.
+              </p>
+              <div className="mt-4 inline-flex items-center justify-center w-full h-9 rounded-md bg-amber-500 text-amber-950 font-bold text-[12px] group-hover:bg-amber-400 transition">
+                Access Merchant Portal →
+              </div>
+            </button>
+          </div>
+        ) : (
+          <div className="space-y-4 pt-2">
+            <Button
+              type="button"
+              onClick={handleGoogle}
+              disabled={googleBusy}
+              variant="outline"
+              className="w-full h-11 gap-2 border-border bg-card hover:bg-muted/60 font-semibold"
+            >
+              <GoogleGlyph />
+              {googleBusy ? "Opening Google…" : "Continue with Google"}
             </Button>
-          </form>
 
-          <button
-            type="button"
-            onClick={() => setMode(mode === "signup" ? "signin" : "signup")}
-            className="w-full text-center text-[12px] text-muted-foreground hover:text-foreground transition"
-          >
-            {mode === "signup" ? (
-              <>Already have an account? <span className="text-amber-300 font-semibold">Sign in</span></>
-            ) : (
-              <>New here? <span className="text-amber-300 font-semibold">Create an account</span></>
-            )}
-          </button>
+            <div className="flex items-center gap-2 text-[10px] uppercase tracking-wider text-muted-foreground">
+              <div className="h-px flex-1 bg-border" />
+              or with email
+              <div className="h-px flex-1 bg-border" />
+            </div>
 
-          <p className="text-[11px] text-muted-foreground/80 leading-relaxed">
-            🔒 No inbox round-trip — you're in instantly. Email is <span className="font-semibold text-foreground/80">never</span> shown publicly; posts appear under a corporate alias.
-          </p>
-        </div>
+            <form onSubmit={handleSubmit} className="space-y-2">
+              {intent === "merchant" && mode === "signup" && (
+                <div className="relative">
+                  <Beer className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+                  <Input
+                    type="text"
+                    placeholder="Your pub / restaurant name"
+                    value={pubName}
+                    onChange={(e) => setPubName(e.target.value)}
+                    className="pl-9 h-11"
+                    maxLength={120}
+                  />
+                </div>
+              )}
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+                <Input
+                  type="email"
+                  placeholder={intent === "merchant" ? "owner@yourpub.com" : "you@gmail.com (personal — not work)"}
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  autoComplete="email"
+                  className="pl-9 h-11"
+                  required
+                />
+              </div>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+                <Input
+                  type="password"
+                  placeholder={mode === "signup" ? "Create a password (min 8 chars)" : "Your password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  autoComplete={mode === "signup" ? "new-password" : "current-password"}
+                  className="pl-9 h-11"
+                  minLength={8}
+                  required
+                />
+              </div>
+              <Button
+                type="submit"
+                disabled={busy}
+                className={`w-full h-11 font-semibold ${
+                  intent === "merchant"
+                    ? "bg-amber-500 hover:bg-amber-400 text-amber-950"
+                    : "bg-sky-500 hover:bg-sky-400 text-sky-950"
+                }`}
+              >
+                {busy
+                  ? mode === "signup" ? "Creating account…" : "Signing in…"
+                  : mode === "signup"
+                    ? intent === "merchant" ? "Activate Merchant Portal 🍻" : "Enter Breakroom 👔"
+                    : "Sign in 🚪"}
+              </Button>
+            </form>
+
+            <button
+              type="button"
+              onClick={() => setMode(mode === "signup" ? "signin" : "signup")}
+              className="w-full text-center text-[12px] text-muted-foreground hover:text-foreground transition"
+            >
+              {mode === "signup" ? (
+                <>Already have an account? <span className="text-amber-300 font-semibold">Sign in</span></>
+              ) : (
+                <>New here? <span className="text-amber-300 font-semibold">Create an account</span></>
+              )}
+            </button>
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   );
