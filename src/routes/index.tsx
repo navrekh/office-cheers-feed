@@ -1656,6 +1656,40 @@ function Index() {
                     </div>
                   )}
 
+                  {/* Uploaded bar pic preview */}
+                  {attachedUrl && (
+                    <div className="pl-14">
+                      <div className="relative inline-block rounded-xl overflow-hidden border border-amber-500/30 bg-black/40">
+                        <img
+                          src={attachedUrl}
+                          alt="Attached bar pic"
+                          loading="lazy"
+                          className="max-h-48 w-auto object-cover"
+                        />
+                        <button
+                          type="button"
+                          onClick={clearAttachedPic}
+                          className="absolute top-1.5 right-1.5 size-6 rounded-full bg-black/70 text-white grid place-items-center text-xs hover:bg-black"
+                          aria-label="Remove attached image"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  <input
+                    ref={picInputRef}
+                    type="file"
+                    accept="image/jpeg,image/jpg,image/png"
+                    className="hidden"
+                    onChange={(e) => {
+                      const f = e.target.files?.[0];
+                      e.target.value = "";
+                      if (f) void handlePicSelected(f);
+                    }}
+                  />
+
                   <div className="flex items-center gap-2 flex-wrap pl-14">
                     <button
                       type="button"
@@ -1663,6 +1697,22 @@ function Index() {
                       className="inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 border border-primary/40 bg-primary/10 text-primary text-[12px] font-bold hover:bg-primary/20 hover:border-primary/60 transition"
                     >
                       🎬 Add GIF
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => triggerPicUpload("bar")}
+                      disabled={uploadingPic !== null || !!attachedUrl}
+                      className="inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 border border-amber-500/40 bg-amber-500/10 text-amber-200 text-[12px] font-bold hover:bg-amber-500/20 hover:border-amber-500/60 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {uploadingPic === "bar" ? "Uploading…" : "📷 Bar pic"}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => triggerPicUpload("tasting")}
+                      disabled={uploadingPic !== null || !!attachedUrl}
+                      className="inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 border border-amber-500/40 bg-amber-500/10 text-amber-200 text-[12px] font-bold hover:bg-amber-500/20 hover:border-amber-500/60 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {uploadingPic === "tasting" ? "Uploading…" : "📷 Tasting"}
                     </button>
                     {vibeId && (
                       <span className="inline-flex items-center gap-1 rounded-full px-2 py-1 text-[10px] font-bold border border-border bg-muted/40">
@@ -1680,7 +1730,7 @@ function Index() {
                     <div className="ml-auto">
                       <Button
                         type="submit"
-                        disabled={(!body.trim() && !gifUrl && !vibeId) || submitting}
+                        disabled={(!body.trim() && !gifUrl && !vibeId && !attachedUrl) || submitting || uploadingPic !== null}
                         className="rounded-full px-5 font-semibold"
                       >
                         {submitting ? "Pouring…" : "Post 🍻"}
