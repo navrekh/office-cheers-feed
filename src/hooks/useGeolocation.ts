@@ -33,15 +33,23 @@ function writeCache(c: LatLng) {
  * exposed beyond this hook's internal closure.
  */
 export function useGeolocation() {
-  const [coords, setCoords] = useState<LatLng | null>(() => readCache());
-  const [status, setStatus] = useState<Status>(() => (readCache() ? "granted" : "idle"));
+  // Always start with a stable SSR-safe state so the server-rendered HTML
+  // matches the first client render. Cache hydration happens inside the
+  // effect below, after mount.
+  const [coords, setCoords] = useState<LatLng | null>(null);
+  const [status, setStatus] = useState<Status>("idle");
 
   useEffect(() => {
+    const cached = readCache();
+    if (cached) {
+      setCoords(cached);
+      setStatus("granted");
+      return;
+    }
     if (typeof navigator === "undefined" || !navigator.geolocation) {
       setStatus("unavailable");
       return;
     }
-    if (coords) return; // already have a recent jittered fix
 
     setStatus("prompting");
     navigator.geolocation.getCurrentPosition(
@@ -58,7 +66,6 @@ export function useGeolocation() {
       () => setStatus("denied"),
       { enableHighAccuracy: true, maximumAge: 5 * 60 * 1000, timeout: 10_000 }
     );
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return { coords, status };
