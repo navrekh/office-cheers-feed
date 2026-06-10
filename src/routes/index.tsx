@@ -21,6 +21,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
+import { Switch } from "@/components/ui/switch";
 
 import {
   Home,
@@ -141,7 +142,13 @@ function Index() {
   const cheeredRef = useRef<Set<string>>(new Set());
   const [hangoverIndex, setHangoverIndex] = useState<number>(37);
   const [sortMode, setSortMode] = useState<"recent" | "top">("recent");
+  const [anonymous, setAnonymous] = useState(false);
   const [, force] = useState(0);
+
+  const ANON_NAME = "Anonymous Colleague";
+  const ANON_HEADLINE = "Incognito | Drinking to Cope";
+  const displayName = anonymous ? ANON_NAME : authorName;
+  const displayHeadline = anonymous ? ANON_HEADLINE : authorHeadline;
 
 
 
@@ -233,8 +240,8 @@ function Index() {
     const { data, error } = await (supabase as any)
       .from("posts")
       .insert({
-        author_name: authorName || "Anonymous Intern",
-        author_headline: authorHeadline || "Specializing in Liquid Refactoring",
+        author_name: anonymous ? ANON_NAME : (authorName || "Anonymous Intern"),
+        author_headline: anonymous ? ANON_HEADLINE : (authorHeadline || "Specializing in Liquid Refactoring"),
         body_text: body.trim(),
       })
       .select()
@@ -403,7 +410,7 @@ function Index() {
             <NavItem icon={<Users className="size-5" />} label="Bar Hop" active={view === "barhop"} onClick={() => setView("barhop")} />
             <NavItem icon={<Beer className="size-5" />} label="Pubs" active={view === "pubs"} onClick={() => setView("pubs")} />
             <NavItem icon={<MessageSquare className="size-5" />} label="Messages" active={view === "messages"} onClick={() => setView("messages")} />
-            <NavItem icon={<Bell className="size-5" />} label="Notifications" badge={9} active={view === "notifications"} onClick={() => setView("notifications")} />
+            <NavItem icon={<Bell className="size-5" />} label="Notifications" badge={4} active={view === "notifications"} onClick={() => setView("notifications")} />
           </nav>
         </div>
       </header>
@@ -482,40 +489,51 @@ function Index() {
               <Card className="p-4 border-border">
                 <form onSubmit={submitPost} className="space-y-3">
                   <div className="flex items-start gap-3">
-                    <div className="size-11 shrink-0 rounded-full bg-primary/20 grid place-items-center text-lg font-bold text-primary">
-                      {initials(authorName)}
+                    <div className={`size-11 shrink-0 rounded-full grid place-items-center text-lg font-bold transition-colors ${anonymous ? "bg-muted text-muted-foreground" : "bg-primary/20 text-primary"}`}>
+                      {anonymous ? "🎭" : initials(authorName)}
                     </div>
                     <div className="flex-1 space-y-2 min-w-0">
                       <div className="flex items-center gap-2">
                         <Input
-                          value={authorName}
+                          value={displayName}
                           onChange={(e) => setAuthorName(e.target.value)}
                           placeholder="Your corporate alias"
-                          className="h-8 text-xs bg-transparent border-dashed flex-1"
+                          disabled={anonymous}
+                          className="h-8 text-xs bg-transparent border-dashed flex-1 disabled:opacity-70"
                         />
                         <button
                           type="button"
                           onClick={randomize}
+                          disabled={anonymous}
                           title="Randomize a corporate identity"
-                          className="shrink-0 inline-flex items-center gap-1 h-8 px-2.5 rounded-md text-[11px] font-semibold border border-primary/40 text-primary hover:bg-primary/15 hover:border-primary transition"
+                          className="shrink-0 inline-flex items-center gap-1 h-8 px-2.5 rounded-md text-[11px] font-semibold border border-primary/40 text-primary hover:bg-primary/15 hover:border-primary transition disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent"
                         >
                           <Shuffle className="size-3.5" />
                           Randomize
                         </button>
                       </div>
                       <Input
-                        value={authorHeadline}
+                        value={displayHeadline}
                         onChange={(e) => setAuthorHeadline(e.target.value)}
                         placeholder="Your parody headline"
-                        className="h-8 text-xs bg-transparent border-dashed italic text-muted-foreground"
+                        disabled={anonymous}
+                        className="h-8 text-xs bg-transparent border-dashed italic text-muted-foreground disabled:opacity-70"
                       />
                       <Textarea
                         value={body}
                         onChange={(e) => setBody(e.target.value)}
-                        placeholder="Start a post… overshare about your 4pm Aperol."
+                        placeholder={anonymous ? "Spill the corporate tea anonymously…" : "Start a post… overshare about your 4pm Aperol."}
                         className="resize-none min-h-24 bg-muted/40 border-border rounded-xl text-[15px] focus-visible:bg-background"
                       />
                     </div>
+                  </div>
+                  <div className="flex items-center gap-3 pl-14">
+                    <label className={`flex items-center gap-2 cursor-pointer rounded-md px-2.5 py-1.5 border transition ${anonymous ? "border-primary/50 bg-primary/10" : "border-border hover:bg-muted/40"}`}>
+                      <Switch checked={anonymous} onCheckedChange={setAnonymous} aria-label="Post anonymously" />
+                      <span className="text-[11px] font-semibold">
+                        Post Anonymously <span className="text-muted-foreground font-normal">(Confession Mode 🎭)</span>
+                      </span>
+                    </label>
                   </div>
                   <div className="flex items-center gap-1 flex-wrap pl-14">
                     <ComposerChip icon={<ImageIcon className="size-4 text-accent" />} label="Bar pic" />
@@ -621,25 +639,27 @@ function Index() {
               )}
 
 
-              {orderedPosts.map((p) => (
-                <PostCard
-                  key={p.id}
-                  post={p}
-                  comments={commentsByPost[p.id] || []}
-                  onCheers={() => cheers(p)}
-                  onComment={(text, name) => addComment(p.id, text, name)}
-                  onShare={() => sharePost(p.id)}
-                  cheered={cheeredRef.current.has(p.id)}
-                  highlighted={p.id === highlightedId}
-                />
-              ))}
+              <div key={sortMode} className="space-y-3 animate-fade-in">
+                {orderedPosts.map((p) => (
+                  <PostCard
+                    key={p.id}
+                    post={p}
+                    comments={commentsByPost[p.id] || []}
+                    onCheers={() => cheers(p)}
+                    onComment={(text, name) => addComment(p.id, text, name)}
+                    onShare={() => sharePost(p.id)}
+                    cheered={cheeredRef.current.has(p.id)}
+                    highlighted={p.id === highlightedId}
+                  />
+                ))}
+              </div>
             </>
           )}
 
           {view === "pubs" && <PubsView />}
           {view === "barhop" && <BarHopView />}
           {view === "messages" && <ComingSoonView title="Messages" emoji="📬" copy="Your DMs are too embarrassing. We're protecting you from yourself." />}
-          {view === "notifications" && <ComingSoonView title="Notifications" emoji="🔔" copy="9 people Cheered your hangover. 1 recruiter wants a 'quick coffee' (it's tequila)." />}
+          {view === "notifications" && <NotificationsView />}
         </section>
 
 
@@ -710,7 +730,7 @@ function NavItem({
       <div className="relative">
         {icon}
         {badge ? (
-          <span className="absolute -top-1.5 -right-2 bg-destructive text-destructive-foreground text-[9px] font-bold rounded-full size-4 grid place-items-center">
+          <span className="absolute -top-1.5 -right-2 bg-primary text-primary-foreground text-[9px] font-bold rounded-full size-4 grid place-items-center shadow-[0_0_10px_var(--primary)] animate-notif-glow">
             {badge}
           </span>
         ) : null}
@@ -1270,4 +1290,69 @@ function BuzzwordDecrypter() {
     </Card>
   );
 }
+
+const MOCK_NOTIFICATIONS = [
+  {
+    emoji: "⚠️",
+    title: "HR flagged your 'Hangover Index' status as highly accurate.",
+    meta: "People Operations · 2m",
+    tone: "border-destructive/40 bg-destructive/5",
+  },
+  {
+    emoji: "🚨",
+    title: "Your Project Manager added a 4:45 PM sync call. System recommends opening a cold one.",
+    meta: "Calendar AI · 14m",
+    tone: "border-accent/40 bg-accent/5",
+  },
+  {
+    emoji: "🍻",
+    title: "12 colleagues from your previous company just clicked 'Cheers' on your liquid refactoring post.",
+    meta: "Engagement · 1h",
+    tone: "border-primary/40 bg-primary/5",
+  },
+  {
+    emoji: "📈",
+    title: "Your team's aggregate blood alcohol content has reached synergistic alignment.",
+    meta: "Team Analytics · 3h",
+    tone: "border-chart-3/40 bg-chart-3/5",
+  },
+];
+
+function NotificationsView() {
+  return (
+    <div className="space-y-3 animate-fade-in">
+      <Card className="p-4 border-border flex items-center justify-between">
+        <div>
+          <h2 className="font-display text-xl font-bold leading-tight">Notifications</h2>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            4 new corporate alerts requiring immediate liquid attention.
+          </p>
+        </div>
+        <span className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-bold bg-primary text-primary-foreground shadow-[0_0_12px_var(--primary)] animate-notif-glow">
+          <Bell className="size-3.5" /> 4 new
+        </span>
+      </Card>
+      {MOCK_NOTIFICATIONS.map((n, i) => (
+        <Card
+          key={i}
+          className={`p-4 border ${n.tone} hover:translate-x-0.5 transition cursor-pointer`}
+        >
+          <div className="flex items-start gap-3">
+            <div className="size-10 shrink-0 rounded-full bg-card border border-border grid place-items-center text-lg">
+              {n.emoji}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm leading-snug text-foreground/95">{n.title}</p>
+              <p className="text-[11px] text-muted-foreground mt-1">{n.meta}</p>
+            </div>
+            <button className="text-muted-foreground hover:text-foreground p-1 shrink-0">
+              <MoreHorizontal className="size-4" />
+            </button>
+          </div>
+        </Card>
+      ))}
+    </div>
+  );
+}
+
 
