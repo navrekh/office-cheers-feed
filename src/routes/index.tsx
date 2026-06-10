@@ -289,7 +289,8 @@ function Index() {
   }, []);
 
   const sharePost = useCallback(async (postId: string) => {
-    const url = `${window.location.origin}${window.location.pathname}?post=${postId}`;
+    // Production-canonical share URL (always points to drinkedin.me regardless of preview host)
+    const url = `https://drinkedin.me/?post=${postId}`;
     try {
       await navigator.clipboard.writeText(url);
       toast.success("Link copied to clipboard! 🍻", {
@@ -301,6 +302,21 @@ function Index() {
       });
     }
   }, []);
+
+  // Lightweight, anonymous click tracker for the TokenLens banner CTA
+  const trackTokenLensClick = useCallback(() => {
+    const event = {
+      event: "tokenlens_banner_click",
+      ts: new Date().toISOString(),
+      path: typeof window !== "undefined" ? window.location.pathname : "/",
+    };
+    console.log("[DrinkedIn Analytics]", event);
+    if (typeof window !== "undefined") {
+      const w = window as any;
+      (w.__drinkedinEvents ||= []).push(event);
+    }
+  }, []);
+
 
   // Sort posts with highlighted one pinned at top
   const orderedPosts = useMemo(() => {
