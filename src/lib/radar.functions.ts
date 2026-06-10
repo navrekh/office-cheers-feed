@@ -1,5 +1,4 @@
 import { createServerFn } from "@tanstack/react-start";
-import { getRequestHeader } from "@tanstack/react-start/server";
 
 const WINDOW_MS = 3 * 60 * 60 * 1000;
 const EARTH_KM = 6371;
@@ -57,6 +56,7 @@ export const getScrubbedRadarBlips = createServerFn({ method: "POST" })
     };
   })
   .handler(async ({ data }): Promise<ScrubbedBlipsResult> => {
+    const { getRequestHeader } = await import("@tanstack/react-start/server");
     const { supabaseAdmin } = await import(
       "@/integrations/supabase/client.server"
     );
