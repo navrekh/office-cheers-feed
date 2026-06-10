@@ -276,6 +276,12 @@ type PendingDraft = {
 };
 
 function Index() {
+  // Live geolocation (jittered). Coords here are ALREADY fuzzed by ±50–100 m
+  // before they leave the useGeolocation hook — precise lat/lng never reach
+  // the database or any other client. Declared first so all submit/insert
+  // callbacks below can close over it.
+  const { coords: geoCoords, status: geoStatus } = useGeolocation();
+
   const [posts, setPosts] = useState<Post[]>([]);
   const [commentsByPost, setCommentsByPost] = useState<Record<string, Comment[]>>({});
   const [body, setBody] = useState("");
@@ -1126,11 +1132,6 @@ function Index() {
     setSelectedCityState(getSelectedCity());
     return subscribeCity(setSelectedCityState);
   }, []);
-
-  // Live geolocation (jittered). Coords here are ALREADY fuzzed by ±50–100 m
-  // before they leave the useGeolocation hook — precise lat/lng never reach
-  // the database or any other client.
-  const { coords: geoCoords, status: geoStatus } = useGeolocation();
 
   // Drop a "browsing_deals" presence beacon whenever we first acquire a fix.
   useEffect(() => {
