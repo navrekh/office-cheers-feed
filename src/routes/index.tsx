@@ -570,9 +570,8 @@ function Index() {
   }, []);
     if (typeof window !== "undefined") {
       const w = window as any;
-      (w.__drinkedinEvents ||= []).push(event);
-    }
-  }, []);
+
+
 
 
   // Sort posts by selected mode, then pin highlighted post at top
