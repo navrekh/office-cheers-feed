@@ -56,7 +56,20 @@ function saveHeading(s: HeadingState) {
   } catch {}
 }
 
-export default function VerifiedWateringHole({ onRequireAuth }: { onRequireAuth?: () => boolean } = {}) {
+type VerifiedProps = {
+  onRequireAuth?: () => boolean;
+  profile?: Profile | null;
+  userId?: string | null;
+  onProfileUpdated?: (p: Profile) => void;
+};
+
+export default function VerifiedWateringHole({
+  onRequireAuth,
+  profile = null,
+  userId = null,
+  onProfileUpdated,
+}: VerifiedProps = {}) {
+  const [merchantDashOpen, setMerchantDashOpen] = useState(false);
   const [open, setOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
