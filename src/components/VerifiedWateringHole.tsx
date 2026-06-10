@@ -54,7 +54,7 @@ function saveHeading(s: HeadingState) {
   } catch {}
 }
 
-export default function VerifiedWateringHole() {
+export default function VerifiedWateringHole({ onRequireAuth }: { onRequireAuth?: () => boolean } = {}) {
   const [open, setOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
