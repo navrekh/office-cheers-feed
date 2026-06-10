@@ -783,6 +783,7 @@ function Index() {
         author_headline: anonymous ? ANON_HEADLINE : (authorHeadline || "Specializing in Liquid Refactoring"),
         body_text: composed,
         user_id: user?.id ?? null,
+        post_type: "user",
       })
       .select()
       .single();
