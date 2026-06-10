@@ -8,6 +8,9 @@ import {
   generateSimulatedPost,
   isSimulatedPost,
 } from "@/lib/mockFeed";
+import { encodePostMeta, decodePostMeta } from "@/lib/postMeta";
+import { VIBES, getVibe } from "@/lib/vibes";
+import { GifPicker } from "@/components/GifPicker";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -233,6 +236,9 @@ function Index() {
     "Senior Program Manager | Specialize in Liquid Refactoring"
   );
   const [submitting, setSubmitting] = useState(false);
+  const [gifUrl, setGifUrl] = useState<string | null>(null);
+  const [vibeId, setVibeId] = useState<string | null>(null);
+  const [gifPickerOpen, setGifPickerOpen] = useState(false);
   const [view, setView] = useState<ViewKey>("home");
   const [highlightedId, setHighlightedId] = useState<string | null>(null);
   const [feedLoading, setFeedLoading] = useState(true);
