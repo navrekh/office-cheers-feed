@@ -79,6 +79,9 @@ import {
   type CityKey,
   type Merchant,
 } from "@/lib/cityStore";
+import { useGeolocation } from "@/hooks/useGeolocation";
+import { getOrCreateSessionId, haversineKm } from "@/lib/geo";
+import { LiveWorkspaceRadar } from "@/components/LiveWorkspaceRadar";
 
 // ---------- Client-side spam guard ----------
 const RATE_KEY = "drinkedin.rate.posts";
@@ -882,12 +885,25 @@ function Index() {
         user_id: user?.id ?? null,
         post_type: "user",
         attached_visual_url: attachedUrl ?? null,
+        latitude: geoCoords?.latitude ?? null,
+        longitude: geoCoords?.longitude ?? null,
       })
       .select()
       .single();
     if (!error && data) {
       recordPostTimestamp();
       try { localStorage.removeItem(PENDING_DRAFT_KEY); } catch {}
+      // Fire a presence beacon so the radar lights up for nearby colleagues.
+      if (geoCoords) {
+        void (supabase as any).from("check_ins").insert({
+          session_id: getOrCreateSessionId(),
+          user_id: user?.id ?? null,
+          activity: "posting",
+          city: selectedCity,
+          latitude: geoCoords.latitude,
+          longitude: geoCoords.longitude,
+        });
+      }
       setPosts((prev) => (prev.some((p) => p.id === data.id) ? prev : [data as Post, ...prev]));
       setBody("");
       setGifUrl(null);
@@ -1108,6 +1124,26 @@ function Index() {
     setSelectedCityState(getSelectedCity());
     return subscribeCity(setSelectedCityState);
   }, []);
+
+  // Live geolocation (jittered). Coords here are ALREADY fuzzed by ±50–100 m
+  // before they leave the useGeolocation hook — precise lat/lng never reach
+  // the database or any other client.
+  const { coords: geoCoords, status: geoStatus } = useGeolocation();
+
+  // Drop a "browsing_deals" presence beacon whenever we first acquire a fix.
+  useEffect(() => {
+    if (!geoCoords) return;
+    const sessionId = getOrCreateSessionId();
+    void (supabase as any).from("check_ins").insert({
+      session_id: sessionId,
+      user_id: user?.id ?? null,
+      activity: "browsing_deals",
+      city: selectedCity,
+      latitude: geoCoords.latitude,
+      longitude: geoCoords.longitude,
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [geoCoords?.latitude, geoCoords?.longitude]);
 
   // Sort posts by selected mode, inject merchant ads at fixed slots, pin highlighted
   // Employee of the Day — most-cheered real user post in the last 24h.
