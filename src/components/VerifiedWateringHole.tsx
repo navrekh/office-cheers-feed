@@ -466,7 +466,16 @@ export default function VerifiedWateringHole({
                   {submitting ? "Submitting…" : "Submit Sponsorship Request"}
                 </Button>
                 <p className="text-[10px] text-muted-foreground/70 text-center">
-                  No login needed. We'll reach out within 2 hours.
+                  No login needed. We'll reach out within 2 hours — or{" "}
+                  <a
+                    href="https://rzp.io/rzp/qFoLyja"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-amber-300 hover:text-amber-200 underline underline-offset-2 font-semibold"
+                  >
+                    pay ₹599 now
+                  </a>{" "}
+                  to go live instantly (1-week slot).
                 </p>
               </form>
             </>
