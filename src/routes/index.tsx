@@ -713,7 +713,19 @@ function Index() {
       {/* Top Nav */}
       <header className="sticky top-0 z-40 bg-card/95 backdrop-blur border-b border-border shadow-sm">
         <div className="mx-auto max-w-7xl px-4 h-14 flex items-center gap-3">
-          <div className="flex items-center gap-2">
+          <div
+            className="flex items-center gap-2 select-none"
+            onPointerDown={() => {
+              if (logoPressTimer.current) clearTimeout(logoPressTimer.current);
+              logoPressTimer.current = setTimeout(() => setDevOpen(true), 5000);
+            }}
+            onPointerUp={() => {
+              if (logoPressTimer.current) { clearTimeout(logoPressTimer.current); logoPressTimer.current = null; }
+            }}
+            onPointerLeave={() => {
+              if (logoPressTimer.current) { clearTimeout(logoPressTimer.current); logoPressTimer.current = null; }
+            }}
+          >
             <div className="size-9 rounded-md bg-primary text-primary-foreground grid place-items-center font-black text-lg">
               🍻
             </div>
