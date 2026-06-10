@@ -134,6 +134,7 @@ export type Database = {
       }
       posts: {
         Row: {
+          attached_visual_url: string | null
           author_headline: string
           author_name: string
           body_text: string
@@ -150,6 +151,7 @@ export type Database = {
           valid_votes: number
         }
         Insert: {
+          attached_visual_url?: string | null
           author_headline?: string
           author_name: string
           body_text: string
@@ -166,6 +168,7 @@ export type Database = {
           valid_votes?: number
         }
         Update: {
+          attached_visual_url?: string | null
           author_headline?: string
           author_name?: string
           body_text?: string
