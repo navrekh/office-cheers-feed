@@ -507,14 +507,17 @@ function NavItem({
   label,
   active,
   badge,
+  onClick,
 }: {
   icon: React.ReactNode;
   label: string;
   active?: boolean;
   badge?: number;
+  onClick?: () => void;
 }) {
   return (
     <button
+      onClick={onClick}
       className={`relative flex flex-col items-center justify-center px-3 py-1 min-w-[64px] text-[11px] transition-colors ${
         active
           ? "text-foreground border-b-2 border-primary -mb-px"
