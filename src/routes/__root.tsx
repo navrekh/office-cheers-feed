@@ -78,15 +78,31 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "DrinkedIn 🍻 — The world's largest corporate drinking network" },
-      { name: "description", content: "DrinkedIn is the professional network for corporate workers who refuse to network sober. Happy hours, hangover takes, and liquid leadership." },
+      { title: "DrinkedIn 🍻 - The Anti-Corporate Parody Feed" },
+      {
+        name: "description",
+        content:
+          "The premier network for corporate workers to log happy hours, navigate toxic productivity, and announce liquid refactoring milestones. Disagree? Let's take it offline.",
+      },
       { name: "author", content: "DrinkedIn" },
-      { property: "og:title", content: "DrinkedIn 🍻 — The world's largest corporate drinking network" },
-      { property: "og:description", content: "Where ambitious professionals come to overshare about happy hour." },
+      { property: "og:title", content: "DrinkedIn 🍻 - The Anti-Corporate Parody Feed" },
+      {
+        property: "og:description",
+        content:
+          "The premier network for corporate workers to log happy hours, navigate toxic productivity, and announce liquid refactoring milestones. Disagree? Let's take it offline.",
+      },
       { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary" },
-      { name: "twitter:site", content: "@Lovable" },
+      { property: "og:url", content: "https://drinkedin.me/" },
+      { property: "og:site_name", content: "DrinkedIn" },
+      { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "DrinkedIn 🍻 - The Anti-Corporate Parody Feed" },
+      {
+        name: "twitter:description",
+        content:
+          "The premier network for corporate workers to log happy hours, navigate toxic productivity, and announce liquid refactoring milestones. Disagree? Let's take it offline.",
+      },
     ],
+
     links: [
       {
         rel: "stylesheet",
