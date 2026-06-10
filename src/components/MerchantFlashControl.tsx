@@ -149,6 +149,39 @@ export default function MerchantFlashControl({ profile }: Props) {
           <Skeleton className="h-8 w-full" />
           <Skeleton className="h-10 w-full" />
         </div>
+      ) : expired ? (
+        <div className="space-y-3 relative">
+          <div className="rounded-md border border-red-400/50 bg-red-500/10 p-3 text-[12px] leading-snug text-red-100">
+            <div className="font-bold text-[13px] mb-1">
+              ⚠️ Your 1-Week Advertisement Slot Has Expired
+            </div>
+            <p className="text-red-100/85">
+              Your flash deal is currently hidden from the local tech-hub feed.
+              Renew below to instantly republish to every active browser in
+              your city.
+            </p>
+            {row?.expires_at && (
+              <p className="text-[10px] text-red-200/70 mt-2 font-mono">
+                Expired {new Date(row.expires_at).toLocaleString()}
+              </p>
+            )}
+          </div>
+          <Button
+            asChild
+            className="w-full bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 hover:brightness-110 text-amber-950 font-bold text-[12px] h-10 shadow-[0_0_22px_rgba(251,191,36,0.55)]"
+          >
+            <a
+              href="https://rzp.io/rzp/qFoLyja"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Renew Slot for ₹599 / Week 🍻
+            </a>
+          </Button>
+          <p className="text-[10px] text-muted-foreground/80 text-center">
+            Payment confirmation auto-republishes your deal on the next save.
+          </p>
+        </div>
       ) : (
         <div className="space-y-3 relative">
           <div>
