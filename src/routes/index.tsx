@@ -287,10 +287,12 @@ function Index() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [commentsByPost, setCommentsByPost] = useState<Record<string, Comment[]>>({});
   const [body, setBody] = useState("");
-  const [authorName, setAuthorName] = useState("Alex Morgan");
-  const [authorHeadline, setAuthorHeadline] = useState(
-    "Senior Program Manager | Specialize in Liquid Refactoring"
-  );
+  // Identity is resolved from the live Supabase session below. `authorName`
+  // is ONLY populated when the user explicitly types a custom pseudonym
+  // (Priority 1). Otherwise the cascade falls through to email prefix →
+  // "Anonymous Guest". No mock seed names live here anymore.
+  const [authorName, setAuthorName] = useState("");
+  const [authorHeadline, setAuthorHeadline] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [gifUrl, setGifUrl] = useState<string | null>(null);
   const [vibeId, setVibeId] = useState<string | null>(null);
@@ -629,8 +631,25 @@ function Index() {
 
   const ANON_NAME = "Anonymous Colleague";
   const ANON_HEADLINE = "Incognito | Drinking to Cope";
-  const displayName = anonymous ? ANON_NAME : authorName;
-  const displayHeadline = anonymous ? ANON_HEADLINE : authorHeadline;
+  const GUEST_NAME = "Anonymous Guest 🕵️‍♂️";
+
+  // Cascading identity resolution — runs on every render so the moment
+  // `onAuthStateChange` fires inside useAuth and updates `user`, this
+  // recomputes and the composer + sidebar flip to the new pseudonym
+  // without any manual reload.
+  //   P1: user-typed custom alias (anything in the Input box)
+  //   P2: local-part of the verified auth email (e.g. dev_guy99 🎭)
+  //   P3: logged-out fallback → Anonymous Guest 🕵️‍♂️
+  const typedAlias = authorName.trim();
+  const resolvedName = typedAlias
+    ? typedAlias
+    : user
+      ? `${emailPrefix(user.email)} 🎭`
+      : GUEST_NAME;
+  const resolvedHeadline = authorHeadline.trim() || (user ? "Signed in · feed alias stays anonymous" : "Off-the-clock preview mode");
+
+  const displayName = anonymous ? ANON_NAME : resolvedName;
+  const displayHeadline = anonymous ? ANON_HEADLINE : resolvedHeadline;
 
 
 
