@@ -568,8 +568,8 @@ function Index() {
       path: window.location.pathname,
     });
   }, []);
-    if (typeof window !== "undefined") {
-      const w = window as any;
+
+
 
 
 
