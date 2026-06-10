@@ -135,21 +135,37 @@ function Index() {
 
   useEffect(() => {
     let mounted = true;
-    (async () => {
-      const [{ data: postRows }, { data: commentRows }] = await Promise.all([
-        (supabase as any).from("posts").select("*").order("created_at", { ascending: false }),
-        (supabase as any).from("comments").select("*").order("created_at", { ascending: true }),
-      ]);
+    let retryTimer: ReturnType<typeof setTimeout> | null = null;
+
+    async function loadFeed() {
       if (!mounted) return;
-      if (postRows) setPosts(postRows as Post[]);
-      if (commentRows) {
-        const grouped: Record<string, Comment[]> = {};
-        (commentRows as Comment[]).forEach((c) => {
-          (grouped[c.post_id] ||= []).push(c);
-        });
-        setCommentsByPost(grouped);
+      setFeedError(null);
+      try {
+        const [postsRes, commentsRes] = await Promise.all([
+          (supabase as any).from("posts").select("*").order("created_at", { ascending: false }),
+          (supabase as any).from("comments").select("*").order("created_at", { ascending: true }),
+        ]);
+        if (!mounted) return;
+        if (postsRes.error) throw postsRes.error;
+        if (commentsRes.error) throw commentsRes.error;
+        if (postsRes.data) setPosts(postsRes.data as Post[]);
+        if (commentsRes.data) {
+          const grouped: Record<string, Comment[]> = {};
+          (commentsRes.data as Comment[]).forEach((c) => {
+            (grouped[c.post_id] ||= []).push(c);
+          });
+          setCommentsByPost(grouped);
+        }
+        setFeedLoading(false);
+      } catch (err: any) {
+        console.warn("[DrinkedIn] feed load hiccup, retrying…", err?.message || err);
+        if (!mounted) return;
+        setFeedError("The bartender dropped the connection. Re-pouring…");
+        retryTimer = setTimeout(loadFeed, 3000);
       }
-    })();
+    }
+
+    loadFeed();
 
     const channel = (supabase as any)
       .channel("drinkedin-feed")
@@ -183,13 +199,20 @@ function Index() {
           });
         }
       )
-      .subscribe();
+      .subscribe((status: string) => {
+        // Gracefully surface transient realtime hiccups without breaking the UI
+        if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
+          console.warn("[DrinkedIn] realtime status:", status);
+        }
+      });
 
     return () => {
       mounted = false;
+      if (retryTimer) clearTimeout(retryTimer);
       (supabase as any).removeChannel(channel);
     };
   }, []);
+
 
   async function submitPost(e: FormEvent) {
     e.preventDefault();
