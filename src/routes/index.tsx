@@ -328,11 +328,11 @@ function Index() {
           </div>
 
           <nav className="flex items-center gap-1 ml-auto">
-            <NavItem icon={<Home className="size-5" />} label="Home" active />
-            <NavItem icon={<Users className="size-5" />} label="Bar Hop" />
-            <NavItem icon={<Beer className="size-5" />} label="Pubs" />
-            <NavItem icon={<MessageSquare className="size-5" />} label="Messages" />
-            <NavItem icon={<Bell className="size-5" />} label="Notifications" badge={9} />
+            <NavItem icon={<Home className="size-5" />} label="Home" active={view === "home"} onClick={() => setView("home")} />
+            <NavItem icon={<Users className="size-5" />} label="Bar Hop" active={view === "barhop"} onClick={() => setView("barhop")} />
+            <NavItem icon={<Beer className="size-5" />} label="Pubs" active={view === "pubs"} onClick={() => setView("pubs")} />
+            <NavItem icon={<MessageSquare className="size-5" />} label="Messages" active={view === "messages"} onClick={() => setView("messages")} />
+            <NavItem icon={<Bell className="size-5" />} label="Notifications" badge={9} active={view === "notifications"} onClick={() => setView("notifications")} />
           </nav>
         </div>
       </header>
