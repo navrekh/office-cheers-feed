@@ -137,14 +137,20 @@ function TrackPage() {
   async function deletePost() {
     if (!post) return;
     setDeleting(true);
-    const { data, error } = await (supabase as any).rpc("delete_post_by_ticket", { ticket });
-    if (error || !data) {
-      toast.error("Couldn't delete. Try again in a sec.");
+    try {
+      const { data, error } = await (supabase as any).rpc("delete_post_by_ticket", { ticket });
+      if (error || !data) {
+        toast.error("Couldn't delete. Try again in a sec.");
+        setDeleting(false);
+        return;
+      }
+      toast.success("Post deleted. 🗑️", { description: "Your evidence has been shredded." });
+      setTimeout(() => navigate({ to: "/" }), 800);
+    } catch (err) {
+      console.warn("[DrinkedIn] delete post failed", err);
+      toast.error("Network hiccup. Try again in a sec.");
       setDeleting(false);
-      return;
     }
-    toast.success("Post deleted. 🗑️", { description: "Your evidence has been shredded." });
-    setTimeout(() => navigate({ to: "/" }), 800);
   }
 
   const reach = post ? Math.max(post.cheers_count * 37, 128) : 0;
