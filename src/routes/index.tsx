@@ -305,6 +305,7 @@ function Index() {
   const cheeredRef = useRef<Set<string>>(new Set());
   const [hangoverIndex, setHangoverIndex] = useState<number>(37);
   const [sortMode, setSortMode] = useState<"recent" | "top" | "mine" | "tribunal">("recent");
+  const [proximity, setProximity] = useState<ProximityFilter>("city");
   const [notifOpen, setNotifOpen] = useState(false);
   const [notifUnread, setNotifUnread] = useState<number>(4);
   const [notifPulseKey, setNotifPulseKey] = useState<number>(0);
@@ -1595,7 +1596,24 @@ function Index() {
           {view === "home" && (
             <>
               {/* Live Workspace Radar — proximity-aware ambient ticker */}
-              <LiveWorkspaceRadar origin={geoCoords} geoStatus={geoStatus} />
+              <LiveWorkspaceRadar
+                origin={geoCoords}
+                geoStatus={geoStatus}
+                posts={posts.map((p) => ({
+                  id: p.id,
+                  latitude: (p as any).latitude ?? null,
+                  longitude: (p as any).longitude ?? null,
+                  created_at: p.created_at,
+                  author_name: p.author_name,
+                }))}
+                merchants={(MERCHANTS[selectedCity] ?? []).map((m) => ({
+                  id: m.id,
+                  name: m.name,
+                  area: m.area,
+                }))}
+                proximity={proximity}
+                onProximityChange={setProximity}
+              />
 
               {/* Composer */}
               <Card className="p-4 border-border">
