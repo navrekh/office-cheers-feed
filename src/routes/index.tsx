@@ -1180,7 +1180,19 @@ function Index() {
         .filter((p) => (p as any).user_id === user.id && !p.is_hidden)
         .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
     }
-    const visible = [...posts].filter((p) => !p.is_hidden);
+    const proximityKm = proximity === "tech-park" ? 0.5 : proximity === "lunch-dash" ? 2 : Infinity;
+    const visible = [...posts].filter((p) => {
+      if (p.is_hidden) return false;
+      if (proximityKm !== Infinity) {
+        if (!geoCoords) return true; // no fix yet → don't hide everything
+        const d = haversineKm(geoCoords, {
+          latitude: (p as any).latitude,
+          longitude: (p as any).longitude,
+        });
+        if (!isFinite(d) || d > proximityKm) return false;
+      }
+      return true;
+    });
     const sorted = visible.sort((a, b) => {
       if (sortMode === "top") return b.cheers_count - a.cheers_count;
       // "recent" mode: when we have a live geo fix, elevate physically-close
@@ -1201,15 +1213,17 @@ function Index() {
       return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
     });
 
-    // Inject merchant ads for the active city at slots 2 and 6
-    const merchants = MERCHANTS[selectedCity] ?? [];
+    // Inject merchant ads for the active city at slots 2 and 6.
+    // Skip ads when the user has narrowed the spatial filter — strict
+    // proximity modes should show only nearby colleague chatter.
+    const merchants = proximityKm === Infinity ? (MERCHANTS[selectedCity] ?? []) : [];
     const withAds: Post[] = [...sorted];
     if (merchants[0]) withAds.splice(Math.min(2, withAds.length), 0, merchantToPost(merchants[0], selectedCity));
     if (merchants[1]) withAds.splice(Math.min(6, withAds.length), 0, merchantToPost(merchants[1], selectedCity));
 
     // Pin Employee of the Day in "recent" mode.
     let withPin = withAds;
-    if (sortMode === "recent" && employeeOfDay) {
+    if (sortMode === "recent" && employeeOfDay && withAds.some((p) => p.id === employeeOfDay.id)) {
       const rest = withAds.filter((p) => p.id !== employeeOfDay.id);
       withPin = [employeeOfDay, ...rest];
     }
@@ -1218,7 +1232,7 @@ function Index() {
     const idx = withPin.findIndex((p) => p.id === highlightedId);
     if (idx < 0) return withPin;
     return [withPin[idx], ...withPin.slice(0, idx), ...withPin.slice(idx + 1)];
-  }, [posts, highlightedId, sortMode, selectedCity, user, employeeOfDay, geoCoords?.latitude, geoCoords?.longitude]);
+  }, [posts, highlightedId, sortMode, selectedCity, user, employeeOfDay, geoCoords?.latitude, geoCoords?.longitude, proximity]);
 
   // List of the signed-in user's own posts, used by the Tickets accordion.
   const myPosts = useMemo(() => {
