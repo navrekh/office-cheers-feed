@@ -197,6 +197,63 @@ function Index() {
   const [soundEnabled, setSoundEnabled] = useState(false);
   const [loopCount, setLoopCount] = useState<number>(1847);
   const [, force] = useState(0);
+  const [devOpen, setDevOpen] = useState(false);
+  const [mockOutage, setMockOutage] = useState(false);
+  const logoPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Hidden developer console: Ctrl/Cmd + Shift + D
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === "D" || e.key === "d")) {
+        e.preventDefault();
+        setDevOpen((v) => !v);
+      }
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
+  // Dev console event bus: burst sim, cache clear, outage toggle
+  useEffect(() => {
+    function onBurst(e: Event) {
+      const count = ((e as CustomEvent).detail as any)?.count ?? 50;
+      const fakes: Post[] = Array.from({ length: count }).map((_, i) => {
+        const id = randomIdentity();
+        return {
+          id: `dev-${Date.now()}-${i}-${Math.random().toString(36).slice(2, 7)}`,
+          author_name: id.name,
+          author_headline: id.headline,
+          body_text: `[DEV BURST #${i + 1}] Simulated viral take — testing scroll stability under concurrent realtime load.`,
+          cheers_count: Math.floor(Math.random() * 500),
+          created_at: new Date(Date.now() - i * 50).toISOString(),
+        };
+      });
+      setPosts((prev) => [...fakes, ...prev]);
+    }
+    function onClear() {
+      cheeredRef.current.clear();
+      setPosts([]);
+      setCommentsByPost({});
+      setFeedLoading(true);
+    }
+    function onOutage(e: Event) {
+      const next = !!((e as CustomEvent).detail as any)?.outage;
+      setMockOutage(next);
+      if (next) {
+        setFeedLoading(true);
+      } else {
+        setFeedLoading(false);
+      }
+    }
+    window.addEventListener("drinkedin:dev-burst", onBurst as EventListener);
+    window.addEventListener("drinkedin:dev-clear-cache", onClear);
+    window.addEventListener("drinkedin:dev-toggle-outage", onOutage as EventListener);
+    return () => {
+      window.removeEventListener("drinkedin:dev-burst", onBurst as EventListener);
+      window.removeEventListener("drinkedin:dev-clear-cache", onClear);
+      window.removeEventListener("drinkedin:dev-toggle-outage", onOutage as EventListener);
+    };
+  }, []);
 
   // Hydrate persistent TokenLens counter on the client only (avoids SSR hydration mismatch)
   useEffect(() => {
