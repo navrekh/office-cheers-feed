@@ -240,8 +240,8 @@ function Index() {
     const { data, error } = await (supabase as any)
       .from("posts")
       .insert({
-        author_name: authorName || "Anonymous Intern",
-        author_headline: authorHeadline || "Specializing in Liquid Refactoring",
+        author_name: anonymous ? ANON_NAME : (authorName || "Anonymous Intern"),
+        author_headline: anonymous ? ANON_HEADLINE : (authorHeadline || "Specializing in Liquid Refactoring"),
         body_text: body.trim(),
       })
       .select()
