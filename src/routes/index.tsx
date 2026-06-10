@@ -1493,9 +1493,47 @@ const PostCard = memo(function PostCard({
         </button>
       </div>
 
-      <div className="px-4 pb-3 text-[15px] leading-relaxed whitespace-pre-wrap">
-        {post.body_text}
-      </div>
+      {(() => {
+        const { meta, body } = decodePostMeta(post.body_text);
+        const vibe = getVibe(meta.vibe);
+        return (
+          <>
+            {vibe && (
+              <div
+                className={`mx-4 mt-1 mb-3 rounded-xl px-4 py-4 bg-gradient-to-br ${vibe.gradient} ${vibe.text} shadow-[0_6px_20px_-8px_rgba(0,0,0,0.6)] border border-white/5`}
+              >
+                <div className="flex items-center gap-3">
+                  <span className="text-3xl leading-none drop-shadow">{vibe.emoji}</span>
+                  <div className="min-w-0">
+                    <div className="text-[10px] uppercase tracking-[0.18em] font-bold opacity-80">
+                      Current Vibe
+                    </div>
+                    <div className="text-lg font-extrabold leading-tight">{vibe.label}</div>
+                    <div className="text-xs opacity-90">{vibe.caption}</div>
+                  </div>
+                </div>
+              </div>
+            )}
+            {body && (
+              <div className="px-4 pb-3 text-[15px] leading-relaxed whitespace-pre-wrap">
+                {body}
+              </div>
+            )}
+            {meta.gif && (
+              <div className="px-4 pb-3">
+                <div className="rounded-xl overflow-hidden border border-border bg-black/40">
+                  <img
+                    src={meta.gif}
+                    alt="Attached GIF"
+                    loading="lazy"
+                    className="w-full h-auto object-cover max-h-[420px]"
+                  />
+                </div>
+              </div>
+            )}
+          </>
+        );
+      })()}
 
       <div className="px-4 pb-2 flex items-center justify-between text-xs text-muted-foreground">
         <div className="flex items-center gap-1.5">
