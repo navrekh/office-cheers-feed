@@ -1179,6 +1179,21 @@ function Index() {
     const visible = [...posts].filter((p) => !p.is_hidden);
     const sorted = visible.sort((a, b) => {
       if (sortMode === "top") return b.cheers_count - a.cheers_count;
+      // "recent" mode: when we have a live geo fix, elevate physically-close
+      // posts (within 5 km) above the rest. Recency still wins inside each band.
+      if (sortMode === "recent" && geoCoords) {
+        const da = haversineKm(geoCoords, {
+          latitude: (a as any).latitude,
+          longitude: (a as any).longitude,
+        });
+        const db = haversineKm(geoCoords, {
+          latitude: (b as any).latitude,
+          longitude: (b as any).longitude,
+        });
+        const aNear = isFinite(da) && da <= 5 ? 0 : 1;
+        const bNear = isFinite(db) && db <= 5 ? 0 : 1;
+        if (aNear !== bNear) return aNear - bNear;
+      }
       return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
     });
 
@@ -1199,7 +1214,7 @@ function Index() {
     const idx = withPin.findIndex((p) => p.id === highlightedId);
     if (idx < 0) return withPin;
     return [withPin[idx], ...withPin.slice(0, idx), ...withPin.slice(idx + 1)];
-  }, [posts, highlightedId, sortMode, selectedCity, user, employeeOfDay]);
+  }, [posts, highlightedId, sortMode, selectedCity, user, employeeOfDay, geoCoords?.latitude, geoCoords?.longitude]);
 
   // List of the signed-in user's own posts, used by the Tickets accordion.
   const myPosts = useMemo(() => {
