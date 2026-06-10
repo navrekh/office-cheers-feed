@@ -103,7 +103,7 @@ export default function VerifiedWateringHole() {
     }
     const next: HeadingState = {
       ...heading,
-      [activeCity]: {
+      [headingKey]: {
         date: today,
         extra: (cityState?.date === today ? cityState.extra : 0) + 1,
         mine: true,
@@ -113,7 +113,7 @@ export default function VerifiedWateringHole() {
     saveHeading(next);
     setPopping(true);
     window.setTimeout(() => setPopping(false), 500);
-    toast.success(`You're heading to ${sponsored.name.split(" · ")[0]} 🏃‍♂️🍻`);
+    toast.success(`You're heading to ${sponsored.name} 🏃‍♂️🍻`);
   }
 
   function resetForm() {
