@@ -1088,15 +1088,80 @@ function Index() {
                     </button>
                   </div>
 
-                  <div className="flex items-center gap-1 flex-wrap pl-14">
-                    <ComposerChip icon={<ImageIcon className="size-4 text-accent" />} label="Bar pic" />
-                    <ComposerChip icon={<Video className="size-4 text-primary" />} label="Tasting" />
-                    <ComposerChip icon={<CalendarDays className="size-4 text-chart-3" />} label="Happy hr" />
-                    <ComposerChip icon={<FileText className="size-4 text-muted-foreground" />} label="Excuse" />
+                  {/* Current Vibe matrix */}
+                  <div className="pl-14">
+                    <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold mb-1.5">
+                      Current Vibe
+                    </div>
+                    <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
+                      {VIBES.map((v) => {
+                        const active = vibeId === v.id;
+                        return (
+                          <button
+                            key={v.id}
+                            type="button"
+                            onClick={() => setVibeId(active ? null : v.id)}
+                            title={v.caption}
+                            className={`flex flex-col items-center justify-center gap-0.5 py-2 px-1 rounded-md border text-[10px] font-semibold transition ${
+                              active
+                                ? `bg-gradient-to-br ${v.gradient} ${v.text} border-transparent shadow-[0_0_14px_rgba(251,191,36,0.25)]`
+                                : "border-border text-muted-foreground hover:bg-muted/40 hover:text-foreground"
+                            }`}
+                          >
+                            <span className="text-lg leading-none">{v.emoji}</span>
+                            <span className="leading-tight text-center">{v.label}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* GIF preview */}
+                  {gifUrl && (
+                    <div className="pl-14">
+                      <div className="relative rounded-xl overflow-hidden border border-border bg-black/40 max-w-md mx-auto">
+                        <img
+                          src={gifUrl}
+                          alt="Selected GIF"
+                          className="w-full h-auto object-contain max-h-72"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setGifUrl(null)}
+                          className="absolute top-2 right-2 size-7 rounded-full bg-black/70 text-white grid place-items-center text-sm hover:bg-black"
+                          aria-label="Remove GIF"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="flex items-center gap-2 flex-wrap pl-14">
+                    <button
+                      type="button"
+                      onClick={() => setGifPickerOpen(true)}
+                      className="inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 border border-primary/40 bg-primary/10 text-primary text-[12px] font-bold hover:bg-primary/20 hover:border-primary/60 transition"
+                    >
+                      🎬 Add GIF
+                    </button>
+                    {vibeId && (
+                      <span className="inline-flex items-center gap-1 rounded-full px-2 py-1 text-[10px] font-bold border border-border bg-muted/40">
+                        {getVibe(vibeId)!.emoji} {getVibe(vibeId)!.label}
+                        <button
+                          type="button"
+                          onClick={() => setVibeId(null)}
+                          className="ml-1 text-muted-foreground hover:text-foreground"
+                          aria-label="Clear vibe"
+                        >
+                          ✕
+                        </button>
+                      </span>
+                    )}
                     <div className="ml-auto">
                       <Button
                         type="submit"
-                        disabled={!body.trim() || submitting}
+                        disabled={(!body.trim() && !gifUrl && !vibeId) || submitting}
                         className="rounded-full px-5 font-semibold"
                       >
                         {submitting ? "Pouring…" : "Post 🍻"}
@@ -1105,6 +1170,12 @@ function Index() {
                   </div>
                 </form>
               </Card>
+
+              <GifPicker
+                open={gifPickerOpen}
+                onOpenChange={setGifPickerOpen}
+                onSelect={(url) => setGifUrl(url)}
+              />
 
               {highlightedId && orderedPosts.some((p) => p.id === highlightedId) && (
                 <div className="flex items-center justify-between gap-2 px-3 py-2 rounded-md bg-primary/10 border border-primary/30 text-xs">
