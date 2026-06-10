@@ -3,6 +3,11 @@ import { useEffect, useState, useRef, useMemo, useCallback, lazy, Suspense, memo
 import { supabase } from "@/integrations/supabase/client";
 import { SITE, TOKENLENS } from "@/config";
 import { notifyAdminNewPost } from "@/lib/adminNotify.functions";
+import {
+  generateHistoricalSimulatedFeed,
+  generateSimulatedPost,
+  isSimulatedPost,
+} from "@/lib/mockFeed";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
