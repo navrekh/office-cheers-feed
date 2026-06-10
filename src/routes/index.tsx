@@ -1340,6 +1340,36 @@ function Index() {
     if (notifOpen) setNotifUnread(0);
   }, [notifOpen]);
 
+  // Live personal stats derived from the user's real posts
+  useEffect(() => {
+    if (!user) {
+      setLiveViewers(null);
+      setLastExcuseImpressions(null);
+      setHangoverIndex(0);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      const { data, error } = await supabase
+        .from("posts")
+        .select("id, cheers_count, created_at")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false })
+        .limit(50);
+      if (cancelled || error || !data) return;
+      const totalCheers = data.reduce((s, p) => s + (p.cheers_count ?? 0), 0);
+      setLiveViewers(totalCheers);
+      setLastExcuseImpressions(data[0]?.cheers_count ?? 0);
+      const since = Date.now() - 24 * 60 * 60 * 1000;
+      const recent = data.filter((p) => new Date(p.created_at).getTime() >= since).length;
+      setHangoverIndex(Math.min(100, recent * 20 + Math.min(40, totalCheers * 2)));
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [user, posts.length]);
+
+
   const hangoverStatus = useMemo(() => {
     if (hangoverIndex <= 20)
       return { label: "Dangerously Sober", copy: "High risk of replying to emails on time.", tone: "text-chart-3 border-chart-3/40 bg-chart-3/10" };
