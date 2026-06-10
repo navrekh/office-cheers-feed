@@ -164,8 +164,6 @@ function fireProximityToast(
                   })
                 );
                 if (userId) {
-                  // Fire-and-forget — feed counter + taproom seat drop
-                  // both react to these writes via realtime.
                   void (supabase as any)
                     .from("merchant_clicks")
                     .insert({
@@ -173,13 +171,33 @@ function fireProximityToast(
                       user_id: userId,
                       city: deal.city,
                     });
-                  void (supabase as any).rpc("increment_heading_there", {
-                    p_deal_id: deal.id,
+                  // Read live high-accuracy GPS to decide at_venue vs commuting.
+                  const coords = await new Promise<GeolocationCoordinates | null>((resolve) => {
+                    if (!("geolocation" in navigator)) return resolve(null);
+                    navigator.geolocation.getCurrentPosition(
+                      (pos) => resolve(pos.coords),
+                      () => resolve(null),
+                      { enableHighAccuracy: true, timeout: 6000, maximumAge: 0 }
+                    );
                   });
+                  const { data: rows } = await (supabase as any).rpc("check_in_at_deal", {
+                    p_deal_id: deal.id,
+                    p_lat: coords?.latitude ?? null,
+                    p_lng: coords?.longitude ?? null,
+                  });
+                  const row = Array.isArray(rows) ? rows[0] : rows;
+                  if (row?.status === "at_venue") {
+                    toast.success(`Verified inside ${deal.pub_name} 🟢`, {
+                      description: "Solid green ring — you're on a bar stool.",
+                    });
+                  } else {
+                    toast.success(`En route to ${deal.pub_name} 🏃‍♂️`, {
+                      description: "Commuting blip locked in. Cross the 200 m geofence to verify.",
+                    });
+                  }
+                } else {
+                  toast.success(`Locked in at ${deal.pub_name} 🍻`);
                 }
-                toast.success(`Locked in at ${deal.pub_name} 🍻`, {
-                  description: "Your avatar just dropped into the live taproom.",
-                });
               } catch {
                 toast.error("Couldn't lock your spot — try again.");
               } finally {
