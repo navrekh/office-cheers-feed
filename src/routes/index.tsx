@@ -1,10 +1,18 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState, useRef, useCallback, type FormEvent } from "react";
+import { useEffect, useState, useRef, useMemo, useCallback, type FormEvent } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { toast } from "sonner";
 import {
   Home,
   Users,
@@ -25,6 +33,11 @@ import {
   Shuffle,
   Send,
   Sparkles,
+  Briefcase,
+  MapPin,
+  UserPlus,
+  Check,
+  Clock,
 } from "lucide-react";
 
 export const Route = createFileRoute("/")({
