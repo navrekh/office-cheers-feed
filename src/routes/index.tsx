@@ -1828,16 +1828,24 @@ const PostCard = memo(function PostCard({
   onCheers,
   onComment,
   onShare,
+  onReport,
+  onTribunalVote,
   cheered,
   highlighted,
+  tribunalMode,
+  isEmployeeOfDay,
 }: {
   post: Post;
   comments: Comment[];
   onCheers: (post: Post) => void;
   onComment: (postId: string, text: string, name: string) => void;
   onShare: (postId: string) => void;
+  onReport: (post: Post) => void;
+  onTribunalVote: (post: Post, vote: "valid" | "misconduct") => void;
   cheered: boolean;
   highlighted?: boolean;
+  tribunalMode?: boolean;
+  isEmployeeOfDay?: boolean;
 }) {
   const [showComments, setShowComments] = useState(false);
   const [popKey, setPopKey] = useState(0);
