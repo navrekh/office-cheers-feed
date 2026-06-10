@@ -89,7 +89,9 @@ export type Database = {
           id: string
           latitude: number
           longitude: number
+          pub_id: string | null
           session_id: string
+          status: string | null
           user_id: string | null
         }
         Insert: {
@@ -100,7 +102,9 @@ export type Database = {
           id?: string
           latitude: number
           longitude: number
+          pub_id?: string | null
           session_id: string
+          status?: string | null
           user_id?: string | null
         }
         Update: {
@@ -111,10 +115,20 @@ export type Database = {
           id?: string
           latitude?: number
           longitude?: number
+          pub_id?: string | null
           session_id?: string
+          status?: string | null
           user_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "check_ins_pub_id_fkey"
+            columns: ["pub_id"]
+            isOneToOne: false
+            referencedRelation: "merchant_deals"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       comments: {
         Row: {
@@ -188,6 +202,7 @@ export type Database = {
         Row: {
           activated_at: string
           city: string
+          commuting_count: number
           created_at: string
           deal_text: string
           expires_at: string
@@ -198,10 +213,12 @@ export type Database = {
           pub_name: string
           updated_at: string
           urgency_level: number
+          verified_at_venue_count: number
         }
         Insert: {
           activated_at?: string
           city: string
+          commuting_count?: number
           created_at?: string
           deal_text: string
           expires_at?: string
@@ -212,10 +229,12 @@ export type Database = {
           pub_name: string
           updated_at?: string
           urgency_level?: number
+          verified_at_venue_count?: number
         }
         Update: {
           activated_at?: string
           city?: string
+          commuting_count?: number
           created_at?: string
           deal_text?: string
           expires_at?: string
@@ -226,6 +245,7 @@ export type Database = {
           pub_name?: string
           updated_at?: string
           urgency_level?: number
+          verified_at_venue_count?: number
         }
         Relationships: []
       }
@@ -394,6 +414,15 @@ export type Database = {
           p_user_id: string
         }
         Returns: boolean
+      }
+      check_in_at_deal: {
+        Args: { p_deal_id: string; p_lat: number; p_lng: number }
+        Returns: {
+          commuting_count: number
+          distance_km: number
+          status: string
+          verified_at_venue_count: number
+        }[]
       }
       claim_first_admin: { Args: never; Returns: boolean }
       claim_merchant_role: { Args: { p_pub_name?: string }; Returns: boolean }
