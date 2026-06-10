@@ -1670,8 +1670,14 @@ function Index() {
                     onCheers={cheers}
                     onComment={addComment}
                     onShare={sharePost}
+                    onReport={reportPost}
+                    onTribunalVote={voteTribunal}
                     cheered={cheeredRef.current.has(p.id)}
                     highlighted={p.id === highlightedId}
+                    tribunalMode={sortMode === "tribunal"}
+                    isEmployeeOfDay={
+                      sortMode === "recent" && employeeOfDay?.id === p.id
+                    }
                   />
                 ))}
               </div>
