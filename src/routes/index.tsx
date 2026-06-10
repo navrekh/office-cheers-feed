@@ -1672,99 +1672,163 @@ const PUB_JOBS = [
 ];
 
 function PubsView() {
-  const [applied, setApplied] = useState<string | null>(null);
+  const [selectedCity, setSelectedCityLocal] = useState<CityKey>("Bangalore");
+  useEffect(() => {
+    setSelectedCityLocal(getSelectedCity());
+    return subscribeCity(setSelectedCityLocal);
+  }, []);
+
+  const merchants = MERCHANTS[selectedCity] ?? [];
+
+  // Per-merchant "tech workers here tonight" counter (localStorage-backed,
+  // shared with the Heading-There-Tonight check-in on the sidebar ad).
+  const [heading, setHeading] = useState<Record<string, { date: string; extra: number; mine: boolean }>>({});
+  useEffect(() => {
+    try {
+      setHeading(JSON.parse(localStorage.getItem("drinkedin.headingThere.v1") || "{}"));
+    } catch {}
+  }, [selectedCity]);
+
+  const today = new Date().toISOString().slice(0, 10);
+
+  function checkIn(m: Merchant) {
+    const state = heading[m.id];
+    const alreadyChecked = state && state.date === today && state.mine === true;
+    if (alreadyChecked) {
+      toast("You're already on the list for tonight 🍻", {
+        description: "Come back tomorrow to check in again.",
+      });
+      return;
+    }
+    const next = {
+      ...heading,
+      [m.id]: {
+        date: today,
+        extra: (state?.date === today ? state.extra : 0) + 1,
+        mine: true,
+      },
+    };
+    setHeading(next);
+    try { localStorage.setItem("drinkedin.headingThere.v1", JSON.stringify(next)); } catch {}
+    toast.success(`You're heading to ${m.name} 🏃‍♂️🍻`);
+  }
 
   return (
     <div className="space-y-3 animate-in fade-in duration-300">
       <VerifiedWateringHole />
 
-      <Card className="p-5 border-border bg-gradient-to-br from-card via-card to-primary/5">
+      <Card className="p-5 border-amber-400/30 bg-gradient-to-br from-amber-950/30 via-card to-card">
         <div className="flex items-center gap-3">
-          <div className="size-11 rounded-xl bg-primary/20 grid place-items-center text-primary">
-            <Briefcase className="size-5" />
+          <div className="size-11 rounded-xl bg-amber-500/20 grid place-items-center text-amber-300">
+            <Beer className="size-5" />
           </div>
-          <div>
-            <h2 className="text-lg font-bold">Pubs · Jobs</h2>
+          <div className="flex-1 min-w-0">
+            <h2 className="text-lg font-bold leading-tight">
+              Trending Neighborhood Watering Holes
+            </h2>
             <p className="text-xs text-muted-foreground">
-              Roles that prefer their KPIs poured, not measured.
+              Live in <span className="text-amber-300 font-semibold">{selectedCity}</span> — change your tech hub from the top ticker.
             </p>
           </div>
+          <select
+            aria-label="Filter by city"
+            value={selectedCity}
+            onChange={(e) => {
+              import("@/lib/cityStore").then((m) => m.setSelectedCity(e.target.value as CityKey));
+            }}
+            className="hidden sm:block h-8 text-xs bg-muted/40 border border-border rounded-md px-2 cursor-pointer hover:border-amber-400/50"
+          >
+            {CITIES.map((c) => (
+              <option key={c} value={c}>{c}</option>
+            ))}
+          </select>
         </div>
       </Card>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        {PUB_JOBS.map((job) => (
-          <Card
-            key={job.title}
-            className="p-4 border-border hover:border-primary/50 transition group flex flex-col"
-          >
-            <div className="flex items-start gap-3 mb-2">
-              <div className="size-10 rounded-md bg-gradient-to-br from-primary/30 to-accent/30 grid place-items-center text-lg shrink-0">
-                🍺
+        {merchants.map((m) => {
+          const state = heading[m.id];
+          const extra = state && state.date === today ? state.extra : 0;
+          const count = m.base_heading + extra;
+          const checked = !!state && state.date === today && state.mine === true;
+          return (
+            <Card
+              key={m.id}
+              className="p-4 border-amber-400/40 bg-gradient-to-br from-amber-950/25 via-card to-card hover:border-amber-300/60 transition flex flex-col shadow-[0_0_18px_rgba(251,191,36,0.12)]"
+            >
+              <div className="flex items-start gap-3 mb-2">
+                <div className="size-10 rounded-md bg-gradient-to-br from-amber-500/40 to-amber-300/20 grid place-items-center text-lg shrink-0">
+                  🍺
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-1.5 mb-0.5">
+                    <span className="inline-flex items-center gap-1 rounded-full border border-amber-400/60 bg-amber-500/15 px-1.5 py-0 text-[9px] font-bold uppercase tracking-wider text-amber-300">
+                      <ShieldCheck className="size-2.5" /> Verified
+                    </span>
+                  </div>
+                  <h3 className="font-bold text-[15px] leading-tight text-amber-100 truncate">
+                    {m.name}
+                  </h3>
+                  <p className="text-[11px] text-muted-foreground mt-0.5 flex items-center gap-1">
+                    <MapPin className="size-3" /> {m.area}
+                  </p>
+                </div>
               </div>
-              <div className="min-w-0 flex-1">
-                <h3 className="font-semibold text-[15px] leading-tight group-hover:text-primary transition">
-                  {job.title}
-                </h3>
-                <p className="text-xs text-muted-foreground mt-0.5">{job.company}</p>
-              </div>
-            </div>
 
-            <div className="text-xs text-muted-foreground space-y-1 mb-3">
-              <div className="flex items-center gap-1.5">
-                <MapPin className="size-3" /> {job.location}
+              <div className="rounded-md border border-amber-400/30 bg-amber-500/5 p-2.5 mb-3">
+                <div className="text-[10px] uppercase tracking-wider font-bold text-amber-300 mb-1">
+                  🔥 Flash Happy Hour
+                </div>
+                <p className="text-[12px] leading-snug text-foreground/90">
+                  {m.deal}
+                </p>
               </div>
-              <div className="flex items-center gap-1.5">
-                <Sparkles className="size-3 text-primary" /> {job.salary}
-              </div>
-            </div>
 
-            <div className="flex flex-wrap gap-1 mb-3">
-              {job.tags.map((t) => (
-                <span
-                  key={t}
-                  className="text-[10px] px-2 py-0.5 rounded-full bg-muted/60 text-muted-foreground"
-                >
-                  {t}
+              <div className="flex items-center gap-1.5 text-[11px] text-amber-200/90 mb-3">
+                <UsersIcon className="size-3" />
+                <span>
+                  <span className="font-bold text-amber-100">{count}</span> tech workers here tonight
                 </span>
-              ))}
-            </div>
+              </div>
 
-            <div className="mt-auto flex items-center justify-between">
-              <span className="text-[11px] text-muted-foreground">Posted {job.posted} ago</span>
-              <Button
-                size="sm"
-                onClick={() => setApplied(job.title)}
-                className="rounded-full h-8 px-4 font-semibold"
-              >
-                Quick Apply
-              </Button>
-            </div>
-          </Card>
-        ))}
+              <div className="mt-auto grid grid-cols-2 gap-2">
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={() => checkIn(m)}
+                  disabled={checked}
+                  className={`h-9 text-[12px] font-bold ${
+                    checked
+                      ? "bg-emerald-500/20 hover:bg-emerald-500/20 text-emerald-200 border border-emerald-400/40 cursor-default"
+                      : "bg-amber-500 hover:bg-amber-400 text-amber-950"
+                  }`}
+                >
+                  {checked ? "On the list ✓" : "I'm heading 🏃‍♂️"}
+                </Button>
+                <a
+                  href={mapsDirectionsUrl(m.map_query_address)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center gap-1.5 h-9 rounded-md border border-amber-400/50 bg-amber-500/10 hover:bg-amber-500/20 text-amber-100 text-[12px] font-semibold transition"
+                >
+                  <Navigation className="size-3.5" /> Get Directions 📍
+                </a>
+              </div>
+
+              {m.website && (
+                <a
+                  href={m.website}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-2 inline-flex items-center justify-center gap-1.5 h-8 rounded-md text-[11px] font-semibold text-amber-300 hover:text-amber-100 hover:underline"
+                >
+                  <ExternalLink className="size-3" /> Visit Website 🌐
+                </a>
+              )}
+            </Card>
+          );
+        })}
       </div>
-
-      <Dialog open={!!applied} onOpenChange={(o) => !o && setApplied(null)}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <span className="text-2xl">🍻</span> Application submitted!
-            </DialogTitle>
-            <DialogDescription className="pt-2 leading-relaxed">
-              Go grab a drink while HR ignores this. You'll receive a templated
-              rejection email in 6–8 weeks. Best of luck out there, champ.
-            </DialogDescription>
-          </DialogHeader>
-          {applied && (
-            <p className="text-xs text-muted-foreground italic">
-              Applied to: <span className="text-foreground font-medium">{applied}</span>
-            </p>
-          )}
-          <Button onClick={() => setApplied(null)} className="rounded-full mt-2">
-            Pour me one
-          </Button>
-        </DialogContent>
-      </Dialog>
 
       <Suspense
         fallback={
