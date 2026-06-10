@@ -114,6 +114,8 @@ function initials(name: string) {
     .toUpperCase();
 }
 
+type ViewKey = "home" | "barhop" | "pubs" | "messages" | "notifications";
+
 function Index() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [commentsByPost, setCommentsByPost] = useState<Record<string, Comment[]>>({});
@@ -123,6 +125,8 @@ function Index() {
     "Senior Program Manager | Specialize in Liquid Refactoring"
   );
   const [submitting, setSubmitting] = useState(false);
+  const [view, setView] = useState<ViewKey>("home");
+  const [highlightedId, setHighlightedId] = useState<string | null>(null);
   const cheeredRef = useRef<Set<string>>(new Set());
   const [, force] = useState(0);
 
