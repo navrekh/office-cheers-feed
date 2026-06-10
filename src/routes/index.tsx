@@ -410,7 +410,7 @@ function Index() {
             <NavItem icon={<Users className="size-5" />} label="Bar Hop" active={view === "barhop"} onClick={() => setView("barhop")} />
             <NavItem icon={<Beer className="size-5" />} label="Pubs" active={view === "pubs"} onClick={() => setView("pubs")} />
             <NavItem icon={<MessageSquare className="size-5" />} label="Messages" active={view === "messages"} onClick={() => setView("messages")} />
-            <NavItem icon={<Bell className="size-5" />} label="Notifications" badge={9} active={view === "notifications"} onClick={() => setView("notifications")} />
+            <NavItem icon={<Bell className="size-5" />} label="Notifications" badge={4} active={view === "notifications"} onClick={() => setView("notifications")} />
           </nav>
         </div>
       </header>
