@@ -554,13 +554,17 @@ function PostCard({
   comments,
   onCheers,
   onComment,
+  onShare,
   cheered,
+  highlighted,
 }: {
   post: Post;
   comments: Comment[];
   onCheers: () => void;
   onComment: (text: string, name: string) => void;
+  onShare: () => void;
   cheered: boolean;
+  highlighted?: boolean;
 }) {
   const [showComments, setShowComments] = useState(false);
   const [popKey, setPopKey] = useState(0);
@@ -575,7 +579,12 @@ function PostCard({
   }
 
   return (
-    <Card className="border-border overflow-hidden">
+    <Card className={`border-border overflow-hidden ${highlighted ? "post-spotlight" : ""}`}>
+      {highlighted && (
+        <div className="px-4 pt-2 pb-1 text-[10px] uppercase tracking-wider text-primary font-bold flex items-center gap-1.5">
+          <Sparkles className="size-3" /> Shared with you · spotlight
+        </div>
+      )}
       <div className="p-4 pb-2 flex items-start gap-3">
         <div className="size-12 rounded-full bg-gradient-to-br from-primary/40 to-accent/40 grid place-items-center font-bold text-base shrink-0">
           {initials(post.author_name)}
