@@ -15,6 +15,8 @@ export type Profile = {
   whatsapp_number: string | null;
   latitude: number | null;
   longitude: number | null;
+  declared_company: string | null;
+  tech_park_zone: string | null;
 };
 
 /**
