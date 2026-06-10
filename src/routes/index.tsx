@@ -131,7 +131,8 @@ import VerifiedWateringHole from "@/components/VerifiedWateringHole";
 import HappyHourTicker from "@/components/HappyHourTicker";
 import ClaimTicketModal from "@/components/ClaimTicketModal";
 import AuthModal from "@/components/AuthModal";
-import { useAuth, emailPrefix, signOut } from "@/lib/useAuth";
+import { useAuth, emailPrefix, signOut, corporateCodename } from "@/lib/useAuth";
+import { Skeleton } from "@/components/ui/skeleton";
 import { LogOut } from "lucide-react";
 
 function isHappyHourNow(d: Date = new Date()): boolean {
