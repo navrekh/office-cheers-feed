@@ -1872,6 +1872,11 @@ const PostCard = memo(function PostCard({
           : "border-border"
       }`}
     >
+      {isEmployeeOfDay && !isMerchant && (
+        <div className="px-4 py-1.5 text-[11px] font-extrabold uppercase tracking-wider text-amber-200 bg-gradient-to-r from-amber-500/30 via-fuchsia-500/20 to-amber-500/30 border-b border-amber-400/40 shadow-[0_0_18px_rgba(251,191,36,0.45)] animate-pulse flex items-center justify-center gap-1.5">
+          🏆 Employee of the Day · Most Cheered post in the last 24h
+        </div>
+      )}
       {highlighted && (
         <div className="px-4 pt-2 pb-1 text-[10px] uppercase tracking-wider text-primary font-bold flex items-center gap-1.5">
           <Sparkles className="size-3" /> Shared with you · spotlight
