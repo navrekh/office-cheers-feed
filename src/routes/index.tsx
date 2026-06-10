@@ -680,6 +680,11 @@ function Index() {
         }
       } catch {}
       if (anonymous) bumpAchievement("whistleblower", true);
+      // Surface the unique claim ticket so the author can track the post from any device.
+      if ((data as any).claim_ticket) {
+        setClaimTicket((data as any).claim_ticket as string);
+        setClaimModalOpen(true);
+      }
       // Optional admin webhook (Slack/Discord). No-op unless ADMIN_WEBHOOK_URL is set on the server.
       void notifyAdminNewPost({
         data: {
