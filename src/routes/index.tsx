@@ -391,6 +391,19 @@ function Index() {
     };
   }, []);
 
+  // Resilience: mirror feed state to localStorage so transient outages stay invisible
+  useEffect(() => {
+    if (!posts.length) return;
+    try { localStorage.setItem("drinkedin.cache.posts", JSON.stringify(posts.slice(0, 100))); } catch {}
+  }, [posts]);
+
+  useEffect(() => {
+    if (!Object.keys(commentsByPost).length) return;
+    try { localStorage.setItem("drinkedin.cache.comments", JSON.stringify(commentsByPost)); } catch {}
+  }, [commentsByPost]);
+
+
+
 
   async function submitPost(e: FormEvent) {
     e.preventDefault();
