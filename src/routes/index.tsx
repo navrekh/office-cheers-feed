@@ -147,14 +147,24 @@ function isHappyHourNow(d: Date = new Date()): boolean {
   return minutes >= 16 * 60 + 30 && minutes < 18 * 60;
 }
 export const Route = createFileRoute("/")({
-  head: () => ({
-    meta: [
-      { title: "DrinkedIn 🍻 — Feed" },
-      { name: "description", content: "The professional network for corporate workers who refuse to network sober." },
-      { property: "og:title", content: "DrinkedIn 🍻 — Feed" },
-      { property: "og:description", content: "Happy hours, hangover takes, and liquid leadership." },
-    ],
-  }),
+  head: () => {
+    const title =
+      "DrinkedIn 🍻 | The Corporate Sanctuary for Anonymous Coping & Office Parody";
+    const description =
+      "Stuck in another endless cross-functional alignment meeting? Drop anonymous workplace confessions, turn simple complaints into viral influencer 'Broetry' with one click, and find verified local happy hours in your tech hub city.";
+    return {
+      meta: [
+        { title },
+        { name: "description", content: description },
+        { property: "og:title", content: title },
+        { property: "og:description", content: description },
+        { property: "og:url", content: "https://drinkedin.me/" },
+        { property: "og:image", content: "https://drinkedin.me/og-card.jpg" },
+        { name: "twitter:image", content: "https://drinkedin.me/og-card.jpg" },
+      ],
+      links: [{ rel: "canonical", href: "https://drinkedin.me/" }],
+    };
+  },
   component: Index,
 });
 
