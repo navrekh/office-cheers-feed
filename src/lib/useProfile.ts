@@ -12,6 +12,9 @@ export type Profile = {
   merchant_website: string | null;
   flash_deal_text: string | null;
   upi_vpa: string | null;
+  whatsapp_number: string | null;
+  latitude: number | null;
+  longitude: number | null;
 };
 
 /**
@@ -30,7 +33,7 @@ export function useProfile(userId: string | null | undefined) {
     setLoading(true);
     const { data } = await (supabase as any)
       .from("profiles")
-      .select("id, role, verified_hub_city, pub_name, map_query_address, merchant_website, flash_deal_text, upi_vpa")
+      .select("id, role, verified_hub_city, pub_name, map_query_address, merchant_website, flash_deal_text, upi_vpa, whatsapp_number, latitude, longitude")
       .eq("id", userId)
       .maybeSingle();
     setProfile((data as Profile) ?? null);

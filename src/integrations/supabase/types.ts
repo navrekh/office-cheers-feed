@@ -299,6 +299,7 @@ export type Database = {
           updated_at: string
           upi_vpa: string | null
           verified_hub_city: string | null
+          whatsapp_number: string | null
         }
         Insert: {
           created_at?: string
@@ -313,6 +314,7 @@ export type Database = {
           updated_at?: string
           upi_vpa?: string | null
           verified_hub_city?: string | null
+          whatsapp_number?: string | null
         }
         Update: {
           created_at?: string
@@ -327,6 +329,7 @@ export type Database = {
           updated_at?: string
           upi_vpa?: string | null
           verified_hub_city?: string | null
+          whatsapp_number?: string | null
         }
         Relationships: []
       }
