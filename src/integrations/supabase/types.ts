@@ -16,6 +16,8 @@ export type Database = {
     Tables: {
       advertiser_leads: {
         Row: {
+          approved_at: string | null
+          approved_by: string | null
           city: string
           contact_info: string
           created_at: string
@@ -23,6 +25,8 @@ export type Database = {
           pub_name: string
         }
         Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
           city: string
           contact_info: string
           created_at?: string
@@ -30,6 +34,8 @@ export type Database = {
           pub_name: string
         }
         Update: {
+          approved_at?: string | null
+          approved_by?: string | null
           city?: string
           contact_info?: string
           created_at?: string
@@ -329,6 +335,22 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_approve_lead: {
+        Args: { p_deal_text?: string; p_lead_id: string; p_urgency?: number }
+        Returns: string
+      }
+      admin_set_deal_active: {
+        Args: { p_active: boolean; p_deal_id: string }
+        Returns: boolean
+      }
+      admin_set_role: {
+        Args: {
+          p_role: Database["public"]["Enums"]["app_role"]
+          p_user_id: string
+        }
+        Returns: boolean
+      }
+      claim_first_admin: { Args: never; Returns: boolean }
       delete_post_by_ticket: { Args: { ticket: string }; Returns: boolean }
       has_role: {
         Args: {
@@ -350,7 +372,7 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "employee" | "merchant"
+      app_role: "employee" | "merchant" | "admin"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -478,7 +500,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["employee", "merchant"],
+      app_role: ["employee", "merchant", "admin"],
     },
   },
 } as const
