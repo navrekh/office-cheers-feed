@@ -1158,7 +1158,7 @@ const PostCard = memo(function PostCard({
           onClick={() => setShowComments((v) => !v)}
           active={showComments}
         />
-        <ActionBtn onClick={onShare} label="Share" icon={<Share2 className="size-5" />} />
+        <ActionBtn onClick={() => onShare(post.id)} label="Share" icon={<Share2 className="size-5" />} />
         <ActionBtn
           onClick={() => {
             void triggerDownloadPostCard(post);
