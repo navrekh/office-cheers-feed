@@ -1086,6 +1086,53 @@ function Index() {
       .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
   }, [posts, user]);
 
+  // Live notification badge: pulse + bump unread whenever one of MY posts ticks past
+  // a Cheers milestone (10 / 50 / 100), or someone replies on one of my threads.
+  useEffect(() => {
+    const seen = seenMilestonesRef.current;
+    let bump = 0;
+    for (const p of myPosts) {
+      for (const m of [10, 50, 100]) {
+        const key = `${p.id}:${m}`;
+        if (p.cheers_count >= m && !seen.has(key)) {
+          seen.add(key);
+          bump += 1;
+        }
+      }
+    }
+    if (bump > 0) {
+      setNotifUnread((n) => n + bump);
+      setNotifPulseKey((k) => k + 1);
+    }
+  }, [myPosts]);
+
+  useEffect(() => {
+    if (!user) return;
+    const myIds = new Set(myPosts.map((p) => p.id));
+    if (myIds.size === 0) return;
+    const seen = seenCommentIdsRef.current;
+    let bump = 0;
+    for (const pid of Object.keys(commentsByPost)) {
+      if (!myIds.has(pid)) continue;
+      for (const c of commentsByPost[pid] || []) {
+        if (c.id.startsWith("tmp-")) continue;
+        if ((c as any).user_id && (c as any).user_id === user.id) continue;
+        if (!seen.has(c.id)) {
+          seen.add(c.id);
+          bump += 1;
+        }
+      }
+    }
+    if (bump > 0) {
+      setNotifUnread((n) => n + bump);
+      setNotifPulseKey((k) => k + 1);
+    }
+  }, [commentsByPost, myPosts, user]);
+
+  useEffect(() => {
+    if (notifOpen) setNotifUnread(0);
+  }, [notifOpen]);
+
   const hangoverStatus = useMemo(() => {
     if (hangoverIndex <= 20)
       return { label: "Dangerously Sober", copy: "High risk of replying to emails on time.", tone: "text-chart-3 border-chart-3/40 bg-chart-3/10" };
