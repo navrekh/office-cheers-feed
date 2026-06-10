@@ -877,6 +877,7 @@ function Index() {
         body_text: composed,
         user_id: user?.id ?? null,
         post_type: "user",
+        attached_visual_url: attachedUrl ?? null,
       })
       .select()
       .single();
@@ -887,6 +888,8 @@ function Index() {
       setBody("");
       setGifUrl(null);
       setVibeId(null);
+      setAttachedUrl(null);
+      setAttachedPath(null);
       try {
         const mine: string[] = JSON.parse(localStorage.getItem(ACH_KEYS.myPosts) || "[]");
         if (!mine.includes(data.id)) {
