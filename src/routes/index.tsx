@@ -1594,7 +1594,12 @@ function Index() {
 
           <CorporateBingo />
 
-          <VerifiedWateringHole onRequireAuth={() => requireAuth("Sign in before sponsoring a slot — keeps merchant leads verified.")} />
+          <VerifiedWateringHole
+            onRequireAuth={() => requireAuth("Sign in before sponsoring a slot — keeps merchant leads verified.")}
+            profile={profile}
+            userId={user?.id ?? null}
+            onProfileUpdated={() => void refreshProfile()}
+          />
 
 
 
