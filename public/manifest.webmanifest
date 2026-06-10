@@ -1,0 +1,25 @@
+{
+  "name": "DrinkedIn — Live Tech Hub Radar",
+  "short_name": "DrinkedIn",
+  "description": "Parody social platform for anonymous workplace confessions and verified local happy hours.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#0a0a0a",
+  "background_color": "#0a0a0a",
+  "icons": [
+    {
+      "src": "/favicon.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/favicon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
