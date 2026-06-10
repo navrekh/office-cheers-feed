@@ -2062,7 +2062,17 @@ function CopeItem({ tag, title, stat }: { tag: string; title: string; stat: stri
 // ============================================================
 
 
-function PubsView({ requireAuth }: { requireAuth: (reason?: string) => boolean }) {
+function PubsView({
+  requireAuth,
+  profile,
+  userId,
+  onProfileUpdated,
+}: {
+  requireAuth: (reason?: string) => boolean;
+  profile: import("@/lib/useProfile").Profile | null;
+  userId: string | null;
+  onProfileUpdated: () => void;
+}) {
   const [selectedCity, setSelectedCityLocal] = useState<CityKey>("Bangalore");
   useEffect(() => {
     setSelectedCityLocal(getSelectedCity());
