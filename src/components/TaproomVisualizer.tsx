@@ -2,6 +2,10 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { useMerchantDeals } from "@/lib/useMerchantDeals";
 import { getSelectedCity, subscribeCity, type CityKey } from "@/lib/cityStore";
+import { useAuth } from "@/lib/useAuth";
+import { useAtVenueStatus } from "@/lib/useAtVenueStatus";
+import LiveAmbientEqualizer from "@/components/LiveAmbientEqualizer";
+import VenueVibeDrawer from "@/components/VenueVibeDrawer";
 
 // Tiny pixel-style avatars rendered as emoji glyphs. Cheap, plays nicely with SSR.
 const PERSONAS = ["👨‍💻", "👩‍💻", "🧑‍🎨", "👔", "🧑‍🔧", "👩‍🔬", "🧑‍💼", "🦸"];
