@@ -1072,6 +1072,12 @@ function Index() {
           </p>
         </aside>
       </main>
+
+      {devOpen && (
+        <Suspense fallback={null}>
+          <DevConsole onClose={() => setDevOpen(false)} />
+        </Suspense>
+      )}
     </div>
   );
 }
