@@ -1232,7 +1232,7 @@ function PostCard({
         </div>
       </div>
 
-      <div className="border-t border-border grid grid-cols-3 px-2 py-1">
+      <div className="border-t border-border grid grid-cols-4 px-2 py-1">
         <ActionBtn
           onClick={handleCheers}
           active={cheered}
