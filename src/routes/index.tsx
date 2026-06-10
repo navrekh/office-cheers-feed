@@ -126,6 +126,7 @@ async function triggerDownloadPostCard(post: { id: string; author_name: string; 
 
 
 import AchievementBadges, { ACH_KEYS, bumpAchievement } from "@/components/AchievementBadges";
+import MerchantFlashControl from "@/components/MerchantFlashControl";
 import CorporateBingo from "@/components/CorporateBingo";
 import VerifiedWateringHole from "@/components/VerifiedWateringHole";
 import HappyHourTicker from "@/components/HappyHourTicker";
@@ -1480,6 +1481,12 @@ function Index() {
             </div>
             <AchievementBadges />
           </Card>
+
+          {profile?.role === "merchant" && (
+            <MerchantFlashControl profile={profile} />
+          )}
+
+
 
           <Card className="p-4 border-border">
             <h4 className="text-sm font-semibold mb-2">Recent</h4>
