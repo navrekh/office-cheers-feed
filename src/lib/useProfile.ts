@@ -30,7 +30,7 @@ export function useProfile(userId: string | null | undefined) {
     setLoading(true);
     const { data } = await (supabase as any)
       .from("profiles")
-      .select("id, role, verified_hub_city, pub_name, map_query_address, merchant_website, flash_deal_text")
+      .select("id, role, verified_hub_city, pub_name, map_query_address, merchant_website, flash_deal_text, upi_vpa")
       .eq("id", userId)
       .maybeSingle();
     setProfile((data as Profile) ?? null);
