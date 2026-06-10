@@ -459,9 +459,11 @@ function Index() {
       {/* Premium permanent TokenLens banner with neon-amber glow */}
       <div className="tokenlens-banner relative w-full">
         <div className="mx-auto max-w-7xl px-4 py-2.5 text-center text-[13px] font-medium leading-snug flex items-center justify-center gap-2 flex-wrap">
-          <Sparkles className="size-3.5 text-primary shrink-0" />
+          <span className="shrink-0">🔥</span>
           <span className="text-foreground/90">
-            Sobered up and need to fix your actual cloud infrastructure bills?
+            Running commercial LLMs? TokenLens has caught{" "}
+            <span className="font-bold text-primary tabular-nums">{loopCount.toLocaleString()}</span>{" "}
+            runaway prompt loops this week alone.
           </span>
           <a
             href="https://tokenlens.co.in/"
@@ -470,11 +472,20 @@ function Index() {
             onClick={trackTokenLensClick}
             className="inline-flex items-center gap-1 font-bold text-primary hover:text-primary/80 underline decoration-primary/50 decoration-2 underline-offset-4 transition"
           >
-            Check out my real engineering tool: TokenLens →
+            Secure your API budget now →
           </a>
-
+          <button
+            type="button"
+            onClick={() => setSoundEnabled((s) => !s)}
+            aria-label={soundEnabled ? "Mute clink sound" : "Unmute clink sound"}
+            title={soundEnabled ? "Clink sound: ON" : "Clink sound: OFF"}
+            className="ml-1 inline-flex items-center justify-center size-6 rounded-full border border-border/60 hover:border-primary/60 hover:text-primary text-muted-foreground transition"
+          >
+            {soundEnabled ? <Volume2 className="size-3.5" /> : <VolumeX className="size-3.5" />}
+          </button>
         </div>
       </div>
+
 
       {/* Top Nav */}
       <header className="sticky top-0 z-40 bg-card/95 backdrop-blur border-b border-border shadow-sm">
