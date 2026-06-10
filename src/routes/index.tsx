@@ -815,7 +815,11 @@ function Index() {
         },
       }).catch(() => {});
     } else if (error) {
-      toast.error("Couldn't post that round. Try again in a sec.");
+      if (isRlsDenied(error)) {
+        toast.error(RLS_DENIED_MESSAGE);
+      } else {
+        toast.error("Couldn't post that round. Try again in a sec.");
+      }
     }
     setSubmitting(false);
   }
