@@ -1582,12 +1582,35 @@ function Index() {
                       <Briefcase className="size-3" /> My Desk 💼
                     </button>
                   )}
+                  <button
+                    type="button"
+                    onClick={() => setSortMode("tribunal")}
+                    className={`px-3 py-1 rounded-full text-[11px] font-semibold transition inline-flex items-center gap-1 ${
+                      sortMode === "tribunal"
+                        ? "bg-red-500 text-white shadow-[0_0_14px_rgba(239,68,68,0.55)]"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    ⚖️ HR Tribunal
+                    {posts.filter((p) => p.is_in_tribunal && !p.is_hidden).length > 0 && (
+                      <span className="ml-1 rounded-full bg-red-500/20 px-1.5 text-[10px] font-bold text-red-200">
+                        {posts.filter((p) => p.is_in_tribunal && !p.is_hidden).length}
+                      </span>
+                    )}
+                  </button>
                 </div>
                 <div className="h-px flex-1 bg-border" />
                 <span className="text-muted-foreground">
-                  {sortMode === "top" ? "Most Cheered 🍻" : sortMode === "mine" ? "Your timeline 💼" : "Freshly poured"}
+                  {sortMode === "top"
+                    ? "Most Cheered 🍻"
+                    : sortMode === "mine"
+                      ? "Your timeline 💼"
+                      : sortMode === "tribunal"
+                        ? "Community-flagged ⚖️"
+                        : "Freshly poured"}
                 </span>
               </div>
+
 
 
 
