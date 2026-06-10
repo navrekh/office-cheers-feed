@@ -764,17 +764,31 @@ function Index() {
 
 
 
-  // Sort posts by selected mode, then pin highlighted post at top
+  // Track selected tech hub city for merchant feed injection
+  const [selectedCity, setSelectedCityState] = useState<CityKey>("Bangalore");
+  useEffect(() => {
+    setSelectedCityState(getSelectedCity());
+    return subscribeCity(setSelectedCityState);
+  }, []);
+
+  // Sort posts by selected mode, inject merchant ads at fixed slots, pin highlighted
   const orderedPosts = useMemo(() => {
     const sorted = [...posts].sort((a, b) => {
       if (sortMode === "top") return b.cheers_count - a.cheers_count;
       return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
     });
-    if (!highlightedId) return sorted;
-    const idx = sorted.findIndex((p) => p.id === highlightedId);
-    if (idx < 0) return sorted;
-    return [sorted[idx], ...sorted.slice(0, idx), ...sorted.slice(idx + 1)];
-  }, [posts, highlightedId, sortMode]);
+
+    // Inject merchant ads for the active city at slots 2 and 6
+    const merchants = MERCHANTS[selectedCity] ?? [];
+    const withAds: Post[] = [...sorted];
+    if (merchants[0]) withAds.splice(Math.min(2, withAds.length), 0, merchantToPost(merchants[0], selectedCity));
+    if (merchants[1]) withAds.splice(Math.min(6, withAds.length), 0, merchantToPost(merchants[1], selectedCity));
+
+    if (!highlightedId) return withAds;
+    const idx = withAds.findIndex((p) => p.id === highlightedId);
+    if (idx < 0) return withAds;
+    return [withAds[idx], ...withAds.slice(0, idx), ...withAds.slice(idx + 1)];
+  }, [posts, highlightedId, sortMode, selectedCity]);
 
   const hangoverStatus = useMemo(() => {
     if (hangoverIndex <= 20)
