@@ -70,6 +70,30 @@ export type Database = {
           },
         ]
       }
+      merchant_clicks: {
+        Row: {
+          city: string | null
+          created_at: string
+          id: string
+          pub_id: string
+          user_id: string
+        }
+        Insert: {
+          city?: string | null
+          created_at?: string
+          id?: string
+          pub_id: string
+          user_id: string
+        }
+        Update: {
+          city?: string | null
+          created_at?: string
+          id?: string
+          pub_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       posts: {
         Row: {
           author_headline: string
@@ -80,6 +104,7 @@ export type Database = {
           created_at: string
           id: string
           is_author_view: boolean
+          post_type: string
           user_id: string | null
         }
         Insert: {
@@ -91,6 +116,7 @@ export type Database = {
           created_at?: string
           id?: string
           is_author_view?: boolean
+          post_type?: string
           user_id?: string | null
         }
         Update: {
@@ -102,7 +128,44 @@ export type Database = {
           created_at?: string
           id?: string
           is_author_view?: boolean
+          post_type?: string
           user_id?: string | null
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          flash_deal_text: string | null
+          id: string
+          map_query_address: string | null
+          merchant_website: string | null
+          pub_name: string | null
+          role: Database["public"]["Enums"]["app_role"]
+          updated_at: string
+          verified_hub_city: string | null
+        }
+        Insert: {
+          created_at?: string
+          flash_deal_text?: string | null
+          id: string
+          map_query_address?: string | null
+          merchant_website?: string | null
+          pub_name?: string | null
+          role?: Database["public"]["Enums"]["app_role"]
+          updated_at?: string
+          verified_hub_city?: string | null
+        }
+        Update: {
+          created_at?: string
+          flash_deal_text?: string | null
+          id?: string
+          map_query_address?: string | null
+          merchant_website?: string | null
+          pub_name?: string | null
+          role?: Database["public"]["Enums"]["app_role"]
+          updated_at?: string
+          verified_hub_city?: string | null
         }
         Relationships: []
       }
@@ -112,10 +175,17 @@ export type Database = {
     }
     Functions: {
       delete_post_by_ticket: { Args: { ticket: string }; Returns: boolean }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
       increment_cheers: { Args: { post_id: string }; Returns: number }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "employee" | "merchant"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -242,6 +312,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["employee", "merchant"],
+    },
   },
 } as const
