@@ -133,7 +133,10 @@ import ClaimTicketModal from "@/components/ClaimTicketModal";
 import AuthModal from "@/components/AuthModal";
 import { useAuth, emailPrefix, signOut, corporateCodename } from "@/lib/useAuth";
 import { Skeleton } from "@/components/ui/skeleton";
-import { LogOut } from "lucide-react";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { LogOut, Copy, Briefcase, KeyRound, FileText as DraftIcon } from "lucide-react";
+import { SITE } from "@/config";
 
 function isHappyHourNow(d: Date = new Date()): boolean {
   const minutes = d.getHours() * 60 + d.getMinutes();
