@@ -1347,6 +1347,12 @@ function Index() {
           <DevConsole onClose={() => setDevOpen(false)} />
         </Suspense>
       )}
+
+      <ClaimTicketModal
+        open={claimModalOpen}
+        ticket={claimTicket}
+        onOpenChange={setClaimModalOpen}
+      />
     </div>
   );
 }
