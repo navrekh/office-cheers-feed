@@ -153,10 +153,9 @@ function isHappyHourNow(d: Date = new Date()): boolean {
 }
 export const Route = createFileRoute("/")({
   head: () => {
-    const title =
-      "DrinkedIn 🍻 | The Corporate Sanctuary for Anonymous Coping & Office Parody";
+    const title = "DrinkedIn 🍻 | Anonymous Corporate Coping & Pub Parody";
     const description =
-      "Stuck in another endless cross-functional alignment meeting? Drop anonymous workplace confessions, turn simple complaints into viral influencer 'Broetry' with one click, and find verified local happy hours in your tech hub city.";
+      "Anonymous workplace confessions, one-click viral Broetry, and verified happy hours in your tech hub city. Cope with corporate life, one pint at a time.";
     return {
       meta: [
         { title },
@@ -164,8 +163,8 @@ export const Route = createFileRoute("/")({
         { property: "og:title", content: title },
         { property: "og:description", content: description },
         { property: "og:url", content: "https://drinkedin.me/" },
-        { property: "og:image", content: "https://drinkedin.me/og-card.jpg" },
-        { name: "twitter:image", content: "https://drinkedin.me/og-card.jpg" },
+        { name: "twitter:title", content: title },
+        { name: "twitter:description", content: description },
       ],
       links: [{ rel: "canonical", href: "https://drinkedin.me/" }],
     };
@@ -1358,6 +1357,9 @@ function Index() {
 
       {/* 3-column layout */}
       <main className="mx-auto max-w-7xl px-4 py-6 grid grid-cols-12 gap-6">
+        <h1 className="sr-only">
+          DrinkedIn — the corporate sanctuary for anonymous coping, viral Broetry, and verified local happy hours
+        </h1>
         {/* Left sidebar */}
         <aside className="hidden lg:block col-span-3 space-y-4">
           <Card className="overflow-hidden p-0 border-border">
@@ -1655,7 +1657,7 @@ function Index() {
                       <div className="relative rounded-xl overflow-hidden border border-border bg-black/40 max-w-md mx-auto">
                         <img
                           src={gifUrl}
-                          alt="Selected GIF"
+                          alt="Selected reaction GIF for your post"
                           className="w-full h-auto object-contain max-h-72"
                         />
                         <button
@@ -1676,7 +1678,7 @@ function Index() {
                       <div className="relative inline-block rounded-xl overflow-hidden border border-amber-500/30 bg-black/40">
                         <img
                           src={attachedUrl}
-                          alt="Attached bar pic"
+                          alt="Attached photo from your local bar"
                           loading="lazy"
                           className="max-h-48 w-auto object-cover"
                         />
@@ -2239,7 +2241,7 @@ const PostCard = memo(function PostCard({
                 <div className="rounded-xl overflow-hidden border border-border bg-black/40">
                   <img
                     src={meta.gif}
-                    alt="Attached GIF"
+                    alt="Reaction GIF attached to this DrinkedIn post"
                     loading="lazy"
                     className="w-full h-auto object-cover max-h-[420px]"
                   />
@@ -2251,7 +2253,7 @@ const PostCard = memo(function PostCard({
                 <div className="rounded-2xl overflow-hidden border border-amber-500/20 bg-black/40 shadow-[0_8px_30px_-12px_rgba(251,191,36,0.25)]">
                   <img
                     src={post.attached_visual_url}
-                    alt="Attached bar pic"
+                    alt="Photo from a local bar attached to this DrinkedIn post"
                     loading="lazy"
                     decoding="async"
                     className="w-full h-auto object-cover max-h-[520px]"

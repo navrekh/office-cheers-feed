@@ -28,6 +28,9 @@ export const Route = createFileRoute("/track/$ticket")({
       },
       { name: "robots", content: "noindex,nofollow" },
     ],
+    links: [
+      { rel: "canonical", href: `https://drinkedin.me/track/${params.ticket}` },
+    ],
   }),
   component: TrackPage,
 });

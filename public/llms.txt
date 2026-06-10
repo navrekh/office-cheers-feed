@@ -1,0 +1,9 @@
+# DrinkedIn
+
+> Parody social platform for corporate workers — anonymous workplace confessions, one-click viral "Broetry," and verified local happy hours in your tech hub city.
+
+DrinkedIn is a satirical "LinkedIn for after work" feed. Posts are anonymous by default, can be amplified through a Broetry generator, and surface real happy-hour deals from partner pubs.
+
+## Pages
+
+- [Home feed](/): Anonymous post composer, live cheers feed, verified pub deals, and the desperation/hangover meter.

@@ -76,45 +76,52 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
   head: () => {
-    const title =
-      "DrinkedIn 🍻 | The Corporate Sanctuary for Anonymous Coping & Office Parody";
-    const description =
-      "Stuck in another endless cross-functional alignment meeting? Drop anonymous workplace confessions, turn simple complaints into viral influencer 'Broetry' with one click, and find verified local happy hours in your tech hub city.";
+    const siteName = "DrinkedIn";
     const ogImage = `${SITE_URL}/og-card.jpg`;
     return {
       meta: [
         { charSet: "utf-8" },
         { name: "viewport", content: "width=device-width, initial-scale=1" },
-        { title },
-        { name: "description", content: description },
-        { name: "author", content: "DrinkedIn" },
+        { name: "author", content: siteName },
         { name: "theme-color", content: "#0a0a0a" },
-        { property: "og:title", content: title },
-        { property: "og:description", content: description },
         { property: "og:type", content: "website" },
-        { property: "og:url", content: `${SITE_URL}/` },
-        { property: "og:site_name", content: "DrinkedIn" },
+        { property: "og:site_name", content: siteName },
         { property: "og:image", content: ogImage },
         { property: "og:image:width", content: "1200" },
         { property: "og:image:height", content: "630" },
         { property: "og:image:alt", content: "DrinkedIn — Broetry post preview with amber neon glow" },
         { name: "twitter:card", content: "summary_large_image" },
         { name: "twitter:site", content: "@drinkedin" },
-        { name: "twitter:title", content: title },
-        { name: "twitter:description", content: description },
         { name: "twitter:image", content: ogImage },
-        { title: "Eject to Pub" },
-        { property: "og:title", content: "Eject to Pub" },
-        { name: "twitter:title", content: "Eject to Pub" },
-        { name: "description", content: "DrinkedIn is a parody social platform for corporate workers to share happy hour stories and office coping mechanisms." },
-        { property: "og:description", content: "DrinkedIn is a parody social platform for corporate workers to share happy hour stories and office coping mechanisms." },
-        { name: "twitter:description", content: "DrinkedIn is a parody social platform for corporate workers to share happy hour stories and office coping mechanisms." },
-        { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/1c257f5a-6cb6-4216-a065-a10f8d56c6aa/id-preview-ab066422--d83f7512-6f49-4c2c-9603-0fe9b2395dc5.lovable.app-1781108535822.png" },
-        { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/1c257f5a-6cb6-4216-a065-a10f8d56c6aa/id-preview-ab066422--d83f7512-6f49-4c2c-9603-0fe9b2395dc5.lovable.app-1781108535822.png" },
       ],
       links: [
         { rel: "stylesheet", href: appCss },
-        { rel: "icon", href: "/favicon.ico" },
+        { rel: "icon", type: "image/png", href: "/favicon.png" },
+        { rel: "apple-touch-icon", href: "/favicon.png" },
+      ],
+      scripts: [
+        {
+          type: "application/ld+json",
+          children: JSON.stringify({
+            "@context": "https://schema.org",
+            "@graph": [
+              {
+                "@type": "Organization",
+                name: siteName,
+                url: `${SITE_URL}/`,
+                logo: `${SITE_URL}/favicon.png`,
+                sameAs: ["https://twitter.com/drinkedin"],
+              },
+              {
+                "@type": "WebSite",
+                name: siteName,
+                url: `${SITE_URL}/`,
+                description:
+                  "Parody social platform for anonymous workplace confessions and verified local happy hours.",
+              },
+            ],
+          }),
+        },
       ],
     };
   },
