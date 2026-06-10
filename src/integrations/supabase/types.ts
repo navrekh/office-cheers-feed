@@ -102,9 +102,11 @@ export type Database = {
       }
       merchant_deals: {
         Row: {
+          activated_at: string
           city: string
           created_at: string
           deal_text: string
+          expires_at: string
           heading_there_count: number
           id: string
           is_active: boolean
@@ -114,9 +116,11 @@ export type Database = {
           urgency_level: number
         }
         Insert: {
+          activated_at?: string
           city: string
           created_at?: string
           deal_text: string
+          expires_at?: string
           heading_there_count?: number
           id?: string
           is_active?: boolean
@@ -126,9 +130,11 @@ export type Database = {
           urgency_level?: number
         }
         Update: {
+          activated_at?: string
           city?: string
           created_at?: string
           deal_text?: string
+          expires_at?: string
           heading_there_count?: number
           id?: string
           is_active?: boolean
