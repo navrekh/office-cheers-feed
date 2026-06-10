@@ -132,6 +132,7 @@ import HappyHourTicker from "@/components/HappyHourTicker";
 import ClaimTicketModal from "@/components/ClaimTicketModal";
 import AuthModal from "@/components/AuthModal";
 import { useAuth, emailPrefix, signOut, corporateCodename } from "@/lib/useAuth";
+import { useProfile, isRlsDenied, RLS_DENIED_MESSAGE } from "@/lib/useProfile";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
