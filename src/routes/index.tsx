@@ -917,6 +917,7 @@ function Index() {
                       onClick={() => {
                         const next = broetrify(body);
                         setBody(next);
+                        bumpAchievement("broetry", 1);
                         toast.success("Broetry engaged 🚀", { description: "Your hot take is now LinkedIn-grade." });
                       }}
                       className="inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 border border-primary/40 bg-primary/10 text-primary text-[11px] font-semibold hover:bg-primary/20 hover:border-primary/60 transition"
