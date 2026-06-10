@@ -1855,7 +1855,7 @@ function CopeItem({ tag, title, stat }: { tag: string; title: string; stat: stri
 // ============================================================
 
 
-function PubsView() {
+function PubsView({ requireAuth }: { requireAuth: (reason?: string) => boolean }) {
   const [selectedCity, setSelectedCityLocal] = useState<CityKey>("Bangalore");
   useEffect(() => {
     setSelectedCityLocal(getSelectedCity());
