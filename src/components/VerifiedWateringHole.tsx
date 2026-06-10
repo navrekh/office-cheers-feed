@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react";
+import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
@@ -12,7 +12,14 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { ShieldCheck, Beer, MapPin, Check } from "lucide-react";
+import { ShieldCheck, Beer, MapPin, Check, Sparkles, Users } from "lucide-react";
+import {
+  getSelectedCity,
+  subscribeCity,
+  subscribeAdPreview,
+  triggerAdPreview,
+  type CityKey,
+} from "@/lib/cityStore";
 
 const leadSchema = z.object({
   pub_name: z.string().trim().min(1, "Pub name is required").max(120),
@@ -24,6 +31,72 @@ const leadSchema = z.object({
     .max(240, "Keep contact info under 240 characters"),
 });
 
+// Per-city sponsored pub (mock) shown in the ad card.
+const SPONSORED: Record<CityKey, { name: string; area: string; deal: string }> = {
+  Bangalore: {
+    name: "Toit Bangalore · Indiranagar",
+    area: "100 Feet Road · 1.2km away",
+    deal: "2+1 on all house crafts for IT pros who flash their DrinkedIn feed at the bar.",
+  },
+  Gurgaon: {
+    name: "Striker Pub & Brewery · Cyberhub",
+    area: "DLF Cyber City · 0.8km away",
+    deal: "1+1 pitchers before 7 PM for anyone showing a red CI build on screen.",
+  },
+  Hyderabad: {
+    name: "Prost Brewpub · HITEC City",
+    area: "Jubilee Enclave · 1.5km away",
+    deal: "Buy-1-get-1 wheat beers for badge-flashing engineers till 8 PM.",
+  },
+  Pune: {
+    name: "Independence Brewing Co. · Koregaon Park",
+    area: "Mundhwa Rd · 2.1km away",
+    deal: "₹199 pints for the next 30 developers through the door.",
+  },
+  Mumbai: {
+    name: "The Bar Stock Exchange · BKC",
+    area: "Bandra Kurla Complex · 1.0km away",
+    deal: "Live ticker pricing on lagers until your sprint ends.",
+  },
+  Delhi: {
+    name: "Social Offline · Aerocity",
+    area: "Worldmark 1 · 1.8km away",
+    deal: "First round comped for anyone with a failed deploy on their laptop.",
+  },
+};
+
+// Per-city baseline counters so the number feels grounded, not random.
+const BASE_HEADING: Record<CityKey, number> = {
+  Bangalore: 47,
+  Gurgaon: 38,
+  Hyderabad: 29,
+  Pune: 22,
+  Mumbai: 41,
+  Delhi: 31,
+};
+
+const HEADING_KEY = "drinkedin.headingThere.v1"; // { [city]: { date: 'YYYY-MM-DD', extra: number, mine: boolean } }
+
+function todayStr() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+type HeadingState = Record<string, { date: string; extra: number; mine: boolean }>;
+
+function loadHeading(): HeadingState {
+  try {
+    return JSON.parse(localStorage.getItem(HEADING_KEY) || "{}");
+  } catch {
+    return {};
+  }
+}
+
+function saveHeading(s: HeadingState) {
+  try {
+    localStorage.setItem(HEADING_KEY, JSON.stringify(s));
+  } catch {}
+}
+
 export default function VerifiedWateringHole() {
   const [open, setOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -31,6 +104,59 @@ export default function VerifiedWateringHole() {
   const [pubName, setPubName] = useState("");
   const [city, setCity] = useState("");
   const [contact, setContact] = useState("");
+
+  const [activeCity, setActiveCity] = useState<CityKey>("Bangalore");
+  const [heading, setHeading] = useState<HeadingState>({});
+  const [popping, setPopping] = useState(false);
+  const [highlighted, setHighlighted] = useState(false);
+
+  useEffect(() => {
+    setActiveCity(getSelectedCity());
+    setHeading(loadHeading());
+    const offCity = subscribeCity(setActiveCity);
+    const offPrev = subscribeAdPreview((ms) => {
+      setHighlighted(true);
+      window.setTimeout(() => setHighlighted(false), ms);
+    });
+    return () => {
+      offCity();
+      offPrev();
+    };
+  }, []);
+
+  const sponsored = SPONSORED[activeCity];
+  const today = todayStr();
+  const cityState = heading[activeCity];
+  const alreadyChecked =
+    cityState && cityState.date === today && cityState.mine === true;
+  const extra =
+    cityState && cityState.date === today ? cityState.extra : 0;
+  const headingCount = useMemo(
+    () => BASE_HEADING[activeCity] + extra + (alreadyChecked ? 0 : 0),
+    [activeCity, extra, alreadyChecked]
+  );
+
+  function handleHeadingClick() {
+    if (alreadyChecked) {
+      toast("You're already on the list for tonight 🍻", {
+        description: "Come back tomorrow to check in again.",
+      });
+      return;
+    }
+    const next: HeadingState = {
+      ...heading,
+      [activeCity]: {
+        date: today,
+        extra: (cityState?.date === today ? cityState.extra : 0) + 1,
+        mine: true,
+      },
+    };
+    setHeading(next);
+    saveHeading(next);
+    setPopping(true);
+    window.setTimeout(() => setPopping(false), 500);
+    toast.success(`You're heading to ${sponsored.name.split(" · ")[0]} 🏃‍♂️🍻`);
+  }
 
   function resetForm() {
     setPubName("");
@@ -52,72 +178,112 @@ export default function VerifiedWateringHole() {
       return;
     }
     setSubmitting(true);
-    const { error } = await (supabase as any)
-      .from("advertiser_leads")
-      .insert(parsed.data);
-    setSubmitting(false);
-    if (error) {
-      toast.error("Couldn't send your request. Try again in a sec.");
-      return;
+    try {
+      const { error } = await (supabase as any)
+        .from("advertiser_leads")
+        .insert(parsed.data);
+      if (error) {
+        toast.error("Couldn't send your request. Try again in a sec.");
+        return;
+      }
+      setSuccess(true);
+      toast.success("Sponsorship request received! 🍻");
+    } catch {
+      toast.error("Network hiccup. Try again in a sec.");
+    } finally {
+      setSubmitting(false);
     }
-    setSuccess(true);
-    toast.success("Sponsorship request received! 🍻");
   }
 
   return (
     <>
-      <Card className="p-4 border-amber-400/40 bg-gradient-to-br from-amber-500/10 via-card to-card relative overflow-hidden shadow-[0_0_30px_rgba(251,191,36,0.12)]">
-        <div className="absolute -top-10 -right-10 size-32 bg-amber-400/20 rounded-full blur-3xl pointer-events-none" />
+      <div
+        className={highlighted ? "ad-preview-active transition" : "transition"}
+      >
+        <Card className="p-4 border-amber-400/40 bg-gradient-to-br from-amber-500/10 via-card to-card relative overflow-hidden shadow-[0_0_30px_rgba(251,191,36,0.12)]">
+          <div className="absolute -top-10 -right-10 size-32 bg-amber-400/20 rounded-full blur-3xl pointer-events-none" />
 
-        <div className="flex items-center justify-between mb-2 relative">
-          <span className="text-[9px] uppercase tracking-wider text-muted-foreground font-bold">
-            Promoted · Local
-          </span>
-          <span
-            className="inline-flex items-center gap-1 rounded-full border border-amber-400/60 bg-amber-500/15 px-2 py-0.5 text-[10px] font-bold text-amber-300 shadow-[0_0_10px_rgba(251,191,36,0.4)]"
-            title="Independently verified by DrinkedIn's Chief Happy Hour Officer"
-          >
-            <ShieldCheck className="size-3" />
-            Verified Watering Hole 🛡️
-          </span>
-        </div>
-
-        <div className="flex items-start gap-3 relative">
-          <div className="size-12 rounded-xl bg-gradient-to-br from-amber-500/40 to-primary/40 grid place-items-center text-xl shrink-0">
-            🍺
+          <div className="flex items-center justify-between mb-2 relative">
+            <span className="text-[9px] uppercase tracking-wider text-muted-foreground font-bold">
+              Promoted · {activeCity}
+            </span>
+            <span
+              className="inline-flex items-center gap-1 rounded-full border border-amber-400/60 bg-amber-500/15 px-2 py-0.5 text-[10px] font-bold text-amber-300 shadow-[0_0_10px_rgba(251,191,36,0.4)]"
+              title="Independently verified by DrinkedIn's Chief Happy Hour Officer"
+            >
+              <ShieldCheck className="size-3" />
+              Verified Watering Hole 🛡️
+            </span>
           </div>
-          <div className="min-w-0 flex-1">
-            <h3 className="font-bold text-[15px] leading-tight">
-              Toit Bangalore · Indiranagar
-            </h3>
-            <div className="text-[11px] text-muted-foreground flex items-center gap-1 mt-0.5">
-              <MapPin className="size-3" /> 100 Feet Road · 1.2km away
+
+          <div className="flex items-start gap-3 relative">
+            <div className="size-12 rounded-xl bg-gradient-to-br from-amber-500/40 to-primary/40 grid place-items-center text-xl shrink-0">
+              🍺
+            </div>
+            <div className="min-w-0 flex-1">
+              <h3 className="font-bold text-[15px] leading-tight">
+                {sponsored.name}
+              </h3>
+              <div className="text-[11px] text-muted-foreground flex items-center gap-1 mt-0.5">
+                <MapPin className="size-3" /> {sponsored.area}
+              </div>
             </div>
           </div>
-        </div>
 
-        <div className="mt-3 rounded-md border border-amber-400/30 bg-amber-500/5 p-2.5 relative">
-          <div className="text-[10px] uppercase tracking-wider font-bold text-amber-300 mb-1">
-            🔥 Happy Hour Alert
+          <div className="mt-3 rounded-md border border-amber-400/30 bg-amber-500/5 p-2.5 relative">
+            <div className="text-[10px] uppercase tracking-wider font-bold text-amber-300 mb-1">
+              🔥 Happy Hour Alert
+            </div>
+            <p className="text-[12px] leading-snug text-foreground/90">
+              {sponsored.deal}
+            </p>
           </div>
-          <p className="text-[12px] leading-snug text-foreground/90">
-            2+1 on all house crafts for IT professionals who show their DrinkedIn
-            feed at the bar.
-          </p>
-        </div>
 
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => {
-            resetForm();
-            setOpen(true);
-          }}
-          className="w-full mt-3 border-amber-400/50 hover:border-amber-300 hover:bg-amber-500/10 text-amber-200 hover:text-amber-100 font-semibold text-[12px] h-9"
-        >
-          Own a Pub? Sponsor this slot for ₹599/week 🍻
-        </Button>
-      </Card>
+          {/* Heading There Tonight CTA */}
+          <div className="mt-3 rounded-md border border-amber-400/40 bg-gradient-to-br from-amber-500/10 to-transparent p-2.5 relative">
+            <div className="flex items-center gap-1.5 text-[10px] text-amber-200/90 mb-2">
+              <Users className="size-3" />
+              <span>
+                <span
+                  className={`font-bold text-amber-100 inline-block ${
+                    popping ? "animate-drinkedin-pop" : ""
+                  }`}
+                >
+                  {headingCount}
+                </span>{" "}
+                people from {activeCity} are heading here tonight
+              </span>
+            </div>
+            <Button
+              type="button"
+              size="sm"
+              onClick={handleHeadingClick}
+              disabled={alreadyChecked}
+              className={`w-full font-bold text-[12px] h-9 ${
+                alreadyChecked
+                  ? "bg-emerald-500/20 hover:bg-emerald-500/20 text-emerald-200 border border-emerald-400/40 cursor-default"
+                  : "bg-amber-500 hover:bg-amber-400 text-amber-950"
+              }`}
+            >
+              {alreadyChecked
+                ? "You're on the list ✓"
+                : "Heading There Tonight 🏃‍♂️🍻"}
+            </Button>
+          </div>
+
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              resetForm();
+              setOpen(true);
+            }}
+            className="w-full mt-3 border-amber-400/50 hover:border-amber-300 hover:bg-amber-500/10 text-amber-200 hover:text-amber-100 font-semibold text-[12px] h-9"
+          >
+            Own a Pub? Sponsor this slot for ₹599/week 🍻
+          </Button>
+        </Card>
+      </div>
 
       <Dialog
         open={open}
@@ -175,6 +341,23 @@ export default function VerifiedWateringHole() {
                   Receive a dedicated Verified Pub Owner Profile.
                 </li>
               </ul>
+
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  triggerAdPreview(4500);
+                  toast("Live preview active 👀", {
+                    description:
+                      "Check the right sidebar — that's your ad slot lighting up.",
+                  });
+                }}
+                className="w-full mb-3 border-amber-400/50 hover:border-amber-300 hover:bg-amber-500/10 text-amber-200 hover:text-amber-100 font-semibold text-[12px] h-9"
+              >
+                <Sparkles className="size-3.5 mr-1.5" />
+                See What Your Ad Looks Like
+              </Button>
 
               <form onSubmit={submit} className="space-y-2.5">
                 <div>
