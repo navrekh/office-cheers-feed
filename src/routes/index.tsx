@@ -976,27 +976,35 @@ function Index() {
           <Card className="overflow-hidden p-0 border-border">
             <div className="h-16 bg-gradient-to-br from-primary/40 via-accent/50 to-primary/30" />
             <div className="px-4 pb-4 -mt-8">
-              <div className="size-16 rounded-full bg-card border-4 border-card ring-2 ring-primary/40 grid place-items-center text-2xl shadow">
-                {user ? "🍻" : "🎭"}
+              <div className={`size-16 rounded-full bg-card border-4 border-card grid place-items-center text-2xl shadow transition ${user ? "ring-2 ring-primary/40" : "ring-2 ring-zinc-700/60 grayscale"}`}>
+                {authLoading ? "…" : user ? "🍻" : "🕵️‍♂️"}
               </div>
-              {user ? (
+              {authLoading ? (
+                <div className="mt-2 space-y-2">
+                  <Skeleton className="h-4 w-3/4" />
+                  <Skeleton className="h-3 w-2/3" />
+                  <Skeleton className="h-3 w-1/2" />
+                </div>
+              ) : user ? (
                 <>
                   <h3 className="mt-2 font-semibold text-base leading-tight">
-                    Welcome, <span className="text-primary">{userAlias}</span> 🍻
+                    Welcome, <span className="text-primary">{userCodename}</span> 🍺
                   </h3>
-                  <p className="text-xs text-muted-foreground mt-1 leading-snug">
-                    Verified session · feed alias stays anonymous
-                  </p>
-                  <p className="text-[11px] text-muted-foreground/80 mt-1 inline-flex items-center gap-1">
-                    <ShieldCheck className="size-3 text-amber-400" />
-                    Legally protected · publicly anonymous
+                  <div className="mt-1.5 inline-flex items-center gap-1 rounded-full border border-emerald-500/40 bg-emerald-500/10 px-2 py-0.5 text-[10px] font-semibold text-emerald-300">
+                    <ShieldCheck className="size-3" />
+                    Verified Session ✔️
+                  </div>
+                  <p className="text-[11px] text-muted-foreground/80 mt-2 leading-snug">
+                    Signed in as <span className="font-mono text-foreground/70">{userAlias}</span> · feed alias stays anonymous
                   </p>
                 </>
               ) : (
                 <>
-                  <h3 className="mt-2 font-semibold text-base leading-tight">Incognito Guest 🎭</h3>
-                  <p className="text-xs text-muted-foreground mt-1 leading-snug line-clamp-2">
-                    Sign in to post, cheers, and track your shareable content.
+                  <h3 className="mt-2 font-semibold text-base leading-tight text-foreground/90">
+                    Status: Off-the-Clock <span className="text-muted-foreground">Preview Mode</span> 🕵️‍♂️
+                  </h3>
+                  <p className="text-[11px] text-muted-foreground mt-1 leading-snug">
+                    Browsing anonymously. Sign in to post, cheers, and claim your stash.
                   </p>
                   <button
                     type="button"
@@ -1004,9 +1012,9 @@ function Index() {
                       setAuthReason("Sign in to unlock posting, cheering, and your private dashboards.");
                       setAuthModalOpen(true);
                     }}
-                    className="mt-2 inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-[11px] font-semibold border border-primary/40 bg-primary/10 text-primary hover:bg-primary/20 transition"
+                    className="mt-3 w-full inline-flex items-center justify-center gap-1.5 rounded-md px-3 py-2 text-[12px] font-bold text-zinc-950 bg-amber-400 hover:bg-amber-300 border border-amber-300/60 shadow-[0_0_20px_rgba(251,191,36,0.45)] hover:shadow-[0_0_28px_rgba(251,191,36,0.65)] transition"
                   >
-                    Sign in 🍻
+                    Sign In to Post 🚀
                   </button>
                 </>
               )}
