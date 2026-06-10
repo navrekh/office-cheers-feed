@@ -1,10 +1,18 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState, useRef, useCallback, type FormEvent } from "react";
+import { useEffect, useState, useRef, useMemo, useCallback, type FormEvent } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { toast } from "sonner";
 import {
   Home,
   Users,
@@ -25,6 +33,11 @@ import {
   Shuffle,
   Send,
   Sparkles,
+  Briefcase,
+  MapPin,
+  UserPlus,
+  Check,
+  Clock,
 } from "lucide-react";
 
 export const Route = createFileRoute("/")({
@@ -101,6 +114,8 @@ function initials(name: string) {
     .toUpperCase();
 }
 
+type ViewKey = "home" | "barhop" | "pubs" | "messages" | "notifications";
+
 function Index() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [commentsByPost, setCommentsByPost] = useState<Record<string, Comment[]>>({});
@@ -110,6 +125,8 @@ function Index() {
     "Senior Program Manager | Specialize in Liquid Refactoring"
   );
   const [submitting, setSubmitting] = useState(false);
+  const [view, setView] = useState<ViewKey>("home");
+  const [highlightedId, setHighlightedId] = useState<string | null>(null);
   const cheeredRef = useRef<Set<string>>(new Set());
   const [, force] = useState(0);
 
@@ -234,6 +251,40 @@ function Index() {
     setAuthorHeadline(id.headline);
   }
 
+  // Deep-link: ?post=<id> spotlights a post at the top of the feed
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    const target = params.get("post");
+    if (target) {
+      setHighlightedId(target);
+      setView("home");
+    }
+  }, []);
+
+  const sharePost = useCallback(async (postId: string) => {
+    const url = `${window.location.origin}${window.location.pathname}?post=${postId}`;
+    try {
+      await navigator.clipboard.writeText(url);
+      toast.success("Link copied to clipboard! 🍻", {
+        description: "Now go forth and overshare on Slack.",
+      });
+    } catch {
+      toast.error("Couldn't copy. Try long-pressing the link.", {
+        description: url,
+      });
+    }
+  }, []);
+
+  // Sort posts with highlighted one pinned at top
+  const orderedPosts = useMemo(() => {
+    if (!highlightedId) return posts;
+    const idx = posts.findIndex((p) => p.id === highlightedId);
+    if (idx < 0) return posts;
+    return [posts[idx], ...posts.slice(0, idx), ...posts.slice(idx + 1)];
+  }, [posts, highlightedId]);
+
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       {/* Premium permanent TokenLens banner with neon-amber glow */}
@@ -277,11 +328,11 @@ function Index() {
           </div>
 
           <nav className="flex items-center gap-1 ml-auto">
-            <NavItem icon={<Home className="size-5" />} label="Home" active />
-            <NavItem icon={<Users className="size-5" />} label="Bar Hop" />
-            <NavItem icon={<Beer className="size-5" />} label="Pubs" />
-            <NavItem icon={<MessageSquare className="size-5" />} label="Messages" />
-            <NavItem icon={<Bell className="size-5" />} label="Notifications" badge={9} />
+            <NavItem icon={<Home className="size-5" />} label="Home" active={view === "home"} onClick={() => setView("home")} />
+            <NavItem icon={<Users className="size-5" />} label="Bar Hop" active={view === "barhop"} onClick={() => setView("barhop")} />
+            <NavItem icon={<Beer className="size-5" />} label="Pubs" active={view === "pubs"} onClick={() => setView("pubs")} />
+            <NavItem icon={<MessageSquare className="size-5" />} label="Messages" active={view === "messages"} onClick={() => setView("messages")} />
+            <NavItem icon={<Bell className="size-5" />} label="Notifications" badge={9} active={view === "notifications"} onClick={() => setView("notifications")} />
           </nav>
         </div>
       </header>
@@ -333,85 +384,116 @@ function Index() {
 
         {/* Feed */}
         <section className="col-span-12 lg:col-span-6 space-y-3">
-          {/* Composer */}
-          <Card className="p-4 border-border">
-            <form onSubmit={submitPost} className="space-y-3">
-              <div className="flex items-start gap-3">
-                <div className="size-11 shrink-0 rounded-full bg-primary/20 grid place-items-center text-lg font-bold text-primary">
-                  {initials(authorName)}
-                </div>
-                <div className="flex-1 space-y-2 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <Input
-                      value={authorName}
-                      onChange={(e) => setAuthorName(e.target.value)}
-                      placeholder="Your corporate alias"
-                      className="h-8 text-xs bg-transparent border-dashed flex-1"
-                    />
-                    <button
-                      type="button"
-                      onClick={randomize}
-                      title="Randomize a corporate identity"
-                      className="shrink-0 inline-flex items-center gap-1 h-8 px-2.5 rounded-md text-[11px] font-semibold border border-primary/40 text-primary hover:bg-primary/15 hover:border-primary transition"
-                    >
-                      <Shuffle className="size-3.5" />
-                      Randomize
-                    </button>
+          {view === "home" && (
+            <>
+              {/* Composer */}
+              <Card className="p-4 border-border">
+                <form onSubmit={submitPost} className="space-y-3">
+                  <div className="flex items-start gap-3">
+                    <div className="size-11 shrink-0 rounded-full bg-primary/20 grid place-items-center text-lg font-bold text-primary">
+                      {initials(authorName)}
+                    </div>
+                    <div className="flex-1 space-y-2 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <Input
+                          value={authorName}
+                          onChange={(e) => setAuthorName(e.target.value)}
+                          placeholder="Your corporate alias"
+                          className="h-8 text-xs bg-transparent border-dashed flex-1"
+                        />
+                        <button
+                          type="button"
+                          onClick={randomize}
+                          title="Randomize a corporate identity"
+                          className="shrink-0 inline-flex items-center gap-1 h-8 px-2.5 rounded-md text-[11px] font-semibold border border-primary/40 text-primary hover:bg-primary/15 hover:border-primary transition"
+                        >
+                          <Shuffle className="size-3.5" />
+                          Randomize
+                        </button>
+                      </div>
+                      <Input
+                        value={authorHeadline}
+                        onChange={(e) => setAuthorHeadline(e.target.value)}
+                        placeholder="Your parody headline"
+                        className="h-8 text-xs bg-transparent border-dashed italic text-muted-foreground"
+                      />
+                      <Textarea
+                        value={body}
+                        onChange={(e) => setBody(e.target.value)}
+                        placeholder="Start a post… overshare about your 4pm Aperol."
+                        className="resize-none min-h-24 bg-muted/40 border-border rounded-xl text-[15px] focus-visible:bg-background"
+                      />
+                    </div>
                   </div>
-                  <Input
-                    value={authorHeadline}
-                    onChange={(e) => setAuthorHeadline(e.target.value)}
-                    placeholder="Your parody headline"
-                    className="h-8 text-xs bg-transparent border-dashed italic text-muted-foreground"
-                  />
-                  <Textarea
-                    value={body}
-                    onChange={(e) => setBody(e.target.value)}
-                    placeholder="Start a post… overshare about your 4pm Aperol."
-                    className="resize-none min-h-24 bg-muted/40 border-border rounded-xl text-[15px] focus-visible:bg-background"
-                  />
-                </div>
-              </div>
-              <div className="flex items-center gap-1 flex-wrap pl-14">
-                <ComposerChip icon={<ImageIcon className="size-4 text-accent" />} label="Bar pic" />
-                <ComposerChip icon={<Video className="size-4 text-primary" />} label="Tasting" />
-                <ComposerChip icon={<CalendarDays className="size-4 text-chart-3" />} label="Happy hr" />
-                <ComposerChip icon={<FileText className="size-4 text-muted-foreground" />} label="Excuse" />
-                <div className="ml-auto">
-                  <Button
-                    type="submit"
-                    disabled={!body.trim() || submitting}
-                    className="rounded-full px-5 font-semibold"
+                  <div className="flex items-center gap-1 flex-wrap pl-14">
+                    <ComposerChip icon={<ImageIcon className="size-4 text-accent" />} label="Bar pic" />
+                    <ComposerChip icon={<Video className="size-4 text-primary" />} label="Tasting" />
+                    <ComposerChip icon={<CalendarDays className="size-4 text-chart-3" />} label="Happy hr" />
+                    <ComposerChip icon={<FileText className="size-4 text-muted-foreground" />} label="Excuse" />
+                    <div className="ml-auto">
+                      <Button
+                        type="submit"
+                        disabled={!body.trim() || submitting}
+                        className="rounded-full px-5 font-semibold"
+                      >
+                        {submitting ? "Pouring…" : "Post 🍻"}
+                      </Button>
+                    </div>
+                  </div>
+                </form>
+              </Card>
+
+              {highlightedId && orderedPosts.some((p) => p.id === highlightedId) && (
+                <div className="flex items-center justify-between gap-2 px-3 py-2 rounded-md bg-primary/10 border border-primary/30 text-xs">
+                  <span className="text-foreground/90">
+                    🍻 Showing a shared post at the top.
+                  </span>
+                  <button
+                    onClick={() => {
+                      setHighlightedId(null);
+                      if (typeof window !== "undefined") {
+                        window.history.replaceState({}, "", window.location.pathname);
+                      }
+                    }}
+                    className="font-semibold text-primary hover:underline"
                   >
-                    {submitting ? "Pouring…" : "Post 🍻"}
-                  </Button>
+                    Show full feed
+                  </button>
                 </div>
+              )}
+
+              <div className="flex items-center gap-3 text-xs text-muted-foreground px-1">
+                <div className="h-px flex-1 bg-border" />
+                <span>Sort by: <span className="text-foreground font-medium">Most Tipsy ▾</span></span>
               </div>
-            </form>
-          </Card>
 
-          <div className="flex items-center gap-3 text-xs text-muted-foreground px-1">
-            <div className="h-px flex-1 bg-border" />
-            <span>Sort by: <span className="text-foreground font-medium">Most Tipsy ▾</span></span>
-          </div>
+              {orderedPosts.length === 0 && (
+                <Card className="p-8 text-center text-sm text-muted-foreground border-border">
+                  Pouring the first round…
+                </Card>
+              )}
 
-          {posts.length === 0 && (
-            <Card className="p-8 text-center text-sm text-muted-foreground border-border">
-              Pouring the first round…
-            </Card>
+              {orderedPosts.map((p) => (
+                <PostCard
+                  key={p.id}
+                  post={p}
+                  comments={commentsByPost[p.id] || []}
+                  onCheers={() => cheers(p)}
+                  onComment={(text, name) => addComment(p.id, text, name)}
+                  onShare={() => sharePost(p.id)}
+                  cheered={cheeredRef.current.has(p.id)}
+                  highlighted={p.id === highlightedId}
+                />
+              ))}
+            </>
           )}
 
-          {posts.map((p) => (
-            <PostCard
-              key={p.id}
-              post={p}
-              comments={commentsByPost[p.id] || []}
-              onCheers={() => cheers(p)}
-              onComment={(text, name) => addComment(p.id, text, name)}
-              cheered={cheeredRef.current.has(p.id)}
-            />
-          ))}
+          {view === "pubs" && <PubsView />}
+          {view === "barhop" && <BarHopView />}
+          {view === "messages" && <ComingSoonView title="Messages" emoji="📬" copy="Your DMs are too embarrassing. We're protecting you from yourself." />}
+          {view === "notifications" && <ComingSoonView title="Notifications" emoji="🔔" copy="9 people Cheered your hangover. 1 recruiter wants a 'quick coffee' (it's tequila)." />}
         </section>
+
 
         {/* Right sidebar */}
         <aside className="hidden lg:block col-span-3 space-y-4">
@@ -456,14 +538,17 @@ function NavItem({
   label,
   active,
   badge,
+  onClick,
 }: {
   icon: React.ReactNode;
   label: string;
   active?: boolean;
   badge?: number;
+  onClick?: () => void;
 }) {
   return (
     <button
+      onClick={onClick}
       className={`relative flex flex-col items-center justify-center px-3 py-1 min-w-[64px] text-[11px] transition-colors ${
         active
           ? "text-foreground border-b-2 border-primary -mb-px"
@@ -500,13 +585,17 @@ function PostCard({
   comments,
   onCheers,
   onComment,
+  onShare,
   cheered,
+  highlighted,
 }: {
   post: Post;
   comments: Comment[];
   onCheers: () => void;
   onComment: (text: string, name: string) => void;
+  onShare: () => void;
   cheered: boolean;
+  highlighted?: boolean;
 }) {
   const [showComments, setShowComments] = useState(false);
   const [popKey, setPopKey] = useState(0);
@@ -521,7 +610,12 @@ function PostCard({
   }
 
   return (
-    <Card className="border-border overflow-hidden">
+    <Card className={`border-border overflow-hidden ${highlighted ? "post-spotlight" : ""}`}>
+      {highlighted && (
+        <div className="px-4 pt-2 pb-1 text-[10px] uppercase tracking-wider text-primary font-bold flex items-center gap-1.5">
+          <Sparkles className="size-3" /> Shared with you · spotlight
+        </div>
+      )}
       <div className="p-4 pb-2 flex items-start gap-3">
         <div className="size-12 rounded-full bg-gradient-to-br from-primary/40 to-accent/40 grid place-items-center font-bold text-base shrink-0">
           {initials(post.author_name)}
@@ -591,7 +685,7 @@ function PostCard({
           onClick={() => setShowComments((v) => !v)}
           active={showComments}
         />
-        <ActionBtn label="Share" icon={<Share2 className="size-5" />} />
+        <ActionBtn onClick={onShare} label="Share" icon={<Share2 className="size-5" />} />
       </div>
 
       {showComments && (
@@ -729,5 +823,238 @@ function CopeItem({ tag, title, stat }: { tag: string; title: string; stat: stri
         <div className="text-muted-foreground text-[11px]">{stat}</div>
       </div>
     </li>
+  );
+}
+
+// ============================================================
+// Pubs view (parody Jobs board)
+// ============================================================
+const PUB_JOBS = [
+  {
+    title: "Lead Happy Hour Architect",
+    company: "Brewstack Inc.",
+    location: "Remote · Anywhere with a tap",
+    salary: "$160k + Unlimited IPA",
+    type: "Full-time",
+    tags: ["Remote", "Senior", "Pints/PR"],
+    posted: "2h",
+  },
+  {
+    title: "Senior Post-Mortem Email Drafter",
+    company: "Latework Labs",
+    location: "Hybrid · 2 days at the bar",
+    salary: "$145k + Whiskey stipend",
+    type: "Hybrid",
+    tags: ["Hybrid", "Writing", "Damage control"],
+    posted: "5h",
+  },
+  {
+    title: "VP of Liquid Infrastructure",
+    company: "Synergy & Sons LLC",
+    location: "On-site · Must bring own flask",
+    salary: "$220k + Equity in keg",
+    type: "Executive",
+    tags: ["Leadership", "Onsite", "BYOF"],
+    posted: "1d",
+  },
+  {
+    title: "Principal Engineer, Beer-Driven Development",
+    company: "Stack Overpour",
+    location: "Remote · Pacific Pint Time",
+    salary: "$190k + Sabbatical at vineyard",
+    type: "Full-time",
+    tags: ["Remote", "Engineering"],
+    posted: "1d",
+  },
+];
+
+function PubsView() {
+  const [applied, setApplied] = useState<string | null>(null);
+
+  return (
+    <div className="space-y-3 animate-in fade-in duration-300">
+      <Card className="p-5 border-border bg-gradient-to-br from-card via-card to-primary/5">
+        <div className="flex items-center gap-3">
+          <div className="size-11 rounded-xl bg-primary/20 grid place-items-center text-primary">
+            <Briefcase className="size-5" />
+          </div>
+          <div>
+            <h2 className="text-lg font-bold">Pubs · Jobs</h2>
+            <p className="text-xs text-muted-foreground">
+              Roles that prefer their KPIs poured, not measured.
+            </p>
+          </div>
+        </div>
+      </Card>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        {PUB_JOBS.map((job) => (
+          <Card
+            key={job.title}
+            className="p-4 border-border hover:border-primary/50 transition group flex flex-col"
+          >
+            <div className="flex items-start gap-3 mb-2">
+              <div className="size-10 rounded-md bg-gradient-to-br from-primary/30 to-accent/30 grid place-items-center text-lg shrink-0">
+                🍺
+              </div>
+              <div className="min-w-0 flex-1">
+                <h3 className="font-semibold text-[15px] leading-tight group-hover:text-primary transition">
+                  {job.title}
+                </h3>
+                <p className="text-xs text-muted-foreground mt-0.5">{job.company}</p>
+              </div>
+            </div>
+
+            <div className="text-xs text-muted-foreground space-y-1 mb-3">
+              <div className="flex items-center gap-1.5">
+                <MapPin className="size-3" /> {job.location}
+              </div>
+              <div className="flex items-center gap-1.5">
+                <Sparkles className="size-3 text-primary" /> {job.salary}
+              </div>
+            </div>
+
+            <div className="flex flex-wrap gap-1 mb-3">
+              {job.tags.map((t) => (
+                <span
+                  key={t}
+                  className="text-[10px] px-2 py-0.5 rounded-full bg-muted/60 text-muted-foreground"
+                >
+                  {t}
+                </span>
+              ))}
+            </div>
+
+            <div className="mt-auto flex items-center justify-between">
+              <span className="text-[11px] text-muted-foreground">Posted {job.posted} ago</span>
+              <Button
+                size="sm"
+                onClick={() => setApplied(job.title)}
+                className="rounded-full h-8 px-4 font-semibold"
+              >
+                Quick Apply
+              </Button>
+            </div>
+          </Card>
+        ))}
+      </div>
+
+      <Dialog open={!!applied} onOpenChange={(o) => !o && setApplied(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <span className="text-2xl">🍻</span> Application submitted!
+            </DialogTitle>
+            <DialogDescription className="pt-2 leading-relaxed">
+              Go grab a drink while HR ignores this. You'll receive a templated
+              rejection email in 6–8 weeks. Best of luck out there, champ.
+            </DialogDescription>
+          </DialogHeader>
+          {applied && (
+            <p className="text-xs text-muted-foreground italic">
+              Applied to: <span className="text-foreground font-medium">{applied}</span>
+            </p>
+          )}
+          <Button onClick={() => setApplied(null)} className="rounded-full mt-2">
+            Pour me one
+          </Button>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
+
+// ============================================================
+// Bar Hop view (parody My Network)
+// ============================================================
+const BAR_HOP_PROFILES = [
+  { name: "Jamie O'Donnell", title: "Scrum Master | Open to Drinks", mutual: "12 mutual liver casualties" },
+  { name: "Priya Kapoor", title: "Director of Synergy | 4x Hangover Survivor", mutual: "8 mutual standups skipped" },
+  { name: "Marcus Trent", title: "Growth Hacker | Specializing in Vodka-Sodas & A/B Tests", mutual: "21 mutual happy hours" },
+  { name: "Sam Whittaker", title: "Product Manager | I ship features and shots", mutual: "5 mutual all-hands naps" },
+  { name: "Lena Park", title: "DevOps Engineer | CI/CD = Cocktails In, Drinks Continuously", mutual: "17 mutual incidents" },
+  { name: "Casey Rivers", title: "Chief People & Pints Officer | We hire vibes", mutual: "3 mutual offsites" },
+];
+
+function BarHopView() {
+  const [statuses, setStatuses] = useState<Record<string, "idle" | "pending" | "connected">>({});
+
+  function connect(name: string) {
+    setStatuses((s) => ({ ...s, [name]: "pending" }));
+    setTimeout(() => {
+      setStatuses((s) => ({ ...s, [name]: "connected" }));
+    }, 1200);
+  }
+
+  return (
+    <div className="space-y-3 animate-in fade-in duration-300">
+      <Card className="p-5 border-border bg-gradient-to-br from-card via-card to-accent/5">
+        <div className="flex items-center gap-3">
+          <div className="size-11 rounded-xl bg-accent/20 grid place-items-center text-accent">
+            <Users className="size-5" />
+          </div>
+          <div>
+            <h2 className="text-lg font-bold">Bar Hop · Network</h2>
+            <p className="text-xs text-muted-foreground">
+              People who are professionally pretending to be sober. Same as you.
+            </p>
+          </div>
+        </div>
+      </Card>
+
+      <Card className="border-border divide-y divide-border">
+        {BAR_HOP_PROFILES.map((p) => {
+          const status = statuses[p.name] ?? "idle";
+          return (
+            <div key={p.name} className="p-4 flex items-center gap-3">
+              <div className="size-12 rounded-full bg-gradient-to-br from-primary/40 to-accent/40 grid place-items-center font-bold text-base shrink-0">
+                {initials(p.name)}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="font-semibold text-[15px] leading-tight truncate">{p.name}</div>
+                <div className="text-xs text-muted-foreground line-clamp-1">{p.title}</div>
+                <div className="text-[11px] text-muted-foreground/80 mt-0.5">{p.mutual}</div>
+              </div>
+              <Button
+                size="sm"
+                variant={status === "idle" ? "default" : status === "pending" ? "secondary" : "outline"}
+                disabled={status !== "idle"}
+                onClick={() => connect(p.name)}
+                className="rounded-full h-8 px-4 font-semibold shrink-0 min-w-[160px]"
+              >
+                {status === "idle" && (
+                  <>
+                    <UserPlus className="size-3.5 mr-1.5" /> Connect
+                  </>
+                )}
+                {status === "pending" && (
+                  <>
+                    <Clock className="size-3.5 mr-1.5 animate-spin" /> Pending Recovery…
+                  </>
+                )}
+                {status === "connected" && (
+                  <>
+                    <Check className="size-3.5 mr-1.5 text-primary" /> Drinks Confirmed
+                  </>
+                )}
+              </Button>
+            </div>
+          );
+        })}
+      </Card>
+    </div>
+  );
+}
+
+function ComingSoonView({ title, emoji, copy }: { title: string; emoji: string; copy: string }) {
+  return (
+    <Card className="p-10 text-center border-border space-y-3 animate-in fade-in duration-300">
+      <div className="text-5xl">{emoji}</div>
+      <h2 className="text-xl font-bold">{title}</h2>
+      <p className="text-sm text-muted-foreground max-w-sm mx-auto leading-relaxed">{copy}</p>
+      <p className="text-xs text-muted-foreground/70 italic pt-2">
+        (Sober-rolling out next sprint.)
+      </p>
+    </Card>
   );
 }
