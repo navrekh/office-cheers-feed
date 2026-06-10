@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
-import { Mail, Sparkles, ShieldCheck } from "lucide-react";
+import { Mail, Lock, ShieldCheck } from "lucide-react";
 
 type Props = {
   open: boolean;
@@ -13,32 +13,59 @@ type Props = {
   reason?: string;
 };
 
+type Mode = "signin" | "signup";
+
 export default function AuthModal({ open, onOpenChange, reason }: Props) {
+  const [mode, setMode] = useState<Mode>("signup");
   const [email, setEmail] = useState("");
-  const [sending, setSending] = useState(false);
-  const [sent, setSent] = useState(false);
+  const [password, setPassword] = useState("");
+  const [busy, setBusy] = useState(false);
   const [googleBusy, setGoogleBusy] = useState(false);
 
-  async function handleMagicLink(e: FormEvent) {
+  async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     const clean = email.trim().toLowerCase();
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(clean)) {
       toast.error("That doesn't look like a real email. Try again sober.");
       return;
     }
-    setSending(true);
-    const redirect = typeof window !== "undefined" ? window.location.origin : undefined;
-    const { error } = await supabase.auth.signInWithOtp({
-      email: clean,
-      options: { emailRedirectTo: redirect },
-    });
-    setSending(false);
-    if (error) {
-      toast.error("Couldn't send the magic link. Try again.", { description: error.message });
+    if (password.length < 8) {
+      toast.error("Password must be at least 8 characters.");
       return;
     }
-    setSent(true);
-    toast.success("Magic link poured 🍻", { description: "Check your inbox to finish signing in." });
+    setBusy(true);
+    try {
+      if (mode === "signup") {
+        const redirect = typeof window !== "undefined" ? window.location.origin : undefined;
+        const { data, error } = await supabase.auth.signUp({
+          email: clean,
+          password,
+          options: { emailRedirectTo: redirect },
+        });
+        if (error) {
+          toast.error("Sign up failed", { description: error.message });
+          return;
+        }
+        if (data.session) {
+          toast.success("You're in 🍻", { description: "Account created. Pouring you a session…" });
+          onOpenChange(false);
+        } else {
+          // Should not happen with auto-confirm enabled, but handle gracefully.
+          toast.success("Account created", { description: "Sign in to continue." });
+          setMode("signin");
+        }
+      } else {
+        const { error } = await supabase.auth.signInWithPassword({ email: clean, password });
+        if (error) {
+          toast.error("Sign in failed", { description: error.message });
+          return;
+        }
+        toast.success("Welcome back 🍻");
+        onOpenChange(false);
+      }
+    } finally {
+      setBusy(false);
+    }
   }
 
   async function handleGoogle() {
@@ -48,12 +75,13 @@ export default function AuthModal({ open, onOpenChange, reason }: Props) {
         redirect_uri: typeof window !== "undefined" ? window.location.origin : undefined,
       });
       if (result.error) {
-        toast.error("Google sign-in failed", { description: String((result.error as any)?.message ?? result.error) });
+        toast.error("Google sign-in failed", {
+          description: String((result.error as any)?.message ?? result.error),
+        });
         setGoogleBusy(false);
         return;
       }
-      if (result.redirected) return; // browser navigates to Google
-      // Token-flow success — modal can close
+      if (result.redirected) return;
       onOpenChange(false);
     } catch (e: any) {
       toast.error("Google sign-in failed", { description: e?.message });
@@ -73,7 +101,8 @@ export default function AuthModal({ open, onOpenChange, reason }: Props) {
             Join the Breakroom 🍻
           </DialogTitle>
           <DialogDescription className="text-muted-foreground leading-relaxed">
-            {reason || "To keep our corporate sanctuary safe and brand-verified, sign in with your email or Google account. Your public posts remain 100% anonymous."}
+            {reason ||
+              "Use a personal email — never your work address. Your public posts always stay 100% anonymous behind a corporate alias."}
           </DialogDescription>
         </DialogHeader>
 
@@ -92,42 +121,65 @@ export default function AuthModal({ open, onOpenChange, reason }: Props) {
 
           <div className="flex items-center gap-2 text-[10px] uppercase tracking-wider text-muted-foreground">
             <div className="h-px flex-1 bg-border" />
-            or passwordless magic link
+            or with personal email
             <div className="h-px flex-1 bg-border" />
           </div>
 
-          {/* Magic link */}
-          {sent ? (
-            <div className="rounded-lg border border-amber-500/40 bg-amber-500/10 p-4 text-sm text-amber-100">
-              <div className="flex items-center gap-2 font-bold">
-                <Sparkles className="size-4" /> Check your inbox
-              </div>
-              <p className="mt-1.5 text-amber-100/80 text-xs leading-relaxed">
-                We sent a one-tap sign-in link to <span className="font-semibold">{email}</span>. Open it on this device to finish signing in.
-              </p>
+          <form onSubmit={handleSubmit} className="space-y-2">
+            <div className="relative">
+              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+              <Input
+                type="email"
+                placeholder="you@gmail.com (personal — not work)"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                autoComplete="email"
+                className="pl-9 h-11"
+                required
+              />
             </div>
-          ) : (
-            <form onSubmit={handleMagicLink} className="space-y-2">
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-                <Input
-                  type="email"
-                  placeholder="you@company.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  autoComplete="email"
-                  className="pl-9 h-11"
-                  required
-                />
-              </div>
-              <Button type="submit" disabled={sending} className="w-full h-11 font-semibold bg-amber-500 hover:bg-amber-400 text-zinc-950">
-                {sending ? "Sending link…" : "Send Magic Link ✉️"}
-              </Button>
-            </form>
-          )}
+            <div className="relative">
+              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+              <Input
+                type="password"
+                placeholder={mode === "signup" ? "Create a password (min 8 chars)" : "Your password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                autoComplete={mode === "signup" ? "new-password" : "current-password"}
+                className="pl-9 h-11"
+                minLength={8}
+                required
+              />
+            </div>
+            <Button
+              type="submit"
+              disabled={busy}
+              className="w-full h-11 font-semibold bg-amber-500 hover:bg-amber-400 text-zinc-950"
+            >
+              {busy
+                ? mode === "signup"
+                  ? "Creating account…"
+                  : "Signing in…"
+                : mode === "signup"
+                ? "Create account 🍻"
+                : "Sign in 🚪"}
+            </Button>
+          </form>
+
+          <button
+            type="button"
+            onClick={() => setMode(mode === "signup" ? "signin" : "signup")}
+            className="w-full text-center text-[12px] text-muted-foreground hover:text-foreground transition"
+          >
+            {mode === "signup" ? (
+              <>Already have an account? <span className="text-amber-300 font-semibold">Sign in</span></>
+            ) : (
+              <>New here? <span className="text-amber-300 font-semibold">Create an account</span></>
+            )}
+          </button>
 
           <p className="text-[11px] text-muted-foreground/80 leading-relaxed">
-            🔒 Your email is <span className="font-semibold text-foreground/80">never</span> shown publicly. Posts appear under a corporate alias so your feed stays a confession booth.
+            🔒 No inbox round-trip — you're in instantly. Email is <span className="font-semibold text-foreground/80">never</span> shown publicly; posts appear under a corporate alias.
           </p>
         </div>
       </DialogContent>
