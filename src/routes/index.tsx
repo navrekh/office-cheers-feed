@@ -286,6 +286,23 @@ function Index() {
     let mounted = true;
     let retryTimer: ReturnType<typeof setTimeout> | null = null;
 
+    // Resilience: hydrate from localStorage cache immediately so the feed never blanks
+    try {
+      const cachedPosts = localStorage.getItem("drinkedin.cache.posts");
+      const cachedComments = localStorage.getItem("drinkedin.cache.comments");
+      if (cachedPosts) {
+        const parsed = JSON.parse(cachedPosts) as Post[];
+        if (Array.isArray(parsed) && parsed.length) {
+          setPosts(parsed);
+          setFeedLoading(false);
+        }
+      }
+      if (cachedComments) {
+        const parsed = JSON.parse(cachedComments) as Record<string, Comment[]>;
+        if (parsed && typeof parsed === "object") setCommentsByPost(parsed);
+      }
+    } catch {}
+
     async function loadFeed() {
       if (!mounted) return;
       setFeedError(null);
@@ -307,14 +324,26 @@ function Index() {
         }
         setFeedLoading(false);
       } catch (err: any) {
-        console.warn("[DrinkedIn] feed load hiccup, retrying…", err?.message || err);
+        console.warn("[DrinkedIn] feed load hiccup, falling back to local cache…", err?.message || err);
         if (!mounted) return;
-        setFeedError("The bartender dropped the connection. Re-pouring…");
+        // If we have a cache, keep the feed visible and quietly retry in the background
+        try {
+          const cachedPosts = localStorage.getItem("drinkedin.cache.posts");
+          if (cachedPosts && JSON.parse(cachedPosts).length) {
+            setFeedLoading(false);
+            setFeedError(null);
+          } else {
+            setFeedError("The bartender dropped the connection. Re-pouring…");
+          }
+        } catch {
+          setFeedError("The bartender dropped the connection. Re-pouring…");
+        }
         retryTimer = setTimeout(loadFeed, 3000);
       }
     }
 
     loadFeed();
+
 
     const channel = (supabase as any)
       .channel("drinkedin-feed")
