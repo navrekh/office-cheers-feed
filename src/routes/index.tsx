@@ -1481,6 +1481,12 @@ function Index() {
             <AchievementBadges />
           </Card>
 
+          {profile?.role === "merchant" && (
+            <MerchantFlashControl profile={profile} />
+          )}
+
+
+
           <Card className="p-4 border-border">
             <h4 className="text-sm font-semibold mb-2">Recent</h4>
             <ul className="text-xs space-y-1.5 text-muted-foreground">
