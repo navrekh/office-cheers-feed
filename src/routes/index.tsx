@@ -741,13 +741,28 @@ function Index() {
             </button>
             <div
               role="tooltip"
-              className="pointer-events-none absolute left-1/2 top-full z-50 mt-2 w-72 -translate-x-1/2 rounded-lg border border-border bg-popover/95 backdrop-blur p-3 text-left text-[11px] leading-relaxed shadow-2xl opacity-0 translate-y-1 group-hover:opacity-100 group-hover:translate-y-0 group-focus-within:opacity-100 transition"
+              className="absolute left-1/2 top-full z-50 mt-2 w-72 -translate-x-1/2 rounded-lg border border-border bg-popover/95 backdrop-blur p-3 text-left text-[11px] leading-relaxed shadow-2xl opacity-0 translate-y-1 pointer-events-none group-hover:opacity-100 group-hover:translate-y-0 group-hover:pointer-events-auto group-focus-within:opacity-100 group-focus-within:pointer-events-auto transition"
             >
-              <div className="text-[10px] uppercase tracking-wider font-bold text-primary mb-1.5">Live leaks caught</div>
+              <div className="text-[10px] uppercase tracking-wider font-bold text-primary mb-1.5">Live leaks caught · click to fix</div>
               <ul className="space-y-1 text-foreground/90">
-                <li className="flex items-start gap-1.5"><span>⚠️</span><span>Runaway Agent Loops Stopped: <span className="font-bold text-primary tabular-nums">412</span></span></li>
-                <li className="flex items-start gap-1.5"><span>⚠️</span><span>Opaque Multi-Tenant Waste Caught: <span className="font-bold text-primary tabular-nums">$8,420</span></span></li>
-                <li className="flex items-start gap-1.5"><span>⚠️</span><span>Idle Sandbox API Key Leakage Blocked: <span className="font-bold text-primary tabular-nums">1,105</span></span></li>
+                {[
+                  { emoji: "⚠️", label: "Runaway Agent Loops Stopped", stat: "412" },
+                  { emoji: "⚠️", label: "Opaque Multi-Tenant Waste Caught", stat: "$8,420" },
+                  { emoji: "⚠️", label: "Idle Sandbox API Key Leakage Blocked", stat: "1,105" },
+                ].map((leak) => (
+                  <li key={leak.label}>
+                    <a
+                      href="https://tokenlens.co.in/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={trackTokenLensClick}
+                      className="flex items-start gap-1.5 rounded px-1.5 py-1 -mx-1.5 hover:bg-primary/10 hover:text-primary transition"
+                    >
+                      <span>{leak.emoji}</span>
+                      <span>{leak.label}: <span className="font-bold text-primary tabular-nums">{leak.stat}</span></span>
+                    </a>
+                  </li>
+                ))}
               </ul>
             </div>
           </div>
