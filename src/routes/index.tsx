@@ -1855,12 +1855,14 @@ function NavItem({
   label,
   active,
   badge,
+  pulseKey,
   onClick,
 }: {
   icon: React.ReactNode;
   label: string;
   active?: boolean;
   badge?: number;
+  pulseKey?: number;
   onClick?: () => void;
 }) {
   return (
@@ -1875,8 +1877,11 @@ function NavItem({
       <div className="relative">
         {icon}
         {badge ? (
-          <span className="absolute -top-1.5 -right-2 bg-primary text-primary-foreground text-[9px] font-bold rounded-full size-4 grid place-items-center shadow-[0_0_10px_var(--primary)] animate-notif-glow">
-            {badge}
+          <span
+            key={pulseKey ?? 0}
+            className="absolute -top-1.5 -right-2 bg-amber-500 text-amber-950 text-[9px] font-bold rounded-full min-w-4 h-4 px-1 grid place-items-center shadow-[0_0_10px_rgba(251,191,36,0.8)] animate-notif-glow"
+          >
+            {badge > 99 ? "99+" : badge}
           </span>
         ) : null}
       </div>
