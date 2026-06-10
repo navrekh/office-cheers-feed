@@ -631,14 +631,27 @@ function Index() {
                       />
                     </div>
                   </div>
-                  <div className="flex items-center gap-3 pl-14">
+                  <div className="flex items-center gap-2 flex-wrap pl-14">
                     <label className={`flex items-center gap-2 cursor-pointer rounded-md px-2.5 py-1.5 border transition ${anonymous ? "border-primary/50 bg-primary/10" : "border-border hover:bg-muted/40"}`}>
                       <Switch checked={anonymous} onCheckedChange={setAnonymous} aria-label="Post anonymously" />
                       <span className="text-[11px] font-semibold">
                         Post Anonymously <span className="text-muted-foreground font-normal">(Confession Mode 🎭)</span>
                       </span>
                     </label>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const next = broetrify(body);
+                        setBody(next);
+                        toast.success("Broetry engaged 🚀", { description: "Your hot take is now LinkedIn-grade." });
+                      }}
+                      className="inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 border border-primary/40 bg-primary/10 text-primary text-[11px] font-semibold hover:bg-primary/20 hover:border-primary/60 transition"
+                    >
+                      <Rocket className="size-3.5" />
+                      Make it Broetry 🚀
+                    </button>
                   </div>
+
                   <div className="flex items-center gap-1 flex-wrap pl-14">
                     <ComposerChip icon={<ImageIcon className="size-4 text-accent" />} label="Bar pic" />
                     <ComposerChip icon={<Video className="size-4 text-primary" />} label="Tasting" />
