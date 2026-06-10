@@ -569,6 +569,27 @@ function Index() {
     try { localStorage.setItem("drinkedin.cache.comments", JSON.stringify(commentsByPost)); } catch {}
   }, [commentsByPost]);
 
+  // Simulated Corporate Pulse: drop a fresh mock post onto the top of the feed
+  // every 45–90s so the timeline feels like a live global user base.
+  useEffect(() => {
+    let cancelled = false;
+    let timer: ReturnType<typeof setTimeout> | null = null;
+    function schedule() {
+      const delay = 45_000 + Math.floor(Math.random() * 45_000);
+      timer = setTimeout(() => {
+        if (cancelled) return;
+        const sim = generateSimulatedPost() as unknown as Post;
+        setPosts((prev) => [sim, ...prev]);
+        schedule();
+      }, delay);
+    }
+    schedule();
+    return () => {
+      cancelled = true;
+      if (timer) clearTimeout(timer);
+    };
+  }, []);
+
 
 
 
