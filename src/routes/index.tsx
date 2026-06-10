@@ -850,7 +850,7 @@ function Index() {
     await (supabase as any).rpc("increment_cheers", { post_id: post.id });
   }, [playClink, user]);
 
-  const addComment = useCallback(async (postId: string, text: string, name: string) => {
+  const addComment = useCallback(async (postId: string, text: string, name?: string) => {
     const trimmed = text.trim();
     if (!trimmed) return;
     if (!user) {
@@ -858,10 +858,11 @@ function Index() {
       setAuthModalOpen(true);
       return;
     }
+    const alias = name || corporateCodename(user.email) || pick(RANDOM_COMMENT_NAMES);
     const optimistic: Comment = {
       id: `tmp-${Date.now()}-${Math.random()}`,
       post_id: postId,
-      author_name: name || "Anonymous Intern",
+      author_name: alias,
       body_text: trimmed,
       created_at: new Date().toISOString(),
     };
@@ -869,16 +870,32 @@ function Index() {
       ...prev,
       [postId]: [...(prev[postId] || []), optimistic],
     }));
-    const { data, error } = await (supabase as any)
-      .from("comments")
-      .insert({ post_id: postId, body_text: trimmed, author_name: name || "Anonymous Intern" })
-      .select()
-      .single();
-    if (!error && data) {
+    try {
+      const { data, error } = await (supabase as any)
+        .from("comments")
+        .insert({
+          post_id: postId,
+          body_text: trimmed,
+          author_name: alias,
+          author_alias: alias,
+          user_id: user.id,
+        })
+        .select()
+        .single();
+      if (error) throw error;
+      if (data) {
+        setCommentsByPost((prev) => ({
+          ...prev,
+          [postId]: (prev[postId] || []).map((c) => (c.id === optimistic.id ? (data as Comment) : c)),
+        }));
+      }
+    } catch (err) {
+      console.warn("[DrinkedIn] comment insert failed", err);
       setCommentsByPost((prev) => ({
         ...prev,
-        [postId]: (prev[postId] || []).map((c) => (c.id === optimistic.id ? (data as Comment) : c)),
+        [postId]: (prev[postId] || []).filter((c) => c.id !== optimistic.id),
       }));
+      toast.error("Couldn't post your reply. Try again in a sec.");
     }
   }, [user]);
 
