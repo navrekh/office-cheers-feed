@@ -1442,7 +1442,13 @@ function PubsView() {
         </DialogContent>
       </Dialog>
 
-      <BarLocator />
+      <Suspense
+        fallback={
+          <Card className="p-5 border-border h-64 animate-pulse bg-gradient-to-br from-card via-card to-primary/5" />
+        }
+      >
+        <BarLocator />
+      </Suspense>
     </div>
   );
 }
