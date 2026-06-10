@@ -1,6 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState, useRef, useMemo, useCallback, lazy, Suspense, memo, type FormEvent } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { SITE, TOKENLENS } from "@/config";
+import { notifyAdminNewPost } from "@/lib/adminNotify.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -592,6 +594,13 @@ function Index() {
         }
       } catch {}
       if (anonymous) bumpAchievement("whistleblower", true);
+      // Optional admin webhook (Slack/Discord). No-op unless ADMIN_WEBHOOK_URL is set on the server.
+      void notifyAdminNewPost({
+        data: {
+          snippet: sanitized.clean.slice(0, 200),
+          author: anonymous ? "Anonymous" : (authorName || "Anonymous Intern"),
+        },
+      }).catch(() => {});
     } else if (error) {
       toast.error("Couldn't post that round. Try again in a sec.");
     }
@@ -656,7 +665,7 @@ function Index() {
 
   const sharePost = useCallback(async (postId: string) => {
     // Production-canonical share URL (always points to drinkedin.me regardless of preview host)
-    const url = `https://drinkedin.me/?post=${postId}`;
+    const url = SITE.shareUrl(postId);
     try {
       await navigator.clipboard.writeText(url);
       toast.success("Link copied to clipboard! 🍻", {
@@ -721,7 +730,7 @@ function Index() {
             runaway prompt loops this week alone.
           </span>
           <a
-            href="https://tokenlens.co.in/"
+            href={TOKENLENS.url}
             target="_blank"
             rel="noopener noreferrer"
             onClick={trackTokenLensClick}
@@ -752,7 +761,7 @@ function Index() {
                 ].map((leak) => (
                   <li key={leak.label}>
                     <a
-                      href="https://tokenlens.co.in/"
+                      href={TOKENLENS.url}
                       target="_blank"
                       rel="noopener noreferrer"
                       onClick={trackTokenLensClick}
