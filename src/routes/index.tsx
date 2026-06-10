@@ -127,6 +127,9 @@ async function triggerDownloadPostCard(post: { id: string; author_name: string; 
 
 import AchievementBadges, { ACH_KEYS, bumpAchievement } from "@/components/AchievementBadges";
 import MerchantFlashControl from "@/components/MerchantFlashControl";
+import TaproomVisualizer from "@/components/TaproomVisualizer";
+import DesperationGauge from "@/components/DesperationGauge";
+import EmergencyDealOverlay from "@/components/EmergencyDealOverlay";
 import CorporateBingo from "@/components/CorporateBingo";
 import VerifiedWateringHole from "@/components/VerifiedWateringHole";
 import HappyHourTicker from "@/components/HappyHourTicker";
@@ -1349,6 +1352,9 @@ function Index() {
         <HappyHourTicker />
       </header>
 
+      <EmergencyDealOverlay />
+
+
       {/* 3-column layout */}
       <main className="mx-auto max-w-7xl px-4 py-6 grid grid-cols-12 gap-6">
         {/* Left sidebar */}
@@ -1747,6 +1753,10 @@ function Index() {
                 </form>
               </Card>
 
+              <TaproomVisualizer />
+
+
+
               <GifPicker
                 open={gifPickerOpen}
                 onOpenChange={setGifPickerOpen}
@@ -1927,6 +1937,7 @@ function Index() {
 
         {/* Right sidebar */}
         <aside className="hidden lg:block col-span-3 space-y-4">
+          <DesperationGauge />
           <Card className="p-4 border-border">
             <div className="flex items-center justify-between mb-3">
               <h4 className="text-sm font-semibold flex items-center gap-1.5">
