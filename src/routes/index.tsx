@@ -634,7 +634,10 @@ function Index() {
   async function submitPost(e: FormEvent) {
     e.preventDefault();
     if (submitting) return;
-    const sanitized = sanitizePostBody(body);
+    // Allow body-less posts when a vibe or GIF is attached — the visual carries the post.
+    const hasVisual = !!(gifUrl || vibeId);
+    const bodyForSanitize = body.trim() ? body : hasVisual ? "🍻" : body;
+    const sanitized = sanitizePostBody(bodyForSanitize);
     if (!sanitized.ok) {
       toast.error(sanitized.reason || "That post didn't make the cut.");
       return;
