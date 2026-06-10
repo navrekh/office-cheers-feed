@@ -488,3 +488,105 @@ function SubscriptionClock({ pubName, onRefresh }: { pubName: string | null; onR
     </Card>
   );
 }
+
+/* ------- E. Live Guest Sentiment & Environmental Audit ------- */
+function GuestSentimentPanel({ pubName }: { pubName: string | null }) {
+  const [row, setRow] = useState<{
+    crowd_density: number | null;
+    noise_level: number | null;
+    vibe_type: number | null;
+    vibe_sample_count: number | null;
+  } | null>(null);
+
+  useEffect(() => {
+    if (!pubName) return;
+    let cancelled = false;
+    async function load() {
+      const { data } = await (supabase as any)
+        .from("merchant_deals")
+        .select("crowd_density, noise_level, vibe_type, vibe_sample_count")
+        .ilike("pub_name", pubName as string)
+        .order("updated_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (!cancelled) setRow(data ?? null);
+    }
+    load();
+    const channel = (supabase as any)
+      .channel(`sentiment-${pubName}`)
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "merchant_deals" }, load)
+      .subscribe();
+    const id = setInterval(load, 15_000);
+    return () => {
+      cancelled = true;
+      clearInterval(id);
+      (supabase as any).removeChannel(channel);
+    };
+  }, [pubName]);
+
+  const c = row?.crowd_density ?? 0;
+  const n = row?.noise_level ?? 0;
+  const v = row?.vibe_type ?? 0;
+  const samples = row?.vibe_sample_count ?? 0;
+
+  // Plain-English operational hints derived from current averages.
+  const insights: string[] = [];
+  if (samples === 0) {
+    insights.push("Waiting on your first on-premise vibe ping — the matrix unlocks for guests inside the 200 m geofence.");
+  } else {
+    if (n > 0.85) insights.push("🔊 Guests flagging the room as 'concert loud' — consider trimming the master volume a notch.");
+    else if (n < 0.2) insights.push("🤫 Floor is reading silent — a livelier playlist could extend table-stay.");
+    if (c > 0.85) insights.push("👥 Standing-room-only on the floor — open the secondary seating zone if available.");
+    else if (c < 0.25) insights.push("🏜️ Crowd density is low — push a flash deal to draw in the commuters en route.");
+    if (v > 0.75) insights.push("🍻 De-stress party energy detected — perfect window to upsell premium pours.");
+    else if (v < 0.3) insights.push("👔 Networking-mode vibe — quieter seating and bar snacks will keep them lingering.");
+    if (insights.length === 0) insights.push("✅ Crowd, acoustics, and scene vibe are all dialled in. Hold the line.");
+  }
+
+  return (
+    <Card className="p-5 border-fuchsia-400/30 bg-gradient-to-br from-fuchsia-500/10 via-zinc-900 to-zinc-950">
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-2">
+          <span className="inline-block size-2 rounded-full bg-fuchsia-400 animate-pulse" />
+          <h2 className="text-sm font-bold uppercase tracking-wider text-fuchsia-100">
+            Live Guest Sentiment &amp; Environmental Audit
+          </h2>
+        </div>
+        <span className="text-[10px] font-mono text-fuchsia-200/70 tabular-nums">
+          {samples} samples
+        </span>
+      </div>
+      <div className="grid sm:grid-cols-[auto_1fr] gap-4 items-center">
+        <LiveAmbientEqualizer crowd={c} noise={n} vibe={v} hideHotBadge />
+        <div className="space-y-2">
+          <div className="grid grid-cols-3 gap-2 text-center">
+            <SentimentTile label="Crowd Density" value={c} accent="amber" />
+            <SentimentTile label="Noise Level" value={n} accent="fuchsia" />
+            <SentimentTile label="Scene Vibe" value={v} accent="cyan" />
+          </div>
+          <ul className="text-[12px] text-fuchsia-50/90 space-y-1 list-none">
+            {insights.map((line) => (
+              <li key={line} className="leading-snug">{line}</li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    </Card>
+  );
+}
+
+function SentimentTile({
+  label, value, accent,
+}: { label: string; value: number; accent: "amber" | "fuchsia" | "cyan" }) {
+  const tone = {
+    amber:   "border-amber-400/40 bg-amber-500/10 text-amber-100",
+    fuchsia: "border-fuchsia-400/40 bg-fuchsia-500/10 text-fuchsia-100",
+    cyan:    "border-cyan-400/40 bg-cyan-500/10 text-cyan-100",
+  }[accent];
+  return (
+    <div className={`rounded-md border p-2 ${tone}`}>
+      <div className="text-[9px] uppercase tracking-wider font-bold opacity-80">{label}</div>
+      <div className="text-xl font-extrabold tabular-nums">{Math.round(value * 100)}%</div>
+    </div>
+  );
+}
