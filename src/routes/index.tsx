@@ -1655,14 +1655,14 @@ function Index() {
                 <form onSubmit={submitPost} className="space-y-3">
                   <div className="flex items-start gap-3">
                     <div className={`size-11 shrink-0 rounded-full grid place-items-center text-lg font-bold transition-colors ${anonymous ? "bg-muted text-muted-foreground" : "bg-primary/20 text-primary"}`}>
-                      {anonymous ? "🎭" : initials(authorName)}
+                      {anonymous ? "🎭" : initials(resolvedName.replace(/[^\p{L}\p{N}\s]/gu, "").trim() || "AG")}
                     </div>
                     <div className="flex-1 space-y-2 min-w-0">
                       <div className="flex items-center gap-2">
                         <Input
                           value={displayName}
                           onChange={(e) => setAuthorName(e.target.value)}
-                          placeholder="Your corporate alias"
+                          placeholder={user ? `${emailPrefix(user.email)} 🎭` : GUEST_NAME}
                           disabled={anonymous}
                           className="h-8 text-xs bg-transparent border-dashed flex-1 disabled:opacity-70"
                         />
@@ -1687,7 +1687,7 @@ function Index() {
                       <Textarea
                         value={body}
                         onChange={(e) => setBody(e.target.value)}
-                        placeholder={anonymous ? "Spill the corporate tea anonymously…" : "Start a post… overshare about your 4pm Aperol."}
+                        placeholder={anonymous ? "Spill the corporate tea anonymously…" : `What's the tea, ${resolvedName}? Drop an anonymous workplace confession... 🤫`}
                         className="resize-none min-h-24 bg-muted/40 border-border rounded-xl text-[15px] focus-visible:bg-background"
                       />
                     </div>
