@@ -92,7 +92,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
           "The premier network for corporate workers to log happy hours, navigate toxic productivity, and announce liquid refactoring milestones. Disagree? Let's take it offline.",
       },
       { property: "og:type", content: "website" },
-      { property: "og:url", content: "https://drinkedin.me/" },
+      { property: "og:url", content: `${SITE_URL}/` },
       { property: "og:site_name", content: "DrinkedIn" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:title", content: "DrinkedIn 🍻 - The Anti-Corporate Parody Feed" },
