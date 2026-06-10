@@ -652,6 +652,7 @@ function Index() {
   async function submitPost(e: FormEvent) {
     e.preventDefault();
     if (submitting) return;
+    if (!requireAuth("Sign in to post — your alias stays anonymous in the feed, but we need a verified session on the backend.")) return;
     // Allow body-less posts when a vibe or GIF is attached — the visual carries the post.
     const hasVisual = !!(gifUrl || vibeId);
     const bodyForSanitize = body.trim() ? body : hasVisual ? "🍻" : body;
@@ -678,6 +679,7 @@ function Index() {
         author_name: anonymous ? ANON_NAME : (authorName || "Anonymous Intern"),
         author_headline: anonymous ? ANON_HEADLINE : (authorHeadline || "Specializing in Liquid Refactoring"),
         body_text: composed,
+        user_id: user?.id ?? null,
       })
       .select()
       .single();
@@ -714,6 +716,11 @@ function Index() {
   }
 
   const cheers = useCallback(async (post: Post) => {
+    if (!user) {
+      setAuthReason("Sign in to send a Cheers 🍻 — it keeps our metrics honest and your feed personalized.");
+      setAuthModalOpen(true);
+      return;
+    }
     if (cheeredRef.current.has(post.id)) return;
     cheeredRef.current.add(post.id);
     force((n) => n + 1);
