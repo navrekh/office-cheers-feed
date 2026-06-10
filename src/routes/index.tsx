@@ -1021,6 +1021,46 @@ function Index() {
                   <p className="text-[11px] text-muted-foreground/80 mt-2 leading-snug">
                     Signed in as <span className="font-mono text-foreground/70">{userAlias}</span> · feed alias stays anonymous
                   </p>
+                  <Accordion type="single" collapsible className="mt-3 -mx-1">
+                    <AccordionItem value="tickets" className="border border-amber-400/30 rounded-md bg-amber-500/5">
+                      <AccordionTrigger className="px-3 py-2 text-[11px] font-semibold text-amber-200 hover:no-underline hover:text-amber-100">
+                        <span className="inline-flex items-center gap-1.5">
+                          <KeyRound className="size-3.5" />
+                          My Administrative Access Tickets
+                        </span>
+                      </AccordionTrigger>
+                      <AccordionContent className="px-2 pt-1 pb-2">
+                        {myPosts.length === 0 ? (
+                          <p className="text-[11px] text-muted-foreground px-1 py-2 leading-snug">
+                            No tickets yet. Post your first story to mint a tracking key.
+                          </p>
+                        ) : (
+                          <ul className="space-y-1 max-h-48 overflow-y-auto pr-1">
+                            {myPosts.map((p) => {
+                              const ticket = (p as any).claim_ticket as string | undefined;
+                              if (!ticket) return null;
+                              return (
+                                <li key={p.id} className="flex items-center gap-1.5 group rounded px-1.5 py-1 hover:bg-amber-500/10">
+                                  <code className="flex-1 text-[10.5px] font-mono text-amber-200 truncate" title={ticket}>{ticket}</code>
+                                  <button
+                                    type="button"
+                                    onClick={async () => {
+                                      const link = SITE.trackUrl(ticket);
+                                      try { await navigator.clipboard.writeText(link); toast.success("Tracking link copied 📋", { description: link }); } catch { toast.error("Copy failed"); }
+                                    }}
+                                    aria-label={`Copy tracking link for ${ticket}`}
+                                    className="shrink-0 p-1 rounded text-muted-foreground hover:text-amber-200 hover:bg-amber-500/15 opacity-60 group-hover:opacity-100 transition"
+                                  >
+                                    <Copy className="size-3" />
+                                  </button>
+                                </li>
+                              );
+                            })}
+                          </ul>
+                        )}
+                      </AccordionContent>
+                    </AccordionItem>
+                  </Accordion>
                 </>
               ) : (
                 <>
