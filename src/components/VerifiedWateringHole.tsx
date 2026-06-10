@@ -361,10 +361,22 @@ export default function VerifiedWateringHole({
                 </div>
                 <p className="font-semibold text-sm">Request received! 🍻</p>
                 <p className="text-xs text-muted-foreground mt-1.5 leading-relaxed">
-                  Our Chief Happy Hour Officer will reach out via WhatsApp/Email
-                  within 2 hours to activate your slot.
+                  Pay ₹599 to instantly activate your 1-week ad slot, or wait
+                  for our Chief Happy Hour Officer to reach out within 2 hours.
                 </p>
               </div>
+              <Button
+                asChild
+                className="w-full bg-amber-500 hover:bg-amber-400 text-amber-950 font-bold"
+              >
+                <a
+                  href="https://rzp.io/rzp/qFoLyja"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Pay ₹599 & Go Live Now 🚀
+                </a>
+              </Button>
               <Button
                 variant="outline"
                 className="w-full"
@@ -454,7 +466,16 @@ export default function VerifiedWateringHole({
                   {submitting ? "Submitting…" : "Submit Sponsorship Request"}
                 </Button>
                 <p className="text-[10px] text-muted-foreground/70 text-center">
-                  No login needed. We'll reach out within 2 hours.
+                  No login needed. We'll reach out within 2 hours — or{" "}
+                  <a
+                    href="https://rzp.io/rzp/qFoLyja"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-amber-300 hover:text-amber-200 underline underline-offset-2 font-semibold"
+                  >
+                    pay ₹599 now
+                  </a>{" "}
+                  to go live instantly (1-week slot).
                 </p>
               </form>
             </>
