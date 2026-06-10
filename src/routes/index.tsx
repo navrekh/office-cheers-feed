@@ -81,7 +81,7 @@ import {
 } from "@/lib/cityStore";
 import { useGeolocation } from "@/hooks/useGeolocation";
 import { getOrCreateSessionId, haversineKm } from "@/lib/geo";
-import { LiveWorkspaceRadar } from "@/components/LiveWorkspaceRadar";
+import { LiveWorkspaceRadar, type ProximityFilter } from "@/components/LiveWorkspaceRadar";
 
 // ---------- Client-side spam guard ----------
 const RATE_KEY = "drinkedin.rate.posts";
