@@ -307,7 +307,9 @@ function Index() {
   const [feedLoading, setFeedLoading] = useState(true);
   const [feedError, setFeedError] = useState<string | null>(null);
   const cheeredRef = useRef<Set<string>>(new Set());
-  const [hangoverIndex, setHangoverIndex] = useState<number>(37);
+  const [hangoverIndex, setHangoverIndex] = useState<number>(0);
+  const [liveViewers, setLiveViewers] = useState<number | null>(null);
+  const [lastExcuseImpressions, setLastExcuseImpressions] = useState<number | null>(null);
   const [sortMode, setSortMode] = useState<"recent" | "top" | "mine" | "tribunal">("recent");
   const [proximity, setProximity] = useState<ProximityFilter>("city");
   const [notifOpen, setNotifOpen] = useState(false);
