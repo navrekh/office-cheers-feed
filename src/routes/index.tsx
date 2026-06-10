@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState, useRef, useMemo, useCallback, type FormEvent } from "react";
+import { useEffect, useState, useRef, useMemo, useCallback, lazy, Suspense, memo, type FormEvent } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
