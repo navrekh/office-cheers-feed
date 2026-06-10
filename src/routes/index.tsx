@@ -511,11 +511,40 @@ function Index() {
                 <span>Sort by: <span className="text-foreground font-medium">Most Tipsy ▾</span></span>
               </div>
 
-              {orderedPosts.length === 0 && (
+              {feedError && orderedPosts.length === 0 && (
+                <Card className="p-4 text-center text-xs text-primary/90 border-primary/30 bg-primary/5 animate-pulse">
+                  {feedError}
+                </Card>
+              )}
+
+              {feedLoading && orderedPosts.length === 0 && !feedError && (
+                <div className="space-y-3" aria-label="Loading feed" role="status">
+                  {[0, 1, 2].map((i) => (
+                    <Card key={i} className="p-4 border-border animate-pulse">
+                      <div className="flex items-start gap-3">
+                        <div className="size-11 rounded-full bg-muted/60" />
+                        <div className="flex-1 space-y-2">
+                          <div className="h-3 w-1/3 rounded bg-muted/60" />
+                          <div className="h-2 w-1/2 rounded bg-muted/40" />
+                        </div>
+                      </div>
+                      <div className="mt-4 space-y-2">
+                        <div className="h-2.5 w-11/12 rounded bg-muted/50" />
+                        <div className="h-2.5 w-10/12 rounded bg-muted/50" />
+                        <div className="h-2.5 w-8/12 rounded bg-muted/40" />
+                      </div>
+                      <div className="mt-4 h-32 rounded-lg bg-muted/30" />
+                    </Card>
+                  ))}
+                </div>
+              )}
+
+              {!feedLoading && !feedError && orderedPosts.length === 0 && (
                 <Card className="p-8 text-center text-sm text-muted-foreground border-border">
                   Pouring the first round…
                 </Card>
               )}
+
 
               {orderedPosts.map((p) => (
                 <PostCard
