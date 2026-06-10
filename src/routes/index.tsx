@@ -146,7 +146,96 @@ function Index() {
   const [hangoverIndex, setHangoverIndex] = useState<number>(37);
   const [sortMode, setSortMode] = useState<"recent" | "top">("recent");
   const [anonymous, setAnonymous] = useState(false);
+  const [soundEnabled, setSoundEnabled] = useState(false);
+  const [loopCount, setLoopCount] = useState<number>(() => 1400 + Math.floor(Math.random() * 1101));
   const [, force] = useState(0);
+
+  useEffect(() => {
+    const id = setInterval(() => setLoopCount((n) => n + 1), 180000);
+    return () => clearInterval(id);
+  }, []);
+
+  const playClink = useCallback(() => {
+    if (!soundEnabled) return;
+    try {
+      const AC = (window as any).AudioContext || (window as any).webkitAudioContext;
+      if (!AC) return;
+      const ctx = new AC();
+      const now = ctx.currentTime;
+      [1760, 2640].forEach((freq, i) => {
+        const o = ctx.createOscillator();
+        const g = ctx.createGain();
+        o.type = "triangle";
+        o.frequency.value = freq;
+        g.gain.setValueAtTime(0.0001, now + i * 0.04);
+        g.gain.exponentialRampToValueAtTime(0.18, now + i * 0.04 + 0.01);
+        g.gain.exponentialRampToValueAtTime(0.0001, now + i * 0.04 + 0.35);
+        o.connect(g).connect(ctx.destination);
+        o.start(now + i * 0.04);
+        o.stop(now + i * 0.04 + 0.4);
+      });
+      setTimeout(() => ctx.close().catch(() => {}), 800);
+    } catch {}
+  }, [soundEnabled]);
+
+  const broetrify = useCallback((raw: string) => {
+    const text = raw.trim() || "I drank a beer during a meeting";
+    const openers = [
+      "I did it.",
+      "Let that sink in.",
+      "Nobody is talking about this.",
+      "This changed everything for me.",
+      "Hot take, but somebody had to say it.",
+    ];
+    const setups = [
+      `Yesterday, ${text.toLowerCase()}. Camera off. Microphone muted.`,
+      `Last quarter, ${text.toLowerCase()}. No slide deck. No agenda. Just vibes.`,
+      `This morning, ${text.toLowerCase()}. While my calendar was on fire.`,
+      `Mid-standup, ${text.toLowerCase()}. The Jira board was screaming.`,
+    ];
+    const whys = ["Why?", "Here's the thing:", "And the lesson?", "But here's what nobody tells you:"];
+    const philosophies = [
+      "Because true leadership isn't about sitting through 60-minute slide decks sober. It's about optimizing liquid infrastructure when project scope creeps.",
+      "Because synergy is a lie. Hydration with hops is the only real KPI.",
+      "Because the best 1:1s happen at the bar, not in a Zoom breakout room.",
+      "Because you can't refactor a meeting, but you can absolutely refactor your sobriety.",
+    ];
+    const realizations = [
+      "It made me realize: Sometimes, you have to let the codebase crash to appreciate the happy hour.",
+      "It hit me: Burnout is just dehydration with a sprint review attached.",
+      "And just like that, I understood: Every great pivot starts with a pint.",
+      "That's when it clicked: The roadmap was never the destination. The bar was.",
+    ];
+    const ctas = [
+      "Agree? Let's take it offline. 🍻",
+      "Thoughts? Drop a 🍺 if this resonates.",
+      "Who else is brave enough to admit it? 👇",
+      "Repost if you've been there. Mute if you can't handle the truth.",
+    ];
+    const hashtags = [
+      "#Mindset #Growth #LiquidRefactoring",
+      "#Leadership #Hustle #HoppyHour",
+      "#Synergy #Wellness #BrewedDifferent",
+      "#Founders #Resilience #PintDriven",
+    ];
+    const pick = <T,>(arr: T[]) => arr[Math.floor(Math.random() * arr.length)];
+    return [
+      pick(openers),
+      "",
+      pick(setups),
+      "",
+      pick(whys),
+      "",
+      pick(philosophies),
+      "",
+      pick(realizations),
+      "",
+      pick(ctas),
+      "",
+      pick(hashtags),
+    ].join("\n");
+  }, []);
+
 
   const ANON_NAME = "Anonymous Colleague";
   const ANON_HEADLINE = "Incognito | Drinking to Cope";
