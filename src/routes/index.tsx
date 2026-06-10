@@ -8,6 +8,9 @@ import {
   generateSimulatedPost,
   isSimulatedPost,
 } from "@/lib/mockFeed";
+import { encodePostMeta, decodePostMeta } from "@/lib/postMeta";
+import { VIBES, getVibe } from "@/lib/vibes";
+import { GifPicker } from "@/components/GifPicker";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -233,6 +236,9 @@ function Index() {
     "Senior Program Manager | Specialize in Liquid Refactoring"
   );
   const [submitting, setSubmitting] = useState(false);
+  const [gifUrl, setGifUrl] = useState<string | null>(null);
+  const [vibeId, setVibeId] = useState<string | null>(null);
+  const [gifPickerOpen, setGifPickerOpen] = useState(false);
   const [view, setView] = useState<ViewKey>("home");
   const [highlightedId, setHighlightedId] = useState<string | null>(null);
   const [feedLoading, setFeedLoading] = useState(true);
@@ -628,7 +634,10 @@ function Index() {
   async function submitPost(e: FormEvent) {
     e.preventDefault();
     if (submitting) return;
-    const sanitized = sanitizePostBody(body);
+    // Allow body-less posts when a vibe or GIF is attached — the visual carries the post.
+    const hasVisual = !!(gifUrl || vibeId);
+    const bodyForSanitize = body.trim() ? body : hasVisual ? "🍻" : body;
+    const sanitized = sanitizePostBody(bodyForSanitize);
     if (!sanitized.ok) {
       toast.error(sanitized.reason || "That post didn't make the cut.");
       return;
@@ -641,12 +650,16 @@ function Index() {
       return;
     }
     setSubmitting(true);
+    const composed = encodePostMeta(
+      { vibe: vibeId || undefined, gif: gifUrl || undefined },
+      sanitized.clean
+    );
     const { data, error } = await (supabase as any)
       .from("posts")
       .insert({
         author_name: anonymous ? ANON_NAME : (authorName || "Anonymous Intern"),
         author_headline: anonymous ? ANON_HEADLINE : (authorHeadline || "Specializing in Liquid Refactoring"),
-        body_text: sanitized.clean,
+        body_text: composed,
       })
       .select()
       .single();
@@ -654,6 +667,8 @@ function Index() {
       recordPostTimestamp();
       setPosts((prev) => (prev.some((p) => p.id === data.id) ? prev : [data as Post, ...prev]));
       setBody("");
+      setGifUrl(null);
+      setVibeId(null);
       try {
         const mine: string[] = JSON.parse(localStorage.getItem(ACH_KEYS.myPosts) || "[]");
         if (!mine.includes(data.id)) {
@@ -1076,15 +1091,80 @@ function Index() {
                     </button>
                   </div>
 
-                  <div className="flex items-center gap-1 flex-wrap pl-14">
-                    <ComposerChip icon={<ImageIcon className="size-4 text-accent" />} label="Bar pic" />
-                    <ComposerChip icon={<Video className="size-4 text-primary" />} label="Tasting" />
-                    <ComposerChip icon={<CalendarDays className="size-4 text-chart-3" />} label="Happy hr" />
-                    <ComposerChip icon={<FileText className="size-4 text-muted-foreground" />} label="Excuse" />
+                  {/* Current Vibe matrix */}
+                  <div className="pl-14">
+                    <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold mb-1.5">
+                      Current Vibe
+                    </div>
+                    <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
+                      {VIBES.map((v) => {
+                        const active = vibeId === v.id;
+                        return (
+                          <button
+                            key={v.id}
+                            type="button"
+                            onClick={() => setVibeId(active ? null : v.id)}
+                            title={v.caption}
+                            className={`flex flex-col items-center justify-center gap-0.5 py-2 px-1 rounded-md border text-[10px] font-semibold transition ${
+                              active
+                                ? `bg-gradient-to-br ${v.gradient} ${v.text} border-transparent shadow-[0_0_14px_rgba(251,191,36,0.25)]`
+                                : "border-border text-muted-foreground hover:bg-muted/40 hover:text-foreground"
+                            }`}
+                          >
+                            <span className="text-lg leading-none">{v.emoji}</span>
+                            <span className="leading-tight text-center">{v.label}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* GIF preview */}
+                  {gifUrl && (
+                    <div className="pl-14">
+                      <div className="relative rounded-xl overflow-hidden border border-border bg-black/40 max-w-md mx-auto">
+                        <img
+                          src={gifUrl}
+                          alt="Selected GIF"
+                          className="w-full h-auto object-contain max-h-72"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setGifUrl(null)}
+                          className="absolute top-2 right-2 size-7 rounded-full bg-black/70 text-white grid place-items-center text-sm hover:bg-black"
+                          aria-label="Remove GIF"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="flex items-center gap-2 flex-wrap pl-14">
+                    <button
+                      type="button"
+                      onClick={() => setGifPickerOpen(true)}
+                      className="inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 border border-primary/40 bg-primary/10 text-primary text-[12px] font-bold hover:bg-primary/20 hover:border-primary/60 transition"
+                    >
+                      🎬 Add GIF
+                    </button>
+                    {vibeId && (
+                      <span className="inline-flex items-center gap-1 rounded-full px-2 py-1 text-[10px] font-bold border border-border bg-muted/40">
+                        {getVibe(vibeId)!.emoji} {getVibe(vibeId)!.label}
+                        <button
+                          type="button"
+                          onClick={() => setVibeId(null)}
+                          className="ml-1 text-muted-foreground hover:text-foreground"
+                          aria-label="Clear vibe"
+                        >
+                          ✕
+                        </button>
+                      </span>
+                    )}
                     <div className="ml-auto">
                       <Button
                         type="submit"
-                        disabled={!body.trim() || submitting}
+                        disabled={(!body.trim() && !gifUrl && !vibeId) || submitting}
                         className="rounded-full px-5 font-semibold"
                       >
                         {submitting ? "Pouring…" : "Post 🍻"}
@@ -1093,6 +1173,12 @@ function Index() {
                   </div>
                 </form>
               </Card>
+
+              <GifPicker
+                open={gifPickerOpen}
+                onOpenChange={setGifPickerOpen}
+                onSelect={(url) => setGifUrl(url)}
+              />
 
               {highlightedId && orderedPosts.some((p) => p.id === highlightedId) && (
                 <div className="flex items-center justify-between gap-2 px-3 py-2 rounded-md bg-primary/10 border border-primary/30 text-xs">
@@ -1407,9 +1493,47 @@ const PostCard = memo(function PostCard({
         </button>
       </div>
 
-      <div className="px-4 pb-3 text-[15px] leading-relaxed whitespace-pre-wrap">
-        {post.body_text}
-      </div>
+      {(() => {
+        const { meta, body } = decodePostMeta(post.body_text);
+        const vibe = getVibe(meta.vibe);
+        return (
+          <>
+            {vibe && (
+              <div
+                className={`mx-4 mt-1 mb-3 rounded-xl px-4 py-4 bg-gradient-to-br ${vibe.gradient} ${vibe.text} shadow-[0_6px_20px_-8px_rgba(0,0,0,0.6)] border border-white/5`}
+              >
+                <div className="flex items-center gap-3">
+                  <span className="text-3xl leading-none drop-shadow">{vibe.emoji}</span>
+                  <div className="min-w-0">
+                    <div className="text-[10px] uppercase tracking-[0.18em] font-bold opacity-80">
+                      Current Vibe
+                    </div>
+                    <div className="text-lg font-extrabold leading-tight">{vibe.label}</div>
+                    <div className="text-xs opacity-90">{vibe.caption}</div>
+                  </div>
+                </div>
+              </div>
+            )}
+            {body && (
+              <div className="px-4 pb-3 text-[15px] leading-relaxed whitespace-pre-wrap">
+                {body}
+              </div>
+            )}
+            {meta.gif && (
+              <div className="px-4 pb-3">
+                <div className="rounded-xl overflow-hidden border border-border bg-black/40">
+                  <img
+                    src={meta.gif}
+                    alt="Attached GIF"
+                    loading="lazy"
+                    className="w-full h-auto object-cover max-h-[420px]"
+                  />
+                </div>
+              </div>
+            )}
+          </>
+        );
+      })()}
 
       <div className="px-4 pb-2 flex items-center justify-between text-xs text-muted-foreground">
         <div className="flex items-center gap-1.5">
