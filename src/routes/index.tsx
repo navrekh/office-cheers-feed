@@ -288,6 +288,80 @@ function Index() {
   // Auto-fill composer alias from the signed-in user's email prefix (never the full email)
   const userAlias = user ? emailPrefix(user.email) : null;
   const userCodename = user ? corporateCodename(user.email) : null;
+  const restoredDraftRef = useRef(false);
+
+  // Seamless auth handoff: once the user is signed in, restore their saved
+  // composer draft and auto-submit if the original action was a Post click.
+  useEffect(() => {
+    if (!user || restoredDraftRef.current) return;
+    let raw: string | null = null;
+    try { raw = localStorage.getItem(PENDING_DRAFT_KEY); } catch {}
+    if (!raw) return;
+    restoredDraftRef.current = true;
+    let draft: PendingDraft | null = null;
+    try { draft = JSON.parse(raw) as PendingDraft; } catch {}
+    if (!draft) {
+      try { localStorage.removeItem(PENDING_DRAFT_KEY); } catch {}
+      return;
+    }
+    // Stale drafts (older than 1 hour) are dropped silently.
+    if (Date.now() - (draft.ts || 0) > 60 * 60_000) {
+      try { localStorage.removeItem(PENDING_DRAFT_KEY); } catch {}
+      return;
+    }
+    // Hydrate the composer for visibility.
+    setBody(draft.body || "");
+    setGifUrl(draft.gifUrl || null);
+    setVibeId(draft.vibeId || null);
+    setAnonymous(!!draft.anonymous);
+    if (draft.authorName) setAuthorName(draft.authorName);
+    if (draft.authorHeadline) setAuthorHeadline(draft.authorHeadline);
+
+    if (!draft.autoSubmit) return;
+
+    // Auto-submit the saved draft directly under the new UID, then surface at top.
+    (async () => {
+      const hasVisual = !!(draft!.gifUrl || draft!.vibeId);
+      const bodyForSanitize = draft!.body.trim() ? draft!.body : hasVisual ? "🍻" : draft!.body;
+      const sanitized = sanitizePostBody(bodyForSanitize);
+      if (!sanitized.ok) {
+        toast.error(sanitized.reason || "Your saved draft didn't make the cut.");
+        try { localStorage.removeItem(PENDING_DRAFT_KEY); } catch {}
+        return;
+      }
+      const composed = encodePostMeta(
+        { vibe: draft!.vibeId || undefined, gif: draft!.gifUrl || undefined },
+        sanitized.clean
+      );
+      const { data, error } = await (supabase as any)
+        .from("posts")
+        .insert({
+          author_name: draft!.anonymous ? "Anonymous Colleague" : (draft!.authorName || "Anonymous Intern"),
+          author_headline: draft!.anonymous ? "Incognito | Drinking to Cope" : (draft!.authorHeadline || "Specializing in Liquid Refactoring"),
+          body_text: composed,
+          user_id: user.id,
+        })
+        .select()
+        .single();
+      try { localStorage.removeItem(PENDING_DRAFT_KEY); } catch {}
+      if (!error && data) {
+        setPosts((prev) => (prev.some((p) => p.id === data.id) ? prev : [data as Post, ...prev]));
+        setBody("");
+        setGifUrl(null);
+        setVibeId(null);
+        setSortMode("recent");
+        setHighlightedId((data as Post).id);
+        if ((data as any).claim_ticket) {
+          setClaimTicket((data as any).claim_ticket as string);
+          setClaimModalOpen(true);
+        }
+        toast.success("Welcome back — your draft just published 🍻", { description: "It's pinned to the top of the feed." });
+      } else if (error) {
+        toast.error("Couldn't auto-publish your saved draft. It's restored in the composer above.");
+      }
+    })();
+  }, [user]);
+
 
   // Happy Hour Mode (16:30–18:00 local time)
   useEffect(() => {
