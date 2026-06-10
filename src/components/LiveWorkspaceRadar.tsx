@@ -334,19 +334,35 @@ export function LiveWorkspaceRadar({
           </span>
         </div>
 
-        {/* Colleague (amber) blips */}
-        {postBlips.map((b) => (
-          <div
-            key={b.id}
-            className="absolute -translate-x-1/2 -translate-y-1/2 group"
-            style={{ left: `${b.x * 100}%`, top: `${b.y * 100}%` }}
-          >
-            <span className="block size-2 rounded-full bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.9)] animate-pulse" />
-            <div className="pointer-events-none absolute left-1/2 -translate-x-1/2 bottom-full mb-1 whitespace-nowrap rounded bg-zinc-900/95 px-2 py-1 text-[10px] text-amber-100 border border-amber-500/40 opacity-0 group-hover:opacity-100 transition z-10 shadow-lg">
-              🎭 Anonymous Colleague — {metersLabel(b.distKm)} away
+        {/* Colleague blips — cyan = same declared company, amber = nearby */}
+        {postBlips.map((b) => {
+          const cyan = b.color === "cyan";
+          return (
+            <div
+              key={b.id}
+              className="absolute -translate-x-1/2 -translate-y-1/2 group"
+              style={{ left: `${b.x * 100}%`, top: `${b.y * 100}%` }}
+            >
+              <span
+                className={
+                  cyan
+                    ? "block size-2.5 rounded-full bg-cyan-300 shadow-[0_0_12px_rgba(34,211,238,1)] animate-pulse ring-1 ring-cyan-200/80"
+                    : "block size-2 rounded-full bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.9)] animate-pulse"
+                }
+              />
+              <div
+                className={`pointer-events-none absolute left-1/2 -translate-x-1/2 bottom-full mb-1 whitespace-nowrap rounded px-2 py-1 text-[10px] opacity-0 group-hover:opacity-100 transition z-10 shadow-lg bg-zinc-900/95 ${
+                  cyan
+                    ? "text-cyan-100 border border-cyan-400/50"
+                    : "text-amber-100 border border-amber-500/40"
+                }`}
+              >
+                {cyan ? "🎯 Direct Colleague" : "🎭 Nearby Professional"} — {metersLabel(b.distKm)} away
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
+
 
         {/* Merchant (beer mug) blips */}
         {merchantBlips.map((b) => (
