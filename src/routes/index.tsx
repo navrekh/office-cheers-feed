@@ -129,6 +129,7 @@ import AchievementBadges, { ACH_KEYS, bumpAchievement } from "@/components/Achie
 import CorporateBingo from "@/components/CorporateBingo";
 import VerifiedWateringHole from "@/components/VerifiedWateringHole";
 import HappyHourTicker from "@/components/HappyHourTicker";
+import ClaimTicketModal from "@/components/ClaimTicketModal";
 
 function isHappyHourNow(d: Date = new Date()): boolean {
   const minutes = d.getHours() * 60 + d.getMinutes();
