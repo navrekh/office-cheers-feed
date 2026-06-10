@@ -2164,7 +2164,10 @@ function Index() {
 
           <BuzzwordDecrypter />
 
+          <LiveVibeBoard />
+
           <CorporateBingo />
+
 
           <VerifiedWateringHole
             onRequireAuth={() => requireAuth("Sign in before sponsoring a slot — keeps merchant leads verified.")}
