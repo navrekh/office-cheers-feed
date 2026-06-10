@@ -100,6 +100,45 @@ export type Database = {
         }
         Relationships: []
       }
+      merchant_deals: {
+        Row: {
+          city: string
+          created_at: string
+          deal_text: string
+          heading_there_count: number
+          id: string
+          is_active: boolean
+          neighborhood: string | null
+          pub_name: string
+          updated_at: string
+          urgency_level: number
+        }
+        Insert: {
+          city: string
+          created_at?: string
+          deal_text: string
+          heading_there_count?: number
+          id?: string
+          is_active?: boolean
+          neighborhood?: string | null
+          pub_name: string
+          updated_at?: string
+          urgency_level?: number
+        }
+        Update: {
+          city?: string
+          created_at?: string
+          deal_text?: string
+          heading_there_count?: number
+          id?: string
+          is_active?: boolean
+          neighborhood?: string | null
+          pub_name?: string
+          updated_at?: string
+          urgency_level?: number
+        }
+        Relationships: []
+      }
       post_reports: {
         Row: {
           created_at: string
