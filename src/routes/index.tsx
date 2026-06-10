@@ -1334,9 +1334,18 @@ const PostCard = memo(function PostCard({
   }
 
   const isSim = isSimulatedPost(post);
+  const isMerchant = post.post_type === "merchant";
 
   return (
-    <Card className={`border-border overflow-hidden animate-fade-in ${highlighted ? "post-spotlight" : ""}`}>
+    <Card
+      className={`overflow-hidden animate-fade-in ${
+        highlighted ? "post-spotlight" : ""
+      } ${
+        isMerchant
+          ? "border-amber-400/60 bg-gradient-to-br from-amber-950/40 via-amber-900/15 to-card shadow-[0_0_24px_rgba(251,191,36,0.18)]"
+          : "border-border"
+      }`}
+    >
       {highlighted && (
         <div className="px-4 pt-2 pb-1 text-[10px] uppercase tracking-wider text-primary font-bold flex items-center gap-1.5">
           <Sparkles className="size-3" /> Shared with you · spotlight
