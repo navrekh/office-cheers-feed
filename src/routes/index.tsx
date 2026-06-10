@@ -151,7 +151,7 @@ import BeerTipPopover from "@/components/BeerTipPopover";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { LogOut, Copy, Briefcase, KeyRound, FileText as DraftIcon } from "lucide-react";
+import { LogOut, Copy, Briefcase, KeyRound, FileText as DraftIcon, Download } from "lucide-react";
 
 
 function isHappyHourNow(d: Date = new Date()): boolean {
