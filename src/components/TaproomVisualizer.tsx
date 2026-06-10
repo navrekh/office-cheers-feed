@@ -31,6 +31,8 @@ export default function TaproomVisualizer() {
   }, []);
 
   const { top } = useMerchantDeals(city);
+  const { user } = useAuth();
+  const atVenue = useAtVenueStatus(top?.id ?? null, user?.id ?? null);
   const verified = Math.max(0, top?.verified_at_venue_count ?? 0);
   const commuting = Math.max(0, top?.commuting_count ?? 0);
   // Cap visible glyphs per side so the bar never overflows.
