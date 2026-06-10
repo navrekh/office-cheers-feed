@@ -1368,7 +1368,7 @@ function Index() {
             </>
           )}
 
-          {view === "pubs" && <PubsView />}
+          {view === "pubs" && <PubsView requireAuth={requireAuth} />}
           {view === "barhop" && <BarHopView />}
           {view === "messages" && <ComingSoonView title="Messages" emoji="📬" copy="Your DMs are too embarrassing. We're protecting you from yourself." />}
           {view === "notifications" && <NotificationsView />}
