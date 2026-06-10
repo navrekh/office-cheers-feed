@@ -112,6 +112,7 @@ async function triggerDownloadPostCard(post: { id: string; author_name: string; 
 import AchievementBadges, { ACH_KEYS, bumpAchievement } from "@/components/AchievementBadges";
 import CorporateBingo from "@/components/CorporateBingo";
 import VerifiedWateringHole from "@/components/VerifiedWateringHole";
+import HappyHourTicker from "@/components/HappyHourTicker";
 
 function isHappyHourNow(d: Date = new Date()): boolean {
   const minutes = d.getHours() * 60 + d.getMinutes();
@@ -874,6 +875,7 @@ function Index() {
             <NavItem icon={<Bell className="size-5" />} label="Notifications" badge={4} active={view === "notifications"} onClick={() => setView("notifications")} />
           </nav>
         </div>
+        <HappyHourTicker />
       </header>
 
       {/* 3-column layout */}
