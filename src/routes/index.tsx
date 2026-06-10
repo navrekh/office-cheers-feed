@@ -1591,6 +1591,9 @@ function Index() {
         <section className="col-span-12 lg:col-span-6 space-y-3">
           {view === "home" && (
             <>
+              {/* Live Workspace Radar — proximity-aware ambient ticker */}
+              <LiveWorkspaceRadar origin={geoCoords} geoStatus={geoStatus} />
+
               {/* Composer */}
               <Card className="p-4 border-border">
                 <form onSubmit={submitPost} className="space-y-3">
