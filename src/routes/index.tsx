@@ -489,40 +489,51 @@ function Index() {
               <Card className="p-4 border-border">
                 <form onSubmit={submitPost} className="space-y-3">
                   <div className="flex items-start gap-3">
-                    <div className="size-11 shrink-0 rounded-full bg-primary/20 grid place-items-center text-lg font-bold text-primary">
-                      {initials(authorName)}
+                    <div className={`size-11 shrink-0 rounded-full grid place-items-center text-lg font-bold transition-colors ${anonymous ? "bg-muted text-muted-foreground" : "bg-primary/20 text-primary"}`}>
+                      {anonymous ? "🎭" : initials(authorName)}
                     </div>
                     <div className="flex-1 space-y-2 min-w-0">
                       <div className="flex items-center gap-2">
                         <Input
-                          value={authorName}
+                          value={displayName}
                           onChange={(e) => setAuthorName(e.target.value)}
                           placeholder="Your corporate alias"
-                          className="h-8 text-xs bg-transparent border-dashed flex-1"
+                          disabled={anonymous}
+                          className="h-8 text-xs bg-transparent border-dashed flex-1 disabled:opacity-70"
                         />
                         <button
                           type="button"
                           onClick={randomize}
+                          disabled={anonymous}
                           title="Randomize a corporate identity"
-                          className="shrink-0 inline-flex items-center gap-1 h-8 px-2.5 rounded-md text-[11px] font-semibold border border-primary/40 text-primary hover:bg-primary/15 hover:border-primary transition"
+                          className="shrink-0 inline-flex items-center gap-1 h-8 px-2.5 rounded-md text-[11px] font-semibold border border-primary/40 text-primary hover:bg-primary/15 hover:border-primary transition disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent"
                         >
                           <Shuffle className="size-3.5" />
                           Randomize
                         </button>
                       </div>
                       <Input
-                        value={authorHeadline}
+                        value={displayHeadline}
                         onChange={(e) => setAuthorHeadline(e.target.value)}
                         placeholder="Your parody headline"
-                        className="h-8 text-xs bg-transparent border-dashed italic text-muted-foreground"
+                        disabled={anonymous}
+                        className="h-8 text-xs bg-transparent border-dashed italic text-muted-foreground disabled:opacity-70"
                       />
                       <Textarea
                         value={body}
                         onChange={(e) => setBody(e.target.value)}
-                        placeholder="Start a post… overshare about your 4pm Aperol."
+                        placeholder={anonymous ? "Spill the corporate tea anonymously…" : "Start a post… overshare about your 4pm Aperol."}
                         className="resize-none min-h-24 bg-muted/40 border-border rounded-xl text-[15px] focus-visible:bg-background"
                       />
                     </div>
+                  </div>
+                  <div className="flex items-center gap-3 pl-14">
+                    <label className={`flex items-center gap-2 cursor-pointer rounded-md px-2.5 py-1.5 border transition ${anonymous ? "border-primary/50 bg-primary/10" : "border-border hover:bg-muted/40"}`}>
+                      <Switch checked={anonymous} onCheckedChange={setAnonymous} aria-label="Post anonymously" />
+                      <span className="text-[11px] font-semibold">
+                        Post Anonymously <span className="text-muted-foreground font-normal">(Confession Mode 🎭)</span>
+                      </span>
+                    </label>
                   </div>
                   <div className="flex items-center gap-1 flex-wrap pl-14">
                     <ComposerChip icon={<ImageIcon className="size-4 text-accent" />} label="Bar pic" />
