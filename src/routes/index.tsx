@@ -1743,7 +1743,7 @@ function Index() {
                     post={p}
                     comments={commentsByPost[p.id] || []}
                     onCheers={cheers}
-                    onComment={addComment}
+                    onOpenComments={(p) => setActiveCommentPostId(p.id)}
                     onShare={sharePost}
                     onReport={reportPost}
                     onTribunalVote={voteTribunal}
