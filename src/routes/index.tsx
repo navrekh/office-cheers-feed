@@ -426,6 +426,27 @@ function Index() {
                 📍 Brewlyn, NY · BigCorp Holdings
               </p>
             </div>
+            <div className="border-t border-border px-4 py-3 space-y-2.5">
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                  Your Hangover Index
+                </span>
+                <span className="text-xs font-bold text-primary tabular-nums">{hangoverIndex}%</span>
+              </div>
+              <Slider
+                value={[hangoverIndex]}
+                onValueChange={(v) => setHangoverIndex(v[0] ?? 0)}
+                min={0}
+                max={100}
+                step={1}
+                aria-label="Your current hangover index"
+              />
+              <div className={`rounded-md border px-2.5 py-1.5 text-[11px] leading-snug transition-colors ${hangoverStatus.tone}`}>
+                <div className="font-bold">{hangoverStatus.label}</div>
+                <div className="text-foreground/70 mt-0.5">{hangoverStatus.copy}</div>
+              </div>
+            </div>
+
             <div className="border-t border-border px-4 py-3 text-xs space-y-2 hover:bg-muted/40 cursor-pointer">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Who viewed your hangover status</span>
