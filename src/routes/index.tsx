@@ -569,6 +569,14 @@ function Index() {
       recordPostTimestamp();
       setPosts((prev) => (prev.some((p) => p.id === data.id) ? prev : [data as Post, ...prev]));
       setBody("");
+      try {
+        const mine: string[] = JSON.parse(localStorage.getItem(ACH_KEYS.myPosts) || "[]");
+        if (!mine.includes(data.id)) {
+          mine.push(data.id);
+          localStorage.setItem(ACH_KEYS.myPosts, JSON.stringify(mine.slice(-50)));
+        }
+      } catch {}
+      if (anonymous) bumpAchievement("whistleblower", true);
     } else if (error) {
       toast.error("Couldn't post that round. Try again in a sec.");
     }
@@ -580,6 +588,7 @@ function Index() {
     cheeredRef.current.add(post.id);
     force((n) => n + 1);
     playClink();
+    bumpAchievement("cheers", 1);
     setPosts((prev) =>
       prev.map((p) => (p.id === post.id ? { ...p, cheers_count: p.cheers_count + 1 } : p))
     );
