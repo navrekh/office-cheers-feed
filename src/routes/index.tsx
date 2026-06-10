@@ -307,7 +307,9 @@ function Index() {
   const [feedLoading, setFeedLoading] = useState(true);
   const [feedError, setFeedError] = useState<string | null>(null);
   const cheeredRef = useRef<Set<string>>(new Set());
-  const [hangoverIndex, setHangoverIndex] = useState<number>(37);
+  const [hangoverIndex, setHangoverIndex] = useState<number>(0);
+  const [liveViewers, setLiveViewers] = useState<number | null>(null);
+  const [lastExcuseImpressions, setLastExcuseImpressions] = useState<number | null>(null);
   const [sortMode, setSortMode] = useState<"recent" | "top" | "mine" | "tribunal">("recent");
   const [proximity, setProximity] = useState<ProximityFilter>("city");
   const [notifOpen, setNotifOpen] = useState(false);
@@ -1338,6 +1340,36 @@ function Index() {
     if (notifOpen) setNotifUnread(0);
   }, [notifOpen]);
 
+  // Live personal stats derived from the user's real posts
+  useEffect(() => {
+    if (!user) {
+      setLiveViewers(null);
+      setLastExcuseImpressions(null);
+      setHangoverIndex(0);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      const { data, error } = await supabase
+        .from("posts")
+        .select("id, cheers_count, created_at")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false })
+        .limit(50);
+      if (cancelled || error || !data) return;
+      const totalCheers = data.reduce((s, p) => s + (p.cheers_count ?? 0), 0);
+      setLiveViewers(totalCheers);
+      setLastExcuseImpressions(data[0]?.cheers_count ?? 0);
+      const since = Date.now() - 24 * 60 * 60 * 1000;
+      const recent = data.filter((p) => new Date(p.created_at).getTime() >= since).length;
+      setHangoverIndex(Math.min(100, recent * 20 + Math.min(40, totalCheers * 2)));
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [user, posts.length]);
+
+
   const hangoverStatus = useMemo(() => {
     if (hangoverIndex <= 20)
       return { label: "Dangerously Sober", copy: "High risk of replying to emails on time.", tone: "text-chart-3 border-chart-3/40 bg-chart-3/10" };
@@ -1594,14 +1626,19 @@ function Index() {
 
             <div className="border-t border-border px-4 py-3 text-xs space-y-2 hover:bg-muted/40 cursor-pointer">
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Who viewed your hangover status</span>
-                <span className="font-semibold text-primary">42</span>
+                <span className="text-muted-foreground">Cheers received on your posts</span>
+                <span className="font-semibold text-primary tabular-nums">
+                  {user ? (liveViewers ?? "…") : "—"}
+                </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Impressions of your last excuse</span>
-                <span className="font-semibold text-primary">1,204</span>
+                <span className="font-semibold text-primary tabular-nums">
+                  {user ? (lastExcuseImpressions ?? "…") : "—"}
+                </span>
               </div>
             </div>
+
             <div className="border-t border-border px-4 py-2 text-xs hover:bg-muted/40 cursor-pointer">
               <span className="text-muted-foreground">Saved </span>
               <span className="font-semibold">🍷 Wine cellar bookmarks</span>
