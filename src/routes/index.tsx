@@ -560,12 +560,14 @@ function Index() {
 
   // Lightweight, anonymous click tracker for the TokenLens banner CTA
   const trackTokenLensClick = useCallback(() => {
-    const event = {
+    if (typeof window === "undefined") return;
+    const w = window as any;
+    (w.__drinkedinEvents ||= []).push({
       event: "tokenlens_banner_click",
       ts: new Date().toISOString(),
-      path: typeof window !== "undefined" ? window.location.pathname : "/",
-    };
-    console.log("[DrinkedIn Analytics]", event);
+      path: window.location.pathname,
+    });
+  }, []);
     if (typeof window !== "undefined") {
       const w = window as any;
       (w.__drinkedinEvents ||= []).push(event);
