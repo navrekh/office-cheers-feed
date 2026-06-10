@@ -204,48 +204,60 @@ export type Database = {
           city: string
           commuting_count: number
           created_at: string
+          crowd_density: number
           deal_text: string
           expires_at: string
           heading_there_count: number
           id: string
           is_active: boolean
           neighborhood: string | null
+          noise_level: number
           pub_name: string
           updated_at: string
           urgency_level: number
           verified_at_venue_count: number
+          vibe_sample_count: number
+          vibe_type: number
         }
         Insert: {
           activated_at?: string
           city: string
           commuting_count?: number
           created_at?: string
+          crowd_density?: number
           deal_text: string
           expires_at?: string
           heading_there_count?: number
           id?: string
           is_active?: boolean
           neighborhood?: string | null
+          noise_level?: number
           pub_name: string
           updated_at?: string
           urgency_level?: number
           verified_at_venue_count?: number
+          vibe_sample_count?: number
+          vibe_type?: number
         }
         Update: {
           activated_at?: string
           city?: string
           commuting_count?: number
           created_at?: string
+          crowd_density?: number
           deal_text?: string
           expires_at?: string
           heading_there_count?: number
           id?: string
           is_active?: boolean
           neighborhood?: string | null
+          noise_level?: number
           pub_name?: string
           updated_at?: string
           urgency_level?: number
           verified_at_venue_count?: number
+          vibe_sample_count?: number
+          vibe_type?: number
         }
         Relationships: []
       }
@@ -437,6 +449,20 @@ export type Database = {
       increment_cheers: { Args: { post_id: string }; Returns: number }
       increment_heading_there: { Args: { p_deal_id: string }; Returns: number }
       report_post: { Args: { p_post_id: string }; Returns: undefined }
+      submit_venue_vibe: {
+        Args: {
+          p_crowd: number
+          p_deal_id: string
+          p_noise: number
+          p_vibe: number
+        }
+        Returns: {
+          crowd_density: number
+          noise_level: number
+          vibe_sample_count: number
+          vibe_type: number
+        }[]
+      }
       tribunal_vote: {
         Args: { p_post_id: string; p_vote: string }
         Returns: {

@@ -139,6 +139,7 @@ import DesperationGauge from "@/components/DesperationGauge";
 import EmergencyDealOverlay from "@/components/EmergencyDealOverlay";
 import CorporateBingo from "@/components/CorporateBingo";
 import VerifiedWateringHole from "@/components/VerifiedWateringHole";
+import LiveVibeBoard from "@/components/LiveVibeBoard";
 import HappyHourTicker from "@/components/HappyHourTicker";
 import ClaimTicketModal from "@/components/ClaimTicketModal";
 import AuthModal from "@/components/AuthModal";
@@ -2163,7 +2164,10 @@ function Index() {
 
           <BuzzwordDecrypter />
 
+          <LiveVibeBoard />
+
           <CorporateBingo />
+
 
           <VerifiedWateringHole
             onRequireAuth={() => requireAuth("Sign in before sponsoring a slot — keeps merchant leads verified.")}

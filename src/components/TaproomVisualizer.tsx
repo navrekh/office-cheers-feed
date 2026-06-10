@@ -2,6 +2,10 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { useMerchantDeals } from "@/lib/useMerchantDeals";
 import { getSelectedCity, subscribeCity, type CityKey } from "@/lib/cityStore";
+import { useAuth } from "@/lib/useAuth";
+import { useAtVenueStatus } from "@/lib/useAtVenueStatus";
+import LiveAmbientEqualizer from "@/components/LiveAmbientEqualizer";
+import VenueVibeDrawer from "@/components/VenueVibeDrawer";
 
 // Tiny pixel-style avatars rendered as emoji glyphs. Cheap, plays nicely with SSR.
 const PERSONAS = ["👨‍💻", "👩‍💻", "🧑‍🎨", "👔", "🧑‍🔧", "👩‍🔬", "🧑‍💼", "🦸"];
@@ -27,6 +31,8 @@ export default function TaproomVisualizer() {
   }, []);
 
   const { top } = useMerchantDeals(city);
+  const { user } = useAuth();
+  const atVenue = useAtVenueStatus(top?.id ?? null, user?.id ?? null);
   const verified = Math.max(0, top?.verified_at_venue_count ?? 0);
   const commuting = Math.max(0, top?.commuting_count ?? 0);
   // Cap visible glyphs per side so the bar never overflows.
@@ -88,6 +94,32 @@ export default function TaproomVisualizer() {
           <span className="text-sky-300/80">🏃‍♂️ {commuting} en route</span>
         </span>
       </div>
+
+      {/* Live ambient equalizer strip */}
+      <div className="px-3 pt-3 flex items-center justify-between gap-3">
+        <span className="text-[9px] uppercase tracking-[0.18em] font-bold text-zinc-400">
+          Live Ambient Equalizer
+        </span>
+        <LiveAmbientEqualizer
+          crowd={top?.crowd_density}
+          noise={top?.noise_level}
+          vibe={top?.vibe_type}
+          compact
+        />
+      </div>
+
+      {/* Geofence-gated vibe drawer */}
+      {atVenue && (
+        <VenueVibeDrawer
+          dealId={top?.id ?? null}
+          userId={user?.id ?? null}
+          initial={{
+            crowd: top?.crowd_density ?? 0.5,
+            noise: top?.noise_level ?? 0.5,
+            vibe: top?.vibe_type ?? 0.5,
+          }}
+        />
+      )}
 
       {/* Stage area */}
       <div className="relative h-32 px-4">
