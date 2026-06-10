@@ -1521,6 +1521,13 @@ function Index() {
         onOpenChange={setAuthModalOpen}
         reason={authReason}
       />
+
+      <NotificationsDrawer
+        open={notifOpen}
+        onOpenChange={setNotifOpen}
+        signedIn={!!user}
+        myPosts={myPosts}
+      />
     </div>
   );
 }
