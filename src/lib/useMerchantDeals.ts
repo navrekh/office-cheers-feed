@@ -16,6 +16,10 @@ export type MerchantDeal = {
   updated_at: string;
   activated_at?: string;
   expires_at?: string;
+  crowd_density?: number;
+  noise_level?: number;
+  vibe_type?: number;
+  vibe_sample_count?: number;
 };
 
 // Happy hour window: 16:30 – 19:30 local. Peaks at 18:00.
