@@ -639,25 +639,27 @@ function Index() {
               )}
 
 
-              {orderedPosts.map((p) => (
-                <PostCard
-                  key={p.id}
-                  post={p}
-                  comments={commentsByPost[p.id] || []}
-                  onCheers={() => cheers(p)}
-                  onComment={(text, name) => addComment(p.id, text, name)}
-                  onShare={() => sharePost(p.id)}
-                  cheered={cheeredRef.current.has(p.id)}
-                  highlighted={p.id === highlightedId}
-                />
-              ))}
+              <div key={sortMode} className="space-y-3 animate-fade-in">
+                {orderedPosts.map((p) => (
+                  <PostCard
+                    key={p.id}
+                    post={p}
+                    comments={commentsByPost[p.id] || []}
+                    onCheers={() => cheers(p)}
+                    onComment={(text, name) => addComment(p.id, text, name)}
+                    onShare={() => sharePost(p.id)}
+                    cheered={cheeredRef.current.has(p.id)}
+                    highlighted={p.id === highlightedId}
+                  />
+                ))}
+              </div>
             </>
           )}
 
           {view === "pubs" && <PubsView />}
           {view === "barhop" && <BarHopView />}
           {view === "messages" && <ComingSoonView title="Messages" emoji="📬" copy="Your DMs are too embarrassing. We're protecting you from yourself." />}
-          {view === "notifications" && <ComingSoonView title="Notifications" emoji="🔔" copy="9 people Cheered your hangover. 1 recruiter wants a 'quick coffee' (it's tequila)." />}
+          {view === "notifications" && <NotificationsView />}
         </section>
 
 
