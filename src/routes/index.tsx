@@ -5,6 +5,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
+import { Slider } from "@/components/ui/slider";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Dialog,
   DialogContent,
@@ -13,6 +21,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
+
 import {
   Home,
   Users,
@@ -130,7 +139,10 @@ function Index() {
   const [feedLoading, setFeedLoading] = useState(true);
   const [feedError, setFeedError] = useState<string | null>(null);
   const cheeredRef = useRef<Set<string>>(new Set());
+  const [hangoverIndex, setHangoverIndex] = useState<number>(37);
+  const [sortMode, setSortMode] = useState<"recent" | "top">("recent");
   const [, force] = useState(0);
+
 
 
   useEffect(() => {
@@ -318,13 +330,28 @@ function Index() {
   }, []);
 
 
-  // Sort posts with highlighted one pinned at top
+  // Sort posts by selected mode, then pin highlighted post at top
   const orderedPosts = useMemo(() => {
-    if (!highlightedId) return posts;
-    const idx = posts.findIndex((p) => p.id === highlightedId);
-    if (idx < 0) return posts;
-    return [posts[idx], ...posts.slice(0, idx), ...posts.slice(idx + 1)];
-  }, [posts, highlightedId]);
+    const sorted = [...posts].sort((a, b) => {
+      if (sortMode === "top") return b.cheers_count - a.cheers_count;
+      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+    });
+    if (!highlightedId) return sorted;
+    const idx = sorted.findIndex((p) => p.id === highlightedId);
+    if (idx < 0) return sorted;
+    return [sorted[idx], ...sorted.slice(0, idx), ...sorted.slice(idx + 1)];
+  }, [posts, highlightedId, sortMode]);
+
+  const hangoverStatus = useMemo(() => {
+    if (hangoverIndex <= 20)
+      return { label: "Dangerously Sober", copy: "High risk of replying to emails on time.", tone: "text-chart-3 border-chart-3/40 bg-chart-3/10" };
+    if (hangoverIndex <= 50)
+      return { label: "Functional Synergy", copy: "Navigating Slack with a moderate buzz.", tone: "text-primary border-primary/40 bg-primary/10" };
+    if (hangoverIndex <= 80)
+      return { label: "Liquid Architecture", copy: "Camera off during regional alignment calls.", tone: "text-accent border-accent/40 bg-accent/10" };
+    return { label: "Total System Outage", copy: "Submitting PTO retroactively.", tone: "text-destructive border-destructive/40 bg-destructive/10" };
+  }, [hangoverIndex]);
+
 
 
   return (
@@ -399,6 +426,27 @@ function Index() {
                 📍 Brewlyn, NY · BigCorp Holdings
               </p>
             </div>
+            <div className="border-t border-border px-4 py-3 space-y-2.5">
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                  Your Hangover Index
+                </span>
+                <span className="text-xs font-bold text-primary tabular-nums">{hangoverIndex}%</span>
+              </div>
+              <Slider
+                value={[hangoverIndex]}
+                onValueChange={(v) => setHangoverIndex(v[0] ?? 0)}
+                min={0}
+                max={100}
+                step={1}
+                aria-label="Your current hangover index"
+              />
+              <div className={`rounded-md border px-2.5 py-1.5 text-[11px] leading-snug transition-colors ${hangoverStatus.tone}`}>
+                <div className="font-bold">{hangoverStatus.label}</div>
+                <div className="text-foreground/70 mt-0.5">{hangoverStatus.copy}</div>
+              </div>
+            </div>
+
             <div className="border-t border-border px-4 py-3 text-xs space-y-2 hover:bg-muted/40 cursor-pointer">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Who viewed your hangover status</span>
@@ -506,10 +554,37 @@ function Index() {
                 </div>
               )}
 
-              <div className="flex items-center gap-3 text-xs text-muted-foreground px-1">
+              <div className="flex items-center gap-3 text-xs px-1">
+                <div className="inline-flex items-center rounded-full border border-border bg-card p-0.5">
+                  <button
+                    type="button"
+                    onClick={() => setSortMode("recent")}
+                    className={`px-3 py-1 rounded-full text-[11px] font-semibold transition ${
+                      sortMode === "recent"
+                        ? "bg-primary text-primary-foreground shadow"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    Recent
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setSortMode("top")}
+                    className={`px-3 py-1 rounded-full text-[11px] font-semibold transition inline-flex items-center gap-1 ${
+                      sortMode === "top"
+                        ? "bg-primary text-primary-foreground shadow"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    🏆 Top Brews
+                  </button>
+                </div>
                 <div className="h-px flex-1 bg-border" />
-                <span>Sort by: <span className="text-foreground font-medium">Most Tipsy ▾</span></span>
+                <span className="text-muted-foreground">
+                  {sortMode === "top" ? "Most Cheered 🍻" : "Freshly poured"}
+                </span>
               </div>
+
 
               {feedError && orderedPosts.length === 0 && (
                 <Card className="p-4 text-center text-xs text-primary/90 border-primary/30 bg-primary/5 animate-pulse">
@@ -594,6 +669,10 @@ function Index() {
               <CopeItem tag="New" title="Scheduling 'focus time' at the pub" stat="Synergy unlocked" />
             </ul>
           </Card>
+
+          <BuzzwordDecrypter />
+
+
 
           <p className="text-[10px] text-muted-foreground/60 px-2 leading-relaxed">
             DrinkedIn © 2026 · A parody. Please drink responsibly.
@@ -1131,3 +1210,64 @@ function ComingSoonView({ title, emoji, copy }: { title: string; emoji: string; 
     </Card>
   );
 }
+
+const BUZZWORDS: { phrase: string; translation: string }[] = [
+  {
+    phrase: "Let's take this offline",
+    translation:
+      "If I have to look at your shared screen for another 30 seconds I am opening a beer.",
+  },
+  {
+    phrase: "Circle back next week",
+    translation:
+      "I am actively hungover and will not process this spreadsheet today.",
+  },
+  {
+    phrase: "High-priority deliverable",
+    translation:
+      "The VP promised something to a client while drinking at an airport bar.",
+  },
+  {
+    phrase: "Synergistic alignment",
+    translation:
+      "We are drinking together at 5:00 PM to forget this project structure.",
+  },
+];
+
+function BuzzwordDecrypter() {
+  const [phrase, setPhrase] = useState<string>(BUZZWORDS[0].phrase);
+  const translation = BUZZWORDS.find((b) => b.phrase === phrase)?.translation ?? "";
+
+  return (
+    <Card className="p-4 border-border">
+      <h4 className="text-sm font-semibold mb-1 flex items-center gap-1.5">
+        <Sparkles className="size-4 text-primary" /> Corporate Buzzword Decrypter
+      </h4>
+      <p className="text-[11px] text-muted-foreground mb-3 leading-snug">
+        Pick a phrase. We'll tell you what it actually meant.
+      </p>
+      <Select value={phrase} onValueChange={setPhrase}>
+        <SelectTrigger className="h-9 text-xs">
+          <SelectValue placeholder="Select a corporate phrase" />
+        </SelectTrigger>
+        <SelectContent>
+          {BUZZWORDS.map((b) => (
+            <SelectItem key={b.phrase} value={b.phrase} className="text-xs">
+              {b.phrase}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+      <blockquote
+        key={phrase}
+        className="mt-3 relative rounded-lg border-l-4 border-primary bg-primary/10 px-3 py-2.5 text-xs italic leading-relaxed text-foreground/90 animate-in fade-in duration-300"
+      >
+        <span className="absolute -top-2 left-2 text-2xl leading-none text-primary/60 select-none">
+          "
+        </span>
+        {translation}
+      </blockquote>
+    </Card>
+  );
+}
+

@@ -169,17 +169,16 @@
 }
 
 @keyframes neon-amber-glow {
-  0%, 100% {
+  0%, 85%, 100% {
     box-shadow:
-      0 0 0 1px color-mix(in oklab, var(--color-primary) 55%, transparent),
-      0 0 22px -4px color-mix(in oklab, var(--color-primary) 50%, transparent),
-      0 0 40px -10px color-mix(in oklab, var(--color-accent) 35%, transparent);
+      0 0 0 1px color-mix(in oklab, var(--color-primary) 45%, transparent),
+      0 0 18px -6px color-mix(in oklab, var(--color-primary) 35%, transparent);
   }
-  50% {
+  92% {
     box-shadow:
-      0 0 0 1px color-mix(in oklab, var(--color-primary) 80%, transparent),
-      0 0 32px -2px color-mix(in oklab, var(--color-primary) 70%, transparent),
-      0 0 55px -6px color-mix(in oklab, var(--color-accent) 55%, transparent);
+      0 0 0 1px color-mix(in oklab, var(--color-primary) 75%, transparent),
+      0 0 28px -2px color-mix(in oklab, var(--color-primary) 55%, transparent),
+      0 0 48px -8px color-mix(in oklab, var(--color-accent) 40%, transparent);
   }
 }
 @utility tokenlens-banner {
@@ -191,8 +190,9 @@
       color-mix(in oklab, var(--color-background) 70%, transparent) 100%
     );
   border-bottom: 1px solid color-mix(in oklab, var(--color-primary) 45%, transparent);
-  animation: neon-amber-glow 3.2s ease-in-out infinite;
+  animation: neon-amber-glow 5s ease-in-out infinite;
 }
+
 
 @keyframes post-spotlight {
   0%, 100% {
