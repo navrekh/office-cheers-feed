@@ -254,7 +254,8 @@ function Index() {
   const [feedError, setFeedError] = useState<string | null>(null);
   const cheeredRef = useRef<Set<string>>(new Set());
   const [hangoverIndex, setHangoverIndex] = useState<number>(37);
-  const [sortMode, setSortMode] = useState<"recent" | "top">("recent");
+  const [sortMode, setSortMode] = useState<"recent" | "top" | "mine">("recent");
+  const [notifOpen, setNotifOpen] = useState(false);
   const [anonymous, setAnonymous] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(false);
   const [loopCount, setLoopCount] = useState<number>(1847);
