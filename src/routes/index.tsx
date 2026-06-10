@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState, useRef, useMemo, useCallback, type FormEvent } from "react";
+import { useEffect, useState, useRef, useMemo, useCallback, lazy, Suspense, memo, type FormEvent } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -92,107 +92,13 @@ function sanitizePostBody(raw: string): { ok: boolean; reason?: string; clean: s
   return { ok: true, clean };
 }
 
-// ---------- Post card image export ----------
-function downloadPostAsImage(post: Post) {
-  const W = 1200, H = 1500;
-  const canvas = document.createElement("canvas");
-  canvas.width = W; canvas.height = H;
-  const ctx = canvas.getContext("2d");
-  if (!ctx) return;
-
-  // dark background gradient
-  const bg = ctx.createLinearGradient(0, 0, 0, H);
-  bg.addColorStop(0, "#0b0f1a");
-  bg.addColorStop(1, "#111827");
-  ctx.fillStyle = bg;
-  ctx.fillRect(0, 0, W, H);
-
-  // accent corner
-  const accent = ctx.createLinearGradient(0, 0, 400, 400);
-  accent.addColorStop(0, "rgba(56,189,248,0.25)");
-  accent.addColorStop(1, "rgba(56,189,248,0)");
-  ctx.fillStyle = accent;
-  ctx.fillRect(0, 0, 600, 600);
-
-  // brand
-  ctx.fillStyle = "#38bdf8";
-  ctx.font = "bold 36px ui-sans-serif, system-ui, -apple-system, sans-serif";
-  ctx.fillText("DrinkedIn 🍻", 80, 110);
-
-  // avatar circle
-  const initials = post.author_name.split(" ").map((s) => s[0]).slice(0, 2).join("").toUpperCase();
-  ctx.beginPath();
-  ctx.arc(130, 240, 60, 0, Math.PI * 2);
-  ctx.fillStyle = "#1e293b";
-  ctx.fill();
-  ctx.fillStyle = "#e2e8f0";
-  ctx.font = "bold 40px ui-sans-serif, system-ui, sans-serif";
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-  ctx.fillText(initials || "?", 130, 240);
-  ctx.textAlign = "start";
-  ctx.textBaseline = "alphabetic";
-
-  // author name + headline
-  ctx.fillStyle = "#f1f5f9";
-  ctx.font = "bold 38px ui-sans-serif, system-ui, sans-serif";
-  ctx.fillText(post.author_name, 220, 230);
-  ctx.fillStyle = "#94a3b8";
-  ctx.font = "26px ui-sans-serif, system-ui, sans-serif";
-  ctx.fillText(post.author_headline.slice(0, 60), 220, 270);
-
-  // divider
-  ctx.strokeStyle = "rgba(148,163,184,0.2)";
-  ctx.beginPath();
-  ctx.moveTo(80, 340);
-  ctx.lineTo(W - 80, 340);
-  ctx.stroke();
-
-  // body text — word-wrap
-  ctx.fillStyle = "#e2e8f0";
-  ctx.font = "34px ui-sans-serif, system-ui, sans-serif";
-  const maxWidth = W - 160;
-  const lineHeight = 50;
-  const words = post.body_text.split(/\s+/);
-  let line = "";
-  let y = 410;
-  const maxY = H - 240;
-  for (const word of words) {
-    const test = line ? line + " " + word : word;
-    if (ctx.measureText(test).width > maxWidth) {
-      ctx.fillText(line, 80, y);
-      line = word;
-      y += lineHeight;
-      if (y > maxY) { line = line + " …"; break; }
-    } else {
-      line = test;
-    }
-  }
-  if (y <= maxY) ctx.fillText(line, 80, y);
-
-  // cheers badge
-  ctx.fillStyle = "#38bdf8";
-  ctx.font = "bold 32px ui-sans-serif, system-ui, sans-serif";
-  ctx.fillText(`🍻 ${post.cheers_count.toLocaleString()} cheers`, 80, H - 140);
-
-  // watermark
-  ctx.fillStyle = "rgba(148,163,184,0.7)";
-  ctx.font = "22px ui-sans-serif, system-ui, sans-serif";
-  ctx.textAlign = "right";
-  ctx.fillText("Made on DrinkedIn.me 🍻", W - 80, H - 60);
-  ctx.textAlign = "start";
-
-  canvas.toBlob((blob) => {
-    if (!blob) return;
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `drinkedin-${post.id.slice(0, 8)}.png`;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
-  }, "image/png");
+// ---------- Lazy code-split modules (kept out of the initial bundle) ----------
+const BarLocator = lazy(() => import("@/components/BarLocator"));
+const DevConsole = lazy(() => import("@/components/DevConsole"));
+// Image export is a one-shot click; dynamic import on demand
+async function triggerDownloadPostCard(post: { id: string; author_name: string; author_headline: string; body_text: string; cheers_count: number }) {
+  const mod = await import("@/lib/postCardImage");
+  mod.downloadPostAsImage(post);
 }
 
 export const Route = createFileRoute("/")({
@@ -291,6 +197,63 @@ function Index() {
   const [soundEnabled, setSoundEnabled] = useState(false);
   const [loopCount, setLoopCount] = useState<number>(1847);
   const [, force] = useState(0);
+  const [devOpen, setDevOpen] = useState(false);
+  const [mockOutage, setMockOutage] = useState(false);
+  const logoPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Hidden developer console: Ctrl/Cmd + Shift + D
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === "D" || e.key === "d")) {
+        e.preventDefault();
+        setDevOpen((v) => !v);
+      }
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
+  // Dev console event bus: burst sim, cache clear, outage toggle
+  useEffect(() => {
+    function onBurst(e: Event) {
+      const count = ((e as CustomEvent).detail as any)?.count ?? 50;
+      const fakes: Post[] = Array.from({ length: count }).map((_, i) => {
+        const id = randomIdentity();
+        return {
+          id: `dev-${Date.now()}-${i}-${Math.random().toString(36).slice(2, 7)}`,
+          author_name: id.name,
+          author_headline: id.headline,
+          body_text: `[DEV BURST #${i + 1}] Simulated viral take — testing scroll stability under concurrent realtime load.`,
+          cheers_count: Math.floor(Math.random() * 500),
+          created_at: new Date(Date.now() - i * 50).toISOString(),
+        };
+      });
+      setPosts((prev) => [...fakes, ...prev]);
+    }
+    function onClear() {
+      cheeredRef.current.clear();
+      setPosts([]);
+      setCommentsByPost({});
+      setFeedLoading(true);
+    }
+    function onOutage(e: Event) {
+      const next = !!((e as CustomEvent).detail as any)?.outage;
+      setMockOutage(next);
+      if (next) {
+        setFeedLoading(true);
+      } else {
+        setFeedLoading(false);
+      }
+    }
+    window.addEventListener("drinkedin:dev-burst", onBurst as EventListener);
+    window.addEventListener("drinkedin:dev-clear-cache", onClear);
+    window.addEventListener("drinkedin:dev-toggle-outage", onOutage as EventListener);
+    return () => {
+      window.removeEventListener("drinkedin:dev-burst", onBurst as EventListener);
+      window.removeEventListener("drinkedin:dev-clear-cache", onClear);
+      window.removeEventListener("drinkedin:dev-toggle-outage", onOutage as EventListener);
+    };
+  }, []);
 
   // Hydrate persistent TokenLens counter on the client only (avoids SSR hydration mismatch)
   useEffect(() => {
@@ -654,17 +617,18 @@ function Index() {
 
   // Lightweight, anonymous click tracker for the TokenLens banner CTA
   const trackTokenLensClick = useCallback(() => {
-    const event = {
+    if (typeof window === "undefined") return;
+    const w = window as any;
+    (w.__drinkedinEvents ||= []).push({
       event: "tokenlens_banner_click",
       ts: new Date().toISOString(),
-      path: typeof window !== "undefined" ? window.location.pathname : "/",
-    };
-    console.log("[DrinkedIn Analytics]", event);
-    if (typeof window !== "undefined") {
-      const w = window as any;
-      (w.__drinkedinEvents ||= []).push(event);
-    }
+      path: window.location.pathname,
+    });
   }, []);
+
+
+
+
 
 
   // Sort posts by selected mode, then pin highlighted post at top
@@ -749,7 +713,19 @@ function Index() {
       {/* Top Nav */}
       <header className="sticky top-0 z-40 bg-card/95 backdrop-blur border-b border-border shadow-sm">
         <div className="mx-auto max-w-7xl px-4 h-14 flex items-center gap-3">
-          <div className="flex items-center gap-2">
+          <div
+            className="flex items-center gap-2 select-none"
+            onPointerDown={() => {
+              if (logoPressTimer.current) clearTimeout(logoPressTimer.current);
+              logoPressTimer.current = setTimeout(() => setDevOpen(true), 5000);
+            }}
+            onPointerUp={() => {
+              if (logoPressTimer.current) { clearTimeout(logoPressTimer.current); logoPressTimer.current = null; }
+            }}
+            onPointerLeave={() => {
+              if (logoPressTimer.current) { clearTimeout(logoPressTimer.current); logoPressTimer.current = null; }
+            }}
+          >
             <div className="size-9 rounded-md bg-primary text-primary-foreground grid place-items-center font-black text-lg">
               🍻
             </div>
@@ -1040,9 +1016,9 @@ function Index() {
                     key={p.id}
                     post={p}
                     comments={commentsByPost[p.id] || []}
-                    onCheers={() => cheers(p)}
-                    onComment={(text, name) => addComment(p.id, text, name)}
-                    onShare={() => sharePost(p.id)}
+                    onCheers={cheers}
+                    onComment={addComment}
+                    onShare={sharePost}
                     cheered={cheeredRef.current.has(p.id)}
                     highlighted={p.id === highlightedId}
                   />
@@ -1096,6 +1072,12 @@ function Index() {
           </p>
         </aside>
       </main>
+
+      {devOpen && (
+        <Suspense fallback={null}>
+          <DevConsole onClose={() => setDevOpen(false)} />
+        </Suspense>
+      )}
     </div>
   );
 }
@@ -1147,7 +1129,7 @@ function ComposerChip({ icon, label }: { icon: React.ReactNode; label: string })
   );
 }
 
-function PostCard({
+const PostCard = memo(function PostCard({
   post,
   comments,
   onCheers,
@@ -1158,9 +1140,9 @@ function PostCard({
 }: {
   post: Post;
   comments: Comment[];
-  onCheers: () => void;
-  onComment: (text: string, name: string) => void;
-  onShare: () => void;
+  onCheers: (post: Post) => void;
+  onComment: (postId: string, text: string, name: string) => void;
+  onShare: (postId: string) => void;
   cheered: boolean;
   highlighted?: boolean;
 }) {
@@ -1173,7 +1155,7 @@ function PostCard({
       setPopKey((k) => k + 1);
       setBumpKey((k) => k + 1);
     }
-    onCheers();
+    onCheers(post);
   }
 
   return (
@@ -1252,10 +1234,10 @@ function PostCard({
           onClick={() => setShowComments((v) => !v)}
           active={showComments}
         />
-        <ActionBtn onClick={onShare} label="Share" icon={<Share2 className="size-5" />} />
+        <ActionBtn onClick={() => onShare(post.id)} label="Share" icon={<Share2 className="size-5" />} />
         <ActionBtn
           onClick={() => {
-            downloadPostAsImage(post);
+            void triggerDownloadPostCard(post);
             toast.success("Post card downloading 🍻");
           }}
           label="Download"
@@ -1266,12 +1248,12 @@ function PostCard({
       {showComments && (
         <CommentSection
           comments={comments}
-          onSubmit={onComment}
+          onSubmit={(text, name) => onComment(post.id, text, name)}
         />
       )}
     </Card>
   );
-}
+});
 
 function CommentSection({
   comments,
@@ -1536,114 +1518,20 @@ function PubsView() {
         </DialogContent>
       </Dialog>
 
-      <BarLocator />
+      <Suspense
+        fallback={
+          <Card className="p-5 border-border h-64 animate-pulse bg-gradient-to-br from-card via-card to-primary/5" />
+        }
+      >
+        <BarLocator />
+      </Suspense>
     </div>
   );
 }
 
-// ============================================================
-// Corporate Bar Locator (parody live map)
-// ============================================================
-const BAR_PINS: Array<{ id: string; x: number; y: number; emoji: string; team: string; label: string; venue: string }> = [
-  { id: "anchor", x: 18, y: 32, emoji: "😭", team: "Product", label: "Product Team weeping into stouts at Anchor Brewing", venue: "Anchor Brewing · Pier 17" },
-  { id: "incident", x: 46, y: 58, emoji: "🚨", team: "DevOps", label: "DevOps hosting an emergency incident response post-mortem at the local pub", venue: "The Crashed Server Tavern · Midtown" },
-  { id: "acq", x: 74, y: 26, emoji: "💸", team: "Sales", label: "Sales running an aggressive client-acquisition tab at a downtown cocktail lounge", venue: "Velvet Pipeline · Financial District" },
-  { id: "design", x: 30, y: 72, emoji: "🎨", team: "Design", label: "Design team workshopping kerning over natural wines", venue: "Grid & Garnish · SoMa" },
-  { id: "eng", x: 62, y: 80, emoji: "🧪", team: "Engineering", label: "Engineering A/B testing two IPAs against a control lager", venue: "Null Pointer Pub · Mission" },
-];
+// (BarLocator moved to src/components/BarLocator.tsx — lazy-loaded)
 
-function BarLocator() {
-  const [active, setActive] = useState<typeof BAR_PINS[number] | null>(null);
-  const [ripple, setRipple] = useState(0);
 
-  return (
-    <Card className="p-5 border-border bg-gradient-to-br from-card via-card to-primary/5">
-      <div className="flex items-center justify-between mb-4">
-        <div>
-          <h3 className="text-lg font-bold flex items-center gap-2">
-            <span>🗺️</span> Corporate Bar Locator
-          </h3>
-          <p className="text-xs text-muted-foreground">
-            Live-ish tracking of where tech teams are currently coping. Click a pin.
-          </p>
-        </div>
-        <span className="text-[10px] uppercase tracking-wider text-primary font-bold flex items-center gap-1.5">
-          <span className="size-1.5 rounded-full bg-primary animate-pulse" /> LIVE
-        </span>
-      </div>
-
-      <div className="relative w-full aspect-[16/9] rounded-xl overflow-hidden border border-border bg-gradient-to-br from-muted/40 to-card">
-        <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute inset-0 w-full h-full opacity-30">
-          <defs>
-            <pattern id="barlocator-grid" width="10" height="10" patternUnits="userSpaceOnUse">
-              <path d="M 10 0 L 0 0 0 10" fill="none" stroke="currentColor" strokeWidth="0.2" />
-            </pattern>
-          </defs>
-          <rect width="100" height="100" fill="url(#barlocator-grid)" className="text-border" />
-          <path d="M0 55 Q 30 40, 55 60 T 100 50" strokeWidth="0.6" fill="none" className="stroke-primary/40" />
-          <path d="M20 0 L 35 100" strokeWidth="0.4" fill="none" className="stroke-accent/30" />
-          <path d="M80 0 L 65 100" strokeWidth="0.4" fill="none" className="stroke-accent/30" />
-        </svg>
-
-        {BAR_PINS.map((p) => (
-          <button
-            key={p.id}
-            type="button"
-            onClick={() => setActive(p)}
-            style={{ left: `${p.x}%`, top: `${p.y}%` }}
-            className="absolute -translate-x-1/2 -translate-y-1/2 group"
-            aria-label={p.label}
-          >
-            <span className="absolute inset-0 -m-1 rounded-full bg-primary/30 animate-ping" />
-            <span className="relative grid place-items-center size-9 rounded-full bg-primary text-primary-foreground text-base shadow-lg shadow-primary/30 ring-2 ring-background group-hover:scale-110 transition">
-              {p.emoji}
-            </span>
-            <span className="absolute left-1/2 -translate-x-1/2 top-full mt-1 whitespace-nowrap text-[10px] font-semibold bg-card/90 backdrop-blur border border-border rounded px-1.5 py-0.5 text-foreground/90 opacity-0 group-hover:opacity-100 transition pointer-events-none">
-              {p.team}
-            </span>
-          </button>
-        ))}
-
-        {active && (
-          <div
-            key={ripple}
-            className="absolute inset-x-3 bottom-3 sm:left-auto sm:right-3 sm:max-w-sm rounded-xl border border-primary/40 bg-card/95 backdrop-blur p-4 shadow-2xl animate-fade-in"
-          >
-            <div className="flex items-start gap-3">
-              <div className="size-10 rounded-lg bg-primary/20 text-primary grid place-items-center text-xl shrink-0">
-                {active.emoji}
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="text-[10px] uppercase tracking-wider font-bold text-primary">{active.team}</div>
-                <p className="text-sm font-semibold leading-snug mt-0.5">{active.label}</p>
-                <p className="text-[11px] text-muted-foreground mt-1">{active.venue}</p>
-              </div>
-              <button
-                onClick={() => setActive(null)}
-                className="text-muted-foreground hover:text-foreground text-lg leading-none"
-                aria-label="Close"
-              >
-                ×
-              </button>
-            </div>
-            <Button
-              size="sm"
-              className="w-full mt-3 rounded-full font-semibold"
-              onClick={() => {
-                setRipple((r) => r + 1);
-                toast.success(`Round of Cheers sent to ${active.team} 🍻`, {
-                  description: `${active.venue} just lit up.`,
-                });
-              }}
-            >
-              Send a round of Cheers 🍻
-            </Button>
-          </div>
-        )}
-      </div>
-    </Card>
-  );
-}
 
 // ============================================================
 // Bar Hop view (parody My Network)
