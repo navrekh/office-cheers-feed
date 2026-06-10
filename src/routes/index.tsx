@@ -765,7 +765,7 @@ function Index() {
 
 
       {/* Top Nav */}
-      <header className="sticky top-0 z-40 bg-card/95 backdrop-blur border-b border-border shadow-sm">
+      <header className={`sticky top-0 z-40 backdrop-blur border-b shadow-sm transition-colors ${happyHour ? "happy-hour-header border-amber-300/50" : "bg-card/95 border-border"}`}>
         <div className="mx-auto max-w-7xl px-4 h-14 flex items-center gap-3">
           <div
             className="flex items-center gap-2 select-none"
