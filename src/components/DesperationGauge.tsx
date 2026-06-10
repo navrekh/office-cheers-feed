@@ -36,11 +36,13 @@ function zoneFor(score: number, d = new Date()): Zone {
 }
 
 export default function DesperationGauge() {
+  const [mounted, setMounted] = useState(false);
   const [tick, setTick] = useState(0);
   const [recentCheers, setRecentCheers] = useState(0);
 
   // Re-render every 30s so the gauge breathes through the day.
   useEffect(() => {
+    setMounted(true);
     const i = setInterval(() => setTick((n) => n + 1), 30_000);
     return () => clearInterval(i);
   }, []);
