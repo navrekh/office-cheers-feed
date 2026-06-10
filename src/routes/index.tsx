@@ -1435,6 +1435,31 @@ const PostCard = memo(function PostCard({
         </div>
       </div>
 
+      {isMerchant && (post.merchant_website || post.map_query_address) && (
+        <div className="px-4 pb-3 grid grid-cols-2 gap-2">
+          {post.merchant_website && (
+            <a
+              href={post.merchant_website}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center gap-1.5 h-9 rounded-md border border-amber-400/50 bg-amber-500/10 hover:bg-amber-500/20 text-amber-100 text-[12px] font-semibold transition"
+            >
+              <ExternalLink className="size-3.5" /> Visit Website 🌐
+            </a>
+          )}
+          {post.map_query_address && (
+            <a
+              href={mapsDirectionsUrl(post.map_query_address)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center gap-1.5 h-9 rounded-md bg-amber-500 hover:bg-amber-400 text-amber-950 text-[12px] font-bold transition"
+            >
+              <Navigation className="size-3.5" /> Get Directions 📍
+            </a>
+          )}
+        </div>
+      )}
+
       <div className="border-t border-border grid grid-cols-4 px-2 py-1">
         <ActionBtn
           onClick={handleCheers}
