@@ -1253,6 +1253,14 @@ function PostCard({
           active={showComments}
         />
         <ActionBtn onClick={onShare} label="Share" icon={<Share2 className="size-5" />} />
+        <ActionBtn
+          onClick={() => {
+            downloadPostAsImage(post);
+            toast.success("Post card downloading 🍻");
+          }}
+          label="Download"
+          icon={<Download className="size-5" />}
+        />
       </div>
 
       {showComments && (
