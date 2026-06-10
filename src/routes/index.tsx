@@ -988,6 +988,8 @@ function Index() {
           author_name: alias,
           author_alias: alias,
           user_id: user.id,
+          latitude: geoCoords?.latitude ?? null,
+          longitude: geoCoords?.longitude ?? null,
         })
         .select()
         .single();
@@ -1006,7 +1008,7 @@ function Index() {
       }));
       toast.error("Couldn't post your reply. Try again in a sec.");
     }
-  }, [user]);
+  }, [user, geoCoords?.latitude, geoCoords?.longitude]);
 
   const reportPost = useCallback(async (post: Post) => {
     if (isSimulatedPost(post) || post.post_type === "merchant" || post.id.startsWith("merchant-")) {
