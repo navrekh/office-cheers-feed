@@ -1,5 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { getRequestHeader } from "@tanstack/react-start/server";
 
 const WINDOW_MS = 3 * 60 * 60 * 1000;
 const EARTH_KM = 6371;
@@ -38,7 +38,6 @@ type Input = {
 };
 
 export const getScrubbedRadarBlips = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
   .inputValidator((data: Input) => {
     if (
       typeof data?.latitude !== "number" ||
@@ -57,22 +56,30 @@ export const getScrubbedRadarBlips = createServerFn({ method: "POST" })
       maxKm,
     };
   })
-  .handler(async ({ data, context }): Promise<ScrubbedBlipsResult> => {
-    const { supabase, userId } = context;
+  .handler(async ({ data }): Promise<ScrubbedBlipsResult> => {
     const { supabaseAdmin } = await import(
       "@/integrations/supabase/client.server"
     );
 
-    // 1. Caller's own declared_company (RLS-safe via user-scoped client)
-    const { data: me } = await supabase
-      .from("profiles")
-      .select("declared_company")
-      .eq("id", userId)
-      .maybeSingle();
-    const myCompany = ((me as any)?.declared_company ?? "")
-      .toString()
-      .trim()
-      .toLowerCase();
+    // 1. Optional caller identity. Anonymous homepage visitors still receive
+    // scrubbed amber blips; signed-in users may receive same-company coloring.
+    const authHeader = getRequestHeader("authorization") ?? "";
+    const token = authHeader.startsWith("Bearer ")
+      ? authHeader.replace("Bearer ", "")
+      : "";
+    let userId = "";
+    if (token) {
+      const { data: userData } = await supabaseAdmin.auth.getUser(token);
+      userId = userData.user?.id ?? "";
+    }
+    const { data: me } = userId
+      ? await supabaseAdmin
+          .from("profiles")
+          .select("declared_company")
+          .eq("id", userId)
+          .maybeSingle()
+      : { data: null };
+    const myCompany = ((me as any)?.declared_company ?? "").toString().trim().toLowerCase();
 
     // 2. Recent geo-tagged posts (admin read OK — we strip PII below)
     const since = new Date(Date.now() - WINDOW_MS).toISOString();
