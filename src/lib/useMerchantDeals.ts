@@ -51,7 +51,8 @@ export function useMerchantDeals(city: CityKey) {
           .from("merchant_deals")
           .select("*")
           .eq("city", city)
-          .eq("is_active", true);
+          .eq("is_active", true)
+          .gt("expires_at", new Date().toISOString());
         if (!cancelled && !error && data) setDeals(data as MerchantDeal[]);
       } catch {
         /* offline fallback handled by caller */
