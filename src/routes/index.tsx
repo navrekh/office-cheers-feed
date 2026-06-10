@@ -975,15 +975,39 @@ function Index() {
             <div className="h-16 bg-gradient-to-br from-primary/40 via-accent/50 to-primary/30" />
             <div className="px-4 pb-4 -mt-8">
               <div className="size-16 rounded-full bg-card border-4 border-card ring-2 ring-primary/40 grid place-items-center text-2xl shadow">
-                🍺
+                {user ? "🍻" : "🎭"}
               </div>
-              <h3 className="mt-2 font-semibold text-base leading-tight">{authorName}</h3>
-              <p className="text-xs text-muted-foreground mt-1 leading-snug line-clamp-2">
-                {authorHeadline}
-              </p>
-              <p className="text-[11px] text-muted-foreground/80 mt-1">
-                📍 Brewlyn, NY · BigCorp Holdings
-              </p>
+              {user ? (
+                <>
+                  <h3 className="mt-2 font-semibold text-base leading-tight">
+                    Welcome, <span className="text-primary">{userAlias}</span> 🍻
+                  </h3>
+                  <p className="text-xs text-muted-foreground mt-1 leading-snug">
+                    Verified session · feed alias stays anonymous
+                  </p>
+                  <p className="text-[11px] text-muted-foreground/80 mt-1 inline-flex items-center gap-1">
+                    <ShieldCheck className="size-3 text-amber-400" />
+                    Legally protected · publicly anonymous
+                  </p>
+                </>
+              ) : (
+                <>
+                  <h3 className="mt-2 font-semibold text-base leading-tight">Incognito Guest 🎭</h3>
+                  <p className="text-xs text-muted-foreground mt-1 leading-snug line-clamp-2">
+                    Sign in to post, cheers, and track your shareable content.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setAuthReason("Sign in to unlock posting, cheering, and your private dashboards.");
+                      setAuthModalOpen(true);
+                    }}
+                    className="mt-2 inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-[11px] font-semibold border border-primary/40 bg-primary/10 text-primary hover:bg-primary/20 transition"
+                  >
+                    Sign in 🍻
+                  </button>
+                </>
+              )}
             </div>
             <div className="border-t border-border px-4 py-3 space-y-2.5">
               <div className="flex items-center justify-between gap-2">
@@ -1032,6 +1056,22 @@ function Index() {
               <li className="hover:text-foreground cursor-pointer"># OOO_AtTheBar</li>
             </ul>
           </Card>
+
+          {user && (
+            <button
+              type="button"
+              onClick={async () => {
+                await signOut();
+                toast("Logged out. The bar is closing… for now. 🚪", {
+                  description: "Your session token has been cleared.",
+                });
+              }}
+              className="w-full inline-flex items-center justify-center gap-2 rounded-md px-3 py-2 text-[12px] font-medium text-muted-foreground hover:text-foreground border border-border/60 hover:border-border bg-card/40 hover:bg-muted/40 transition"
+            >
+              <LogOut className="size-3.5" />
+              Logout 🚪
+            </button>
+          )}
         </aside>
 
         {/* Feed */}
