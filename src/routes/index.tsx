@@ -670,6 +670,10 @@ function Index() {
             </ul>
           </Card>
 
+          <BuzzwordDecrypter />
+
+
+
           <p className="text-[10px] text-muted-foreground/60 px-2 leading-relaxed">
             DrinkedIn © 2026 · A parody. Please drink responsibly.
             <br />
