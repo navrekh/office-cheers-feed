@@ -1283,8 +1283,10 @@ const PostCard = memo(function PostCard({
     onCheers(post);
   }
 
+  const isSim = isSimulatedPost(post);
+
   return (
-    <Card className={`border-border overflow-hidden ${highlighted ? "post-spotlight" : ""}`}>
+    <Card className={`border-border overflow-hidden animate-fade-in ${highlighted ? "post-spotlight" : ""}`}>
       {highlighted && (
         <div className="px-4 pt-2 pb-1 text-[10px] uppercase tracking-wider text-primary font-bold flex items-center gap-1.5">
           <Sparkles className="size-3" /> Shared with you · spotlight
@@ -1295,9 +1297,24 @@ const PostCard = memo(function PostCard({
           {initials(post.author_name)}
         </div>
         <div className="flex-1 min-w-0">
-          <div className="font-semibold text-[15px] leading-tight truncate">
-            {post.author_name}{" "}
-            <span className="text-xs font-normal text-muted-foreground">· 1st</span>
+          <div className="font-semibold text-[15px] leading-tight truncate flex items-center gap-1.5">
+            <span className="truncate">{post.author_name}</span>
+            <span className="text-xs font-normal text-muted-foreground shrink-0">· 1st</span>
+            {isSim && (
+              <span
+                className="group/sim relative inline-flex items-center gap-1 rounded-md border border-amber-400/50 bg-amber-500/10 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-amber-300 shrink-0"
+                tabIndex={0}
+                aria-label="Simulated parody profile"
+              >
+                Simulation 🤖
+                <span
+                  role="tooltip"
+                  className="pointer-events-none absolute left-1/2 top-full z-50 mt-1.5 w-56 -translate-x-1/2 rounded-md border border-border bg-popover/95 backdrop-blur p-2 text-[11px] font-normal normal-case tracking-normal text-foreground/90 shadow-xl opacity-0 -translate-y-1 transition group-hover/sim:opacity-100 group-hover/sim:translate-y-0 group-focus/sim:opacity-100 group-focus/sim:translate-y-0"
+                >
+                  This is an automated parody profile simulating the global corporate grid.
+                </span>
+              </span>
+            )}
           </div>
           <div className="text-xs text-muted-foreground line-clamp-1">
             {post.author_headline}
