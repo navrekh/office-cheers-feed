@@ -1352,6 +1352,9 @@ function Index() {
         <HappyHourTicker />
       </header>
 
+      <EmergencyDealOverlay />
+
+
       {/* 3-column layout */}
       <main className="mx-auto max-w-7xl px-4 py-6 grid grid-cols-12 gap-6">
         {/* Left sidebar */}
