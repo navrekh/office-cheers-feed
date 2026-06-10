@@ -142,7 +142,13 @@ function Index() {
   const cheeredRef = useRef<Set<string>>(new Set());
   const [hangoverIndex, setHangoverIndex] = useState<number>(37);
   const [sortMode, setSortMode] = useState<"recent" | "top">("recent");
+  const [anonymous, setAnonymous] = useState(false);
   const [, force] = useState(0);
+
+  const ANON_NAME = "Anonymous Colleague";
+  const ANON_HEADLINE = "Incognito | Drinking to Cope";
+  const displayName = anonymous ? ANON_NAME : authorName;
+  const displayHeadline = anonymous ? ANON_HEADLINE : authorHeadline;
 
 
 
