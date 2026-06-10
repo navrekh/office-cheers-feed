@@ -766,7 +766,7 @@ function Index() {
         [postId]: (prev[postId] || []).map((c) => (c.id === optimistic.id ? (data as Comment) : c)),
       }));
     }
-  }, []);
+  }, [user]);
 
   function randomize() {
     const id = randomIdentity();
