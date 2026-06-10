@@ -946,9 +946,9 @@ function Index() {
                     key={p.id}
                     post={p}
                     comments={commentsByPost[p.id] || []}
-                    onCheers={() => cheers(p)}
-                    onComment={(text, name) => addComment(p.id, text, name)}
-                    onShare={() => sharePost(p.id)}
+                    onCheers={cheers}
+                    onComment={addComment}
+                    onShare={sharePost}
                     cheered={cheeredRef.current.has(p.id)}
                     highlighted={p.id === highlightedId}
                   />
