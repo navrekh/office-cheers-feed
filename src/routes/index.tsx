@@ -1626,14 +1626,19 @@ function Index() {
 
             <div className="border-t border-border px-4 py-3 text-xs space-y-2 hover:bg-muted/40 cursor-pointer">
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Who viewed your hangover status</span>
-                <span className="font-semibold text-primary">42</span>
+                <span className="text-muted-foreground">Cheers received on your posts</span>
+                <span className="font-semibold text-primary tabular-nums">
+                  {user ? (liveViewers ?? "…") : "—"}
+                </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Impressions of your last excuse</span>
-                <span className="font-semibold text-primary">1,204</span>
+                <span className="font-semibold text-primary tabular-nums">
+                  {user ? (lastExcuseImpressions ?? "…") : "—"}
+                </span>
               </div>
             </div>
+
             <div className="border-t border-border px-4 py-2 text-xs hover:bg-muted/40 cursor-pointer">
               <span className="text-muted-foreground">Saved </span>
               <span className="font-semibold">🍷 Wine cellar bookmarks</span>
