@@ -233,6 +233,7 @@ export default function VerifiedWateringHole({ onRequireAuth }: { onRequireAuth?
             variant="outline"
             size="sm"
             onClick={() => {
+              if (onRequireAuth && !onRequireAuth()) return;
               resetForm();
               setOpen(true);
             }}
