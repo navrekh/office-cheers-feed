@@ -1934,6 +1934,7 @@ function Index() {
 
         {/* Right sidebar */}
         <aside className="hidden lg:block col-span-3 space-y-4">
+          <DesperationGauge />
           <Card className="p-4 border-border">
             <div className="flex items-center justify-between mb-3">
               <h4 className="text-sm font-semibold flex items-center gap-1.5">
