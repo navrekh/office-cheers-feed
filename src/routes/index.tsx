@@ -130,6 +130,9 @@ import CorporateBingo from "@/components/CorporateBingo";
 import VerifiedWateringHole from "@/components/VerifiedWateringHole";
 import HappyHourTicker from "@/components/HappyHourTicker";
 import ClaimTicketModal from "@/components/ClaimTicketModal";
+import AuthModal from "@/components/AuthModal";
+import { useAuth, emailPrefix, signOut } from "@/lib/useAuth";
+import { LogOut } from "lucide-react";
 
 function isHappyHourNow(d: Date = new Date()): boolean {
   const minutes = d.getHours() * 60 + d.getMinutes();
@@ -256,6 +259,17 @@ function Index() {
   const [happyHour, setHappyHour] = useState<boolean>(false);
   const [claimTicket, setClaimTicket] = useState<string | null>(null);
   const [claimModalOpen, setClaimModalOpen] = useState(false);
+  const { user } = useAuth();
+  const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [authReason, setAuthReason] = useState<string | undefined>(undefined);
+  function requireAuth(reason?: string): boolean {
+    if (user) return true;
+    setAuthReason(reason);
+    setAuthModalOpen(true);
+    return false;
+  }
+  // Auto-fill composer alias from the signed-in user's email prefix (never the full email)
+  const userAlias = user ? emailPrefix(user.email) : null;
 
   // Happy Hour Mode (16:30–18:00 local time)
   useEffect(() => {
