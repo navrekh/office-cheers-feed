@@ -181,6 +181,7 @@ type Post = {
   map_query_address?: string;
   user_id?: string | null;
   is_hidden?: boolean;
+  attached_visual_url?: string | null;
   is_in_tribunal?: boolean;
   valid_votes?: number;
   misconduct_votes?: number;
@@ -278,6 +279,11 @@ function Index() {
   const [submitting, setSubmitting] = useState(false);
   const [gifUrl, setGifUrl] = useState<string | null>(null);
   const [vibeId, setVibeId] = useState<string | null>(null);
+  const [attachedUrl, setAttachedUrl] = useState<string | null>(null);
+  const [attachedPath, setAttachedPath] = useState<string | null>(null);
+  const [uploadingPic, setUploadingPic] = useState<null | "bar" | "tasting">(null);
+  const picInputRef = useRef<HTMLInputElement | null>(null);
+  const picKindRef = useRef<"bar" | "tasting">("bar");
   const [gifPickerOpen, setGifPickerOpen] = useState(false);
   const [view, setView] = useState<ViewKey>("home");
   const [highlightedId, setHighlightedId] = useState<string | null>(null);
