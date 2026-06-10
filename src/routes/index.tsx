@@ -1377,7 +1377,19 @@ function Index() {
                 </div>
               )}
 
-              {!feedLoading && !feedError && orderedPosts.length === 0 && (
+              {!feedLoading && !feedError && orderedPosts.length === 0 && sortMode === "mine" && (
+                <Card className="p-8 text-center border-amber-400/40 bg-gradient-to-br from-amber-950/30 via-card to-card shadow-[0_0_30px_rgba(251,191,36,0.1)]">
+                  <div className="mx-auto size-14 rounded-2xl bg-amber-500/15 border border-amber-400/40 grid place-items-center text-2xl mb-3">
+                    📝
+                  </div>
+                  <h3 className="font-display text-lg font-bold text-foreground">Your desk is currently clear!</h3>
+                  <p className="text-sm text-muted-foreground mt-2 max-w-sm mx-auto leading-relaxed">
+                    Write your first office coping story above to see its live global telemetry and upvotes tracking here.
+                  </p>
+                </Card>
+              )}
+
+              {!feedLoading && !feedError && orderedPosts.length === 0 && sortMode !== "mine" && (
                 <Card className="p-8 text-center text-sm text-muted-foreground border-border">
                   Pouring the first round…
                 </Card>
