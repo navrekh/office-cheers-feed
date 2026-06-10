@@ -21,6 +21,8 @@ import {
   MERCHANTS,
   type CityKey,
 } from "@/lib/cityStore";
+import type { Profile } from "@/lib/useProfile";
+import MerchantAdDashboard from "@/components/MerchantAdDashboard";
 
 const leadSchema = z.object({
   pub_name: z.string().trim().min(1, "Pub name is required").max(120),
@@ -54,7 +56,20 @@ function saveHeading(s: HeadingState) {
   } catch {}
 }
 
-export default function VerifiedWateringHole({ onRequireAuth }: { onRequireAuth?: () => boolean } = {}) {
+type VerifiedProps = {
+  onRequireAuth?: () => boolean;
+  profile?: Profile | null;
+  userId?: string | null;
+  onProfileUpdated?: (p: Profile) => void;
+};
+
+export default function VerifiedWateringHole({
+  onRequireAuth,
+  profile = null,
+  userId = null,
+  onProfileUpdated,
+}: VerifiedProps = {}) {
+  const [merchantDashOpen, setMerchantDashOpen] = useState(false);
   const [open, setOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -114,6 +129,11 @@ export default function VerifiedWateringHole({ onRequireAuth }: { onRequireAuth?
     setPopping(true);
     window.setTimeout(() => setPopping(false), 500);
     toast.success(`You're heading to ${sponsored.name} 🏃‍♂️🍻`);
+    if (userId) {
+      void (supabase as any)
+        .from("merchant_clicks")
+        .insert({ pub_id: sponsored.name, user_id: userId, city: activeCity });
+    }
   }
 
   function resetForm() {
@@ -234,15 +254,33 @@ export default function VerifiedWateringHole({ onRequireAuth }: { onRequireAuth?
             size="sm"
             onClick={() => {
               if (onRequireAuth && !onRequireAuth()) return;
+              if (profile?.role === "merchant") {
+                setMerchantDashOpen(true);
+                return;
+              }
               resetForm();
               setOpen(true);
             }}
             className="w-full mt-3 border-amber-400/50 hover:border-amber-300 hover:bg-amber-500/10 text-amber-200 hover:text-amber-100 font-semibold text-[12px] h-9"
           >
-            Own a Pub? Sponsor this slot for ₹599/week 🍻
+            {profile?.role === "merchant"
+              ? "Open Merchant Ad Dashboard 🛡️"
+              : "Own a Pub? Sponsor this slot for ₹599/week 🍻"}
           </Button>
         </Card>
       </div>
+
+      {profile?.role === "merchant" && (
+        <MerchantAdDashboard
+          open={merchantDashOpen}
+          onOpenChange={setMerchantDashOpen}
+          profile={profile}
+          onSaved={(p) => {
+            onProfileUpdated?.(p);
+            setMerchantDashOpen(false);
+          }}
+        />
+      )}
 
       <Dialog
         open={open}

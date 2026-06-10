@@ -132,6 +132,7 @@ import HappyHourTicker from "@/components/HappyHourTicker";
 import ClaimTicketModal from "@/components/ClaimTicketModal";
 import AuthModal from "@/components/AuthModal";
 import { useAuth, emailPrefix, signOut, corporateCodename } from "@/lib/useAuth";
+import { useProfile, isRlsDenied, RLS_DENIED_MESSAGE } from "@/lib/useProfile";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
@@ -277,6 +278,7 @@ function Index() {
   const [claimTicket, setClaimTicket] = useState<string | null>(null);
   const [claimModalOpen, setClaimModalOpen] = useState(false);
   const { user, loading: authLoading } = useAuth();
+  const { profile, refresh: refreshProfile } = useProfile(user?.id ?? null);
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authReason, setAuthReason] = useState<string | undefined>(undefined);
   function requireAuth(reason?: string): boolean {
@@ -781,6 +783,7 @@ function Index() {
         author_headline: anonymous ? ANON_HEADLINE : (authorHeadline || "Specializing in Liquid Refactoring"),
         body_text: composed,
         user_id: user?.id ?? null,
+        post_type: "user",
       })
       .select()
       .single();
@@ -812,7 +815,11 @@ function Index() {
         },
       }).catch(() => {});
     } else if (error) {
-      toast.error("Couldn't post that round. Try again in a sec.");
+      if (isRlsDenied(error)) {
+        toast.error(RLS_DENIED_MESSAGE);
+      } else {
+        toast.error("Couldn't post that round. Try again in a sec.");
+      }
     }
     setSubmitting(false);
   }
@@ -1549,7 +1556,14 @@ function Index() {
             </>
           )}
 
-          {view === "pubs" && <PubsView requireAuth={requireAuth} />}
+          {view === "pubs" && (
+            <PubsView
+              requireAuth={requireAuth}
+              profile={profile}
+              userId={user?.id ?? null}
+              onProfileUpdated={() => void refreshProfile()}
+            />
+          )}
           {view === "barhop" && <BarHopView />}
           {view === "messages" && <ComingSoonView title="Messages" emoji="📬" copy="Your DMs are too embarrassing. We're protecting you from yourself." />}
           {view === "notifications" && <NotificationsView />}
@@ -1587,7 +1601,12 @@ function Index() {
 
           <CorporateBingo />
 
-          <VerifiedWateringHole onRequireAuth={() => requireAuth("Sign in before sponsoring a slot — keeps merchant leads verified.")} />
+          <VerifiedWateringHole
+            onRequireAuth={() => requireAuth("Sign in before sponsoring a slot — keeps merchant leads verified.")}
+            profile={profile}
+            userId={user?.id ?? null}
+            onProfileUpdated={() => void refreshProfile()}
+          />
 
 
 
@@ -2043,7 +2062,17 @@ function CopeItem({ tag, title, stat }: { tag: string; title: string; stat: stri
 // ============================================================
 
 
-function PubsView({ requireAuth }: { requireAuth: (reason?: string) => boolean }) {
+function PubsView({
+  requireAuth,
+  profile,
+  userId,
+  onProfileUpdated,
+}: {
+  requireAuth: (reason?: string) => boolean;
+  profile: import("@/lib/useProfile").Profile | null;
+  userId: string | null;
+  onProfileUpdated: () => void;
+}) {
   const [selectedCity, setSelectedCityLocal] = useState<CityKey>("Bangalore");
   useEffect(() => {
     setSelectedCityLocal(getSelectedCity());
@@ -2087,7 +2116,12 @@ function PubsView({ requireAuth }: { requireAuth: (reason?: string) => boolean }
 
   return (
     <div className="space-y-3 animate-in fade-in duration-300">
-      <VerifiedWateringHole onRequireAuth={() => requireAuth("Sign in before sponsoring a slot — keeps merchant leads verified.")} />
+      <VerifiedWateringHole
+        onRequireAuth={() => requireAuth("Sign in before sponsoring a slot — keeps merchant leads verified.")}
+        profile={profile}
+        userId={userId}
+        onProfileUpdated={onProfileUpdated}
+      />
 
       <Card className="p-5 border-amber-400/30 bg-gradient-to-br from-amber-950/30 via-card to-card">
         <div className="flex items-center gap-3">
