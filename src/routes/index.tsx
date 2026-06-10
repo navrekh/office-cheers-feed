@@ -2125,8 +2125,7 @@ const PostCard = memo(function PostCard({
         <ActionBtn
           label="Comment"
           icon={<MessageCircle className="size-5" />}
-          onClick={() => setShowComments((v) => !v)}
-          active={showComments}
+          onClick={() => onOpenComments(post)}
         />
         <ActionBtn onClick={() => onShare(post.id)} label="Share" icon={<Share2 className="size-5" />} />
         <ActionBtn
