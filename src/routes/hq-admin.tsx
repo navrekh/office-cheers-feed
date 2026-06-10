@@ -218,7 +218,6 @@ function AdminDashboard() {
       try {
         const { error } = await supabase.rpc("admin_approve_lead", {
           p_lead_id: lead.id,
-          p_deal_text: null,
           p_urgency: 2,
         });
         if (error) throw error;

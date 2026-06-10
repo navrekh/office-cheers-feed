@@ -9,10 +9,16 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as HqAdminRouteImport } from './routes/hq-admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as TrackTicketRouteImport } from './routes/track.$ticket'
 import { Route as ApiPublicWebhooksRazorpayRouteImport } from './routes/api/public/webhooks/razorpay'
 
+const HqAdminRoute = HqAdminRouteImport.update({
+  id: '/hq-admin',
+  path: '/hq-admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -32,36 +38,56 @@ const ApiPublicWebhooksRazorpayRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/hq-admin': typeof HqAdminRoute
   '/track/$ticket': typeof TrackTicketRoute
   '/api/public/webhooks/razorpay': typeof ApiPublicWebhooksRazorpayRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/hq-admin': typeof HqAdminRoute
   '/track/$ticket': typeof TrackTicketRoute
   '/api/public/webhooks/razorpay': typeof ApiPublicWebhooksRazorpayRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/hq-admin': typeof HqAdminRoute
   '/track/$ticket': typeof TrackTicketRoute
   '/api/public/webhooks/razorpay': typeof ApiPublicWebhooksRazorpayRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/track/$ticket' | '/api/public/webhooks/razorpay'
+  fullPaths:
+    | '/'
+    | '/hq-admin'
+    | '/track/$ticket'
+    | '/api/public/webhooks/razorpay'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/track/$ticket' | '/api/public/webhooks/razorpay'
-  id: '__root__' | '/' | '/track/$ticket' | '/api/public/webhooks/razorpay'
+  to: '/' | '/hq-admin' | '/track/$ticket' | '/api/public/webhooks/razorpay'
+  id:
+    | '__root__'
+    | '/'
+    | '/hq-admin'
+    | '/track/$ticket'
+    | '/api/public/webhooks/razorpay'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  HqAdminRoute: typeof HqAdminRoute
   TrackTicketRoute: typeof TrackTicketRoute
   ApiPublicWebhooksRazorpayRoute: typeof ApiPublicWebhooksRazorpayRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/hq-admin': {
+      id: '/hq-admin'
+      path: '/hq-admin'
+      fullPath: '/hq-admin'
+      preLoaderRoute: typeof HqAdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -88,6 +114,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  HqAdminRoute: HqAdminRoute,
   TrackTicketRoute: TrackTicketRoute,
   ApiPublicWebhooksRazorpayRoute: ApiPublicWebhooksRazorpayRoute,
 }
