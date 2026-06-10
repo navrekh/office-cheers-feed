@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import MerchantFlashControl from "@/components/MerchantFlashControl";
 import MerchantOnboardingWizard from "@/components/MerchantOnboardingWizard";
+import BillingTab from "@/components/BillingTab";
 import {
   ArrowLeft,
   Beer,
@@ -95,16 +96,8 @@ function MerchantDashboardPage() {
         </div>
       </header>
 
-      <main className="max-w-6xl mx-auto px-4 py-6 grid gap-5 lg:grid-cols-3">
-        <section className="lg:col-span-2 space-y-5">
-          <LiveAnalyticsPanel pubName={profile.pub_name} />
-          <MerchantFlashControl profile={profile} />
-          <MediaWorkspace userId={user!.id} pubName={profile.pub_name} />
-        </section>
-        <aside className="space-y-5">
-          <SubscriptionClock pubName={profile.pub_name} onRefresh={refresh} />
-        </aside>
-      </main>
+      <DashboardTabs userId={user!.id} profile={profile} onRefresh={refresh} />
+
 
       {needsOnboarding && (
         <MerchantOnboardingWizard
