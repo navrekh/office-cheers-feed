@@ -80,24 +80,34 @@ function TrackPage() {
   const trackUrl = SITE.trackUrl(ticket);
 
   const load = useCallback(async () => {
-    const { data, error } = await (supabase as any)
-      .from("posts")
-      .select("*")
-      .eq("claim_ticket", ticket)
-      .maybeSingle();
-    if (error || !data) {
+    try {
+      const { data, error } = await (supabase as any)
+        .from("posts")
+        .select("*")
+        .eq("claim_ticket", ticket)
+        .maybeSingle();
+      if (error || !data) {
+        setNotFound(true);
+        setLoading(false);
+        return;
+      }
+      setPost(data as TrackedPost);
+      setLoading(false);
+      try {
+        const { data: cmts } = await (supabase as any)
+          .from("comments")
+          .select("*")
+          .eq("post_id", data.id)
+          .order("created_at", { ascending: true });
+        setComments((cmts as TrackedComment[] | null) ?? []);
+      } catch (err) {
+        console.warn("[DrinkedIn] track comments load failed", err);
+      }
+    } catch (err) {
+      console.warn("[DrinkedIn] track post load failed", err);
       setNotFound(true);
       setLoading(false);
-      return;
     }
-    setPost(data as TrackedPost);
-    setLoading(false);
-    const { data: cmts } = await (supabase as any)
-      .from("comments")
-      .select("*")
-      .eq("post_id", data.id)
-      .order("created_at", { ascending: true });
-    setComments((cmts as TrackedComment[] | null) ?? []);
   }, [ticket]);
 
   useEffect(() => {
@@ -127,14 +137,20 @@ function TrackPage() {
   async function deletePost() {
     if (!post) return;
     setDeleting(true);
-    const { data, error } = await (supabase as any).rpc("delete_post_by_ticket", { ticket });
-    if (error || !data) {
-      toast.error("Couldn't delete. Try again in a sec.");
+    try {
+      const { data, error } = await (supabase as any).rpc("delete_post_by_ticket", { ticket });
+      if (error || !data) {
+        toast.error("Couldn't delete. Try again in a sec.");
+        setDeleting(false);
+        return;
+      }
+      toast.success("Post deleted. 🗑️", { description: "Your evidence has been shredded." });
+      setTimeout(() => navigate({ to: "/" }), 800);
+    } catch (err) {
+      console.warn("[DrinkedIn] delete post failed", err);
+      toast.error("Network hiccup. Try again in a sec.");
       setDeleting(false);
-      return;
     }
-    toast.success("Post deleted. 🗑️", { description: "Your evidence has been shredded." });
-    setTimeout(() => navigate({ to: "/" }), 800);
   }
 
   const reach = post ? Math.max(post.cheers_count * 37, 128) : 0;

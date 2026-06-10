@@ -40,25 +40,31 @@ export type Database = {
       }
       comments: {
         Row: {
+          author_alias: string | null
           author_name: string
           body_text: string
           created_at: string
           id: string
           post_id: string
+          user_id: string | null
         }
         Insert: {
+          author_alias?: string | null
           author_name?: string
           body_text: string
           created_at?: string
           id?: string
           post_id: string
+          user_id?: string | null
         }
         Update: {
+          author_alias?: string | null
           author_name?: string
           body_text?: string
           created_at?: string
           id?: string
           post_id?: string
+          user_id?: string | null
         }
         Relationships: [
           {

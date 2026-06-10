@@ -131,6 +131,7 @@ import VerifiedWateringHole from "@/components/VerifiedWateringHole";
 import HappyHourTicker from "@/components/HappyHourTicker";
 import ClaimTicketModal from "@/components/ClaimTicketModal";
 import AuthModal from "@/components/AuthModal";
+import CommentsDrawer from "@/components/CommentsDrawer";
 import { useAuth, emailPrefix, signOut, corporateCodename } from "@/lib/useAuth";
 import { useProfile, isRlsDenied, RLS_DENIED_MESSAGE } from "@/lib/useProfile";
 import { reportPost as reportPostRpc, tribunalVote as tribunalVoteRpc } from "@/lib/tribunal";
@@ -276,6 +277,11 @@ function Index() {
   const [hangoverIndex, setHangoverIndex] = useState<number>(37);
   const [sortMode, setSortMode] = useState<"recent" | "top" | "mine" | "tribunal">("recent");
   const [notifOpen, setNotifOpen] = useState(false);
+  const [notifUnread, setNotifUnread] = useState<number>(4);
+  const [notifPulseKey, setNotifPulseKey] = useState<number>(0);
+  const seenMilestonesRef = useRef<Set<string>>(new Set());
+  const seenCommentIdsRef = useRef<Set<string>>(new Set());
+  const [activeCommentPostId, setActiveCommentPostId] = useState<string | null>(null);
   const [anonymous, setAnonymous] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(false);
   const [loopCount, setLoopCount] = useState<number>(1847);
@@ -850,7 +856,7 @@ function Index() {
     await (supabase as any).rpc("increment_cheers", { post_id: post.id });
   }, [playClink, user]);
 
-  const addComment = useCallback(async (postId: string, text: string, name: string) => {
+  const addComment = useCallback(async (postId: string, text: string, name?: string) => {
     const trimmed = text.trim();
     if (!trimmed) return;
     if (!user) {
@@ -858,10 +864,11 @@ function Index() {
       setAuthModalOpen(true);
       return;
     }
+    const alias = name || corporateCodename(user.email) || pick(RANDOM_COMMENT_NAMES);
     const optimistic: Comment = {
       id: `tmp-${Date.now()}-${Math.random()}`,
       post_id: postId,
-      author_name: name || "Anonymous Intern",
+      author_name: alias,
       body_text: trimmed,
       created_at: new Date().toISOString(),
     };
@@ -869,16 +876,32 @@ function Index() {
       ...prev,
       [postId]: [...(prev[postId] || []), optimistic],
     }));
-    const { data, error } = await (supabase as any)
-      .from("comments")
-      .insert({ post_id: postId, body_text: trimmed, author_name: name || "Anonymous Intern" })
-      .select()
-      .single();
-    if (!error && data) {
+    try {
+      const { data, error } = await (supabase as any)
+        .from("comments")
+        .insert({
+          post_id: postId,
+          body_text: trimmed,
+          author_name: alias,
+          author_alias: alias,
+          user_id: user.id,
+        })
+        .select()
+        .single();
+      if (error) throw error;
+      if (data) {
+        setCommentsByPost((prev) => ({
+          ...prev,
+          [postId]: (prev[postId] || []).map((c) => (c.id === optimistic.id ? (data as Comment) : c)),
+        }));
+      }
+    } catch (err) {
+      console.warn("[DrinkedIn] comment insert failed", err);
       setCommentsByPost((prev) => ({
         ...prev,
-        [postId]: (prev[postId] || []).map((c) => (c.id === optimistic.id ? (data as Comment) : c)),
+        [postId]: (prev[postId] || []).filter((c) => c.id !== optimistic.id),
       }));
+      toast.error("Couldn't post your reply. Try again in a sec.");
     }
   }, [user]);
 
@@ -1063,6 +1086,53 @@ function Index() {
       .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
   }, [posts, user]);
 
+  // Live notification badge: pulse + bump unread whenever one of MY posts ticks past
+  // a Cheers milestone (10 / 50 / 100), or someone replies on one of my threads.
+  useEffect(() => {
+    const seen = seenMilestonesRef.current;
+    let bump = 0;
+    for (const p of myPosts) {
+      for (const m of [10, 50, 100]) {
+        const key = `${p.id}:${m}`;
+        if (p.cheers_count >= m && !seen.has(key)) {
+          seen.add(key);
+          bump += 1;
+        }
+      }
+    }
+    if (bump > 0) {
+      setNotifUnread((n) => n + bump);
+      setNotifPulseKey((k) => k + 1);
+    }
+  }, [myPosts]);
+
+  useEffect(() => {
+    if (!user) return;
+    const myIds = new Set(myPosts.map((p) => p.id));
+    if (myIds.size === 0) return;
+    const seen = seenCommentIdsRef.current;
+    let bump = 0;
+    for (const pid of Object.keys(commentsByPost)) {
+      if (!myIds.has(pid)) continue;
+      for (const c of commentsByPost[pid] || []) {
+        if (c.id.startsWith("tmp-")) continue;
+        if ((c as any).user_id && (c as any).user_id === user.id) continue;
+        if (!seen.has(c.id)) {
+          seen.add(c.id);
+          bump += 1;
+        }
+      }
+    }
+    if (bump > 0) {
+      setNotifUnread((n) => n + bump);
+      setNotifPulseKey((k) => k + 1);
+    }
+  }, [commentsByPost, myPosts, user]);
+
+  useEffect(() => {
+    if (notifOpen) setNotifUnread(0);
+  }, [notifOpen]);
+
   const hangoverStatus = useMemo(() => {
     if (hangoverIndex <= 20)
       return { label: "Dangerously Sober", copy: "High risk of replying to emails on time.", tone: "text-chart-3 border-chart-3/40 bg-chart-3/10" };
@@ -1189,7 +1259,7 @@ function Index() {
             <NavItem icon={<Users className="size-5" />} label="Bar Hop" active={view === "barhop"} onClick={() => setView("barhop")} />
             <NavItem icon={<Beer className="size-5" />} label="Pubs" active={view === "pubs"} onClick={() => setView("pubs")} />
             <NavItem icon={<MessageSquare className="size-5" />} label="Messages" active={view === "messages"} onClick={() => setView("messages")} />
-            <NavItem icon={<Bell className="size-5" />} label="Notifications" badge={4} active={notifOpen} onClick={() => setNotifOpen((o) => !o)} />
+            <NavItem icon={<Bell className="size-5" />} label="Notifications" badge={notifUnread} pulseKey={notifPulseKey} active={notifOpen} onClick={() => setNotifOpen((o) => !o)} />
           </nav>
         </div>
         <HappyHourTicker />
@@ -1673,7 +1743,7 @@ function Index() {
                     post={p}
                     comments={commentsByPost[p.id] || []}
                     onCheers={cheers}
-                    onComment={addComment}
+                    onOpenComments={(p) => setActiveCommentPostId(p.id)}
                     onShare={sharePost}
                     onReport={reportPost}
                     onTribunalVote={voteTribunal}
@@ -1776,6 +1846,23 @@ function Index() {
         signedIn={!!user}
         myPosts={myPosts}
       />
+
+      <CommentsDrawer
+        open={!!activeCommentPostId}
+        onOpenChange={(v) => { if (!v) setActiveCommentPostId(null); }}
+        postId={activeCommentPostId}
+        postTitle={(() => {
+          const p = posts.find((x) => x.id === activeCommentPostId);
+          return p ? snippetOf(p.body_text) : null;
+        })()}
+        comments={activeCommentPostId ? (commentsByPost[activeCommentPostId] || []) : []}
+        signedIn={!!user}
+        onRequireAuth={() => {
+          setAuthReason("Sign in to drop a reply 💬 — keeps our breakroom spam-free.");
+          setAuthModalOpen(true);
+        }}
+        onSubmit={(pid, text) => addComment(pid, text)}
+      />
     </div>
   );
 }
@@ -1785,12 +1872,14 @@ function NavItem({
   label,
   active,
   badge,
+  pulseKey,
   onClick,
 }: {
   icon: React.ReactNode;
   label: string;
   active?: boolean;
   badge?: number;
+  pulseKey?: number;
   onClick?: () => void;
 }) {
   return (
@@ -1805,8 +1894,11 @@ function NavItem({
       <div className="relative">
         {icon}
         {badge ? (
-          <span className="absolute -top-1.5 -right-2 bg-primary text-primary-foreground text-[9px] font-bold rounded-full size-4 grid place-items-center shadow-[0_0_10px_var(--primary)] animate-notif-glow">
-            {badge}
+          <span
+            key={pulseKey ?? 0}
+            className="absolute -top-1.5 -right-2 bg-amber-500 text-amber-950 text-[9px] font-bold rounded-full min-w-4 h-4 px-1 grid place-items-center shadow-[0_0_10px_rgba(251,191,36,0.8)] animate-notif-glow"
+          >
+            {badge > 99 ? "99+" : badge}
           </span>
         ) : null}
       </div>
@@ -1831,7 +1923,7 @@ const PostCard = memo(function PostCard({
   post,
   comments,
   onCheers,
-  onComment,
+  onOpenComments,
   onShare,
   onReport,
   onTribunalVote,
@@ -1843,7 +1935,7 @@ const PostCard = memo(function PostCard({
   post: Post;
   comments: Comment[];
   onCheers: (post: Post) => void;
-  onComment: (postId: string, text: string, name: string) => void;
+  onOpenComments: (post: Post) => void;
   onShare: (postId: string) => void;
   onReport: (post: Post) => void;
   onTribunalVote: (post: Post, vote: "valid" | "misconduct") => void;
@@ -1852,7 +1944,6 @@ const PostCard = memo(function PostCard({
   tribunalMode?: boolean;
   isEmployeeOfDay?: boolean;
 }) {
-  const [showComments, setShowComments] = useState(false);
   const [popKey, setPopKey] = useState(0);
   const [bumpKey, setBumpKey] = useState(0);
 
@@ -1999,7 +2090,7 @@ const PostCard = memo(function PostCard({
         </div>
         <div className="flex items-center gap-2">
           <button
-            onClick={() => setShowComments((v) => !v)}
+            onClick={() => onOpenComments(post)}
             className="hover:text-foreground hover:underline"
           >
             {comments.length} comments
@@ -2051,8 +2142,7 @@ const PostCard = memo(function PostCard({
         <ActionBtn
           label="Comment"
           icon={<MessageCircle className="size-5" />}
-          onClick={() => setShowComments((v) => !v)}
-          active={showComments}
+          onClick={() => onOpenComments(post)}
         />
         <ActionBtn onClick={() => onShare(post.id)} label="Share" icon={<Share2 className="size-5" />} />
         <ActionBtn
@@ -2111,12 +2201,6 @@ const PostCard = memo(function PostCard({
         </div>
       )}
 
-      {showComments && (
-        <CommentSection
-          comments={comments}
-          onSubmit={(text, name) => onComment(post.id, text, name)}
-        />
-      )}
     </Card>
   );
 });
