@@ -2217,6 +2217,19 @@ const PostCard = memo(function PostCard({
                 </div>
               </div>
             )}
+            {post.attached_visual_url && !post.is_hidden && (
+              <div className="px-4 pb-3">
+                <div className="rounded-2xl overflow-hidden border border-amber-500/20 bg-black/40 shadow-[0_8px_30px_-12px_rgba(251,191,36,0.25)]">
+                  <img
+                    src={post.attached_visual_url}
+                    alt="Attached bar pic"
+                    loading="lazy"
+                    decoding="async"
+                    className="w-full h-auto object-cover max-h-[520px]"
+                  />
+                </div>
+              </div>
+            )}
           </>
         );
       })()}
