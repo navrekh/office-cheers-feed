@@ -1556,7 +1556,14 @@ function Index() {
             </>
           )}
 
-          {view === "pubs" && <PubsView requireAuth={requireAuth} />}
+          {view === "pubs" && (
+            <PubsView
+              requireAuth={requireAuth}
+              profile={profile}
+              userId={user?.id ?? null}
+              onProfileUpdated={() => void refreshProfile()}
+            />
+          )}
           {view === "barhop" && <BarHopView />}
           {view === "messages" && <ComingSoonView title="Messages" emoji="📬" copy="Your DMs are too embarrassing. We're protecting you from yourself." />}
           {view === "notifications" && <NotificationsView />}
