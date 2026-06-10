@@ -2184,12 +2184,6 @@ const PostCard = memo(function PostCard({
         </div>
       )}
 
-      {showComments && (
-        <CommentSection
-          comments={comments}
-          onSubmit={(text, name) => onComment(post.id, text, name)}
-        />
-      )}
     </Card>
   );
 });
