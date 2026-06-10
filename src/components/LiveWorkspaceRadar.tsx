@@ -5,6 +5,7 @@ import { Radio, Loader2, Compass, MapPinOff, Beer } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { applyJitter, haversineKm, type LatLng } from "@/lib/geo";
 import { getScrubbedRadarBlips, type ScrubbedBlip } from "@/lib/radar.functions";
+import { useT } from "@/lib/i18n";
 
 type CheckIn = {
   id: string;
