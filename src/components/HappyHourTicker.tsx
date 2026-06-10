@@ -10,6 +10,7 @@ import {
 import { useMerchantDeals } from "@/lib/useMerchantDeals";
 import { supabase } from "@/integrations/supabase/client";
 import CityCampaignModal from "@/components/CityCampaignModal";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
 
 export default function HappyHourTicker() {
   const [city, setCity] = useState<CityKey>("Bangalore");
@@ -64,6 +65,7 @@ export default function HappyHourTicker() {
             </option>
           ))}
         </select>
+        <LanguageSwitcher />
         <button
           type="button"
           onClick={() => { setModalCity(city); setModalOpen(true); }}

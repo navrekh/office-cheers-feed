@@ -3,6 +3,7 @@ import { useEffect, useState, useRef, useMemo, useCallback, lazy, Suspense, memo
 import { supabase } from "@/integrations/supabase/client";
 import { SITE, TOKENLENS } from "@/config";
 import { notifyAdminNewPost } from "@/lib/adminNotify.functions";
+import { useT } from "@/lib/i18n";
 import {
   generateHistoricalSimulatedFeed,
   generateSimulatedPost,
@@ -281,6 +282,7 @@ type PendingDraft = {
 };
 
 function Index() {
+  const t = useT();
   // Live geolocation (jittered). Coords here are ALREADY fuzzed by ±50–100 m
   // before they leave the useGeolocation hook — precise lat/lng never reach
   // the database or any other client. Declared first so all submit/insert
@@ -1960,12 +1962,12 @@ function Index() {
                         {submitting ? (
                           <>
                             <Loader2 className="size-4 animate-spin" />
-                            Deploying… 🍺
+                            {t("compose.deploying")}
                           </>
                         ) : (
                           <>
                             <Send className="size-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-                            Eject to Pub 🚀
+                            {t("compose.eject")}
                           </>
                         )}
                       </Button>

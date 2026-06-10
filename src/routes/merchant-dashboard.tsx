@@ -11,6 +11,7 @@ import MerchantFlashControl from "@/components/MerchantFlashControl";
 import MerchantOnboardingWizard from "@/components/MerchantOnboardingWizard";
 import BillingTab from "@/components/BillingTab";
 import LiveAmbientEqualizer from "@/components/LiveAmbientEqualizer";
+import { useT, useI18n } from "@/lib/i18n";
 import {
   ArrowLeft,
   Beer,
@@ -473,6 +474,32 @@ function SubscriptionClock({ pubName, onRefresh }: { pubName: string | null; onR
           </p>
         </div>
       )}
+      <SubscribeCta expired={expired} />
+      <p className="text-[10px] text-muted-foreground/80 mt-2 text-center">
+        Razorpay-secured · auto-republishes on confirmation
+      </p>
+    </Card>
+  );
+}
+
+/* ------- D.1 Geo-aware Subscribe CTA (Razorpay for IN, Stripe elsewhere) ------- */
+function detectRegion(lang: string): string {
+  try {
+    const nav = (navigator.language || "").toUpperCase();
+    const parts = nav.split("-");
+    if (parts[1]) return parts[1];
+  } catch { /* ignore */ }
+  return lang === "ja" ? "JP" : lang === "de" ? "DE" : "US";
+}
+
+function SubscribeCta({ expired }: { expired: boolean }) {
+  const t = useT();
+  const { lang } = useI18n();
+  const region = detectRegion(lang);
+  const isIndia = region === "IN";
+
+  if (isIndia) {
+    return (
       <Button
         asChild
         className="w-full bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 hover:brightness-110 text-amber-950 font-bold text-[12px] h-10 shadow-[0_0_22px_rgba(251,191,36,0.45)]"
@@ -482,10 +509,19 @@ function SubscriptionClock({ pubName, onRefresh }: { pubName: string | null; onR
           {expired ? "Renew Slot — ₹599 / Week" : "Extend Slot — ₹599 / Week"}
         </a>
       </Button>
-      <p className="text-[10px] text-muted-foreground/80 mt-2 text-center">
-        Razorpay-secured · auto-republishes on confirmation
-      </p>
-    </Card>
+    );
+  }
+
+  return (
+    <Button
+      asChild
+      className="w-full bg-gradient-to-r from-indigo-500 via-violet-500 to-fuchsia-500 hover:brightness-110 text-white font-bold text-[12px] h-10 shadow-[0_0_22px_rgba(139,92,246,0.45)]"
+    >
+      <a href="https://buy.stripe.com/test_drinkedin-corporate-weekly" target="_blank" rel="noopener noreferrer">
+        <Beer className="size-4 mr-1.5" />
+        {t("sub.title")} — {t("sub.priceWeek")}
+      </a>
+    </Button>
   );
 }
 
