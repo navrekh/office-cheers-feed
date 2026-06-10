@@ -1406,7 +1406,7 @@ function Index() {
 
           <CorporateBingo />
 
-          <VerifiedWateringHole />
+          <VerifiedWateringHole onRequireAuth={() => requireAuth("Sign in before sponsoring a slot — keeps merchant leads verified.")} />
 
 
 
@@ -1899,7 +1899,7 @@ function PubsView() {
 
   return (
     <div className="space-y-3 animate-in fade-in duration-300">
-      <VerifiedWateringHole />
+      <VerifiedWateringHole onRequireAuth={() => requireAuth("Sign in before sponsoring a slot — keeps merchant leads verified.")} />
 
       <Card className="p-5 border-amber-400/30 bg-gradient-to-br from-amber-950/30 via-card to-card">
         <div className="flex items-center gap-3">
