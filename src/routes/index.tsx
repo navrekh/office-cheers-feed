@@ -938,15 +938,38 @@ function Index() {
   }, []);
 
   // Sort posts by selected mode, inject merchant ads at fixed slots, pin highlighted
+  // Employee of the Day — most-cheered real user post in the last 24h.
+  const employeeOfDay = useMemo(() => {
+    const cutoff = Date.now() - 24 * 60 * 60 * 1000;
+    const candidates = posts.filter(
+      (p) =>
+        !p.is_hidden &&
+        !p.is_in_tribunal &&
+        p.post_type !== "merchant" &&
+        !isSimulatedPost(p) &&
+        new Date(p.created_at).getTime() >= cutoff &&
+        p.cheers_count >= 1
+    );
+    if (!candidates.length) return null;
+    return candidates.reduce((best, p) => (p.cheers_count > best.cheers_count ? p : best));
+  }, [posts]);
+
   const orderedPosts = useMemo(() => {
+    // Tribunal — flagged posts not yet auto-hidden, newest first.
+    if (sortMode === "tribunal") {
+      return [...posts]
+        .filter((p) => p.is_in_tribunal && !p.is_hidden)
+        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    }
     // "My Desk" — strictly the signed-in user's own posts, newest first, no ads.
     if (sortMode === "mine") {
       if (!user) return [];
       return [...posts]
-        .filter((p) => (p as any).user_id === user.id)
+        .filter((p) => (p as any).user_id === user.id && !p.is_hidden)
         .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
     }
-    const sorted = [...posts].sort((a, b) => {
+    const visible = [...posts].filter((p) => !p.is_hidden);
+    const sorted = visible.sort((a, b) => {
       if (sortMode === "top") return b.cheers_count - a.cheers_count;
       return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
     });
@@ -957,11 +980,18 @@ function Index() {
     if (merchants[0]) withAds.splice(Math.min(2, withAds.length), 0, merchantToPost(merchants[0], selectedCity));
     if (merchants[1]) withAds.splice(Math.min(6, withAds.length), 0, merchantToPost(merchants[1], selectedCity));
 
-    if (!highlightedId) return withAds;
-    const idx = withAds.findIndex((p) => p.id === highlightedId);
-    if (idx < 0) return withAds;
-    return [withAds[idx], ...withAds.slice(0, idx), ...withAds.slice(idx + 1)];
-  }, [posts, highlightedId, sortMode, selectedCity, user]);
+    // Pin Employee of the Day in "recent" mode.
+    let withPin = withAds;
+    if (sortMode === "recent" && employeeOfDay) {
+      const rest = withAds.filter((p) => p.id !== employeeOfDay.id);
+      withPin = [employeeOfDay, ...rest];
+    }
+
+    if (!highlightedId) return withPin;
+    const idx = withPin.findIndex((p) => p.id === highlightedId);
+    if (idx < 0) return withPin;
+    return [withPin[idx], ...withPin.slice(0, idx), ...withPin.slice(idx + 1)];
+  }, [posts, highlightedId, sortMode, selectedCity, user, employeeOfDay]);
 
   // List of the signed-in user's own posts, used by the Tickets accordion.
   const myPosts = useMemo(() => {
