@@ -1172,12 +1172,12 @@ const PostCard = memo(function PostCard({
       {showComments && (
         <CommentSection
           comments={comments}
-          onSubmit={onComment}
+          onSubmit={(text, name) => onComment(post.id, text, name)}
         />
       )}
     </Card>
   );
-}
+});
 
 function CommentSection({
   comments,
