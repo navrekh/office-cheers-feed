@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>DrinkedIn — Social Preview Template</title>
+    <meta name="robots" content="noindex,nofollow" />
+    <style>
+      :root {
+        --bg: #0a0a0a;
+        --amber: #fbbf24;
+        --amber-deep: #b45309;
+        --ink: #f5f5f4;
+      }
+      html, body { margin: 0; padding: 0; background: #000; }
+      body {
+        font-family: ui-serif, Georgia, "Times New Roman", serif;
+        color: var(--ink);
+      }
+      .stage {
+        width: 1200px;
+        height: 630px;
+        margin: 24px auto;
+        position: relative;
+        background:
+          radial-gradient(1100px 600px at 20% 0%, rgba(251, 191, 36, 0.18), transparent 60%),
+          radial-gradient(900px 500px at 90% 100%, rgba(180, 83, 9, 0.22), transparent 60%),
+          var(--bg);
+        border: 1px solid rgba(251, 191, 36, 0.25);
+        overflow: hidden;
+        box-shadow: 0 0 80px rgba(251, 191, 36, 0.15) inset;
+      }
+      .logo {
+        position: absolute;
+        top: 38px;
+        left: 56px;
+        font-size: 64px;
+        font-weight: 700;
+        letter-spacing: -1px;
+        color: var(--amber);
+        text-shadow:
+          0 0 18px rgba(251, 191, 36, 0.6),
+          0 0 48px rgba(251, 191, 36, 0.35);
+      }
+      .card {
+        position: absolute;
+        top: 150px;
+        left: 56px;
+        right: 56px;
+        bottom: 130px;
+        border-radius: 22px;
+        border: 1px solid rgba(251, 191, 36, 0.35);
+        background: linear-gradient(180deg, rgba(20, 14, 6, 0.85), rgba(10, 7, 3, 0.85));
+        backdrop-filter: blur(8px);
+        padding: 40px 56px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 18px;
+      }
+      .kicker {
+        font-family: ui-sans-serif, system-ui, sans-serif;
+        font-size: 14px;
+        letter-spacing: 0.3em;
+        text-transform: uppercase;
+        color: var(--amber);
+        opacity: 0.85;
+      }
+      .line {
+        font-size: 44px;
+        line-height: 1.15;
+        font-weight: 600;
+        color: var(--ink);
+      }
+      .line.dim { color: rgba(245, 245, 244, 0.7); }
+      .banner {
+        position: absolute;
+        left: 0; right: 0; bottom: 0;
+        padding: 22px 56px;
+        background: linear-gradient(90deg, var(--amber) 0%, #f59e0b 60%, var(--amber-deep) 100%);
+        color: #0a0a0a;
+        font-family: ui-sans-serif, system-ui, sans-serif;
+        font-weight: 800;
+        font-size: 22px;
+        letter-spacing: 0.01em;
+      }
+    </style>
+  </head>
+  <body>
+    <!--
+      Static OpenGraph preview template. Render at 1200x630 and export to
+      /og-card.jpg if you want to regenerate the share asset.
+    -->
+    <div class="stage" role="img" aria-label="DrinkedIn social preview">
+      <div class="logo">DrinkedIn 🍻</div>
+      <div class="card">
+        <div class="kicker">Broetry Engine · Verified Anonymous</div>
+        <div class="line">I quit my 6-figure job.</div>
+        <div class="line dim">To order another round.</div>
+        <div class="line">Here's what I learned. 🍺</div>
+      </div>
+      <div class="banner">👉 Find Local Flash Deals &amp; Track Runaway LLM Token Loops Live</div>
+    </div>
+  </body>
+</html>
