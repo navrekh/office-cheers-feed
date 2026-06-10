@@ -739,6 +739,11 @@ function Index() {
   const addComment = useCallback(async (postId: string, text: string, name: string) => {
     const trimmed = text.trim();
     if (!trimmed) return;
+    if (!user) {
+      setAuthReason("Sign in to drop a comment 💬 — keeps our breakroom spam-free.");
+      setAuthModalOpen(true);
+      return;
+    }
     const optimistic: Comment = {
       id: `tmp-${Date.now()}-${Math.random()}`,
       post_id: postId,
