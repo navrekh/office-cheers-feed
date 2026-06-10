@@ -8,6 +8,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import MerchantFlashControl from "@/components/MerchantFlashControl";
+import MerchantOnboardingWizard from "@/components/MerchantOnboardingWizard";
 import {
   ArrowLeft,
   Beer,
@@ -34,6 +35,27 @@ function MerchantDashboardPage() {
   const { user, loading: authLoading } = useAuth();
   const { profile, loading: profileLoading, refresh } = useProfile(user?.id ?? null);
 
+  // Onboarding state: do we have any merchant_deals row for this pub yet?
+  const [needsOnboarding, setNeedsOnboarding] = useState<boolean | null>(null);
+  const [reloadKey, setReloadKey] = useState(0);
+
+  useEffect(() => {
+    if (!profile || profile.role !== "merchant") return;
+    let cancelled = false;
+    (async () => {
+      const pubName = profile.pub_name?.trim();
+      // No pub name yet → definitely needs onboarding.
+      if (!pubName) { if (!cancelled) setNeedsOnboarding(true); return; }
+      const { count } = await (supabase as any)
+        .from("merchant_deals")
+        .select("id", { count: "exact", head: true })
+        .ilike("pub_name", pubName);
+      if (cancelled) return;
+      setNeedsOnboarding((count ?? 0) === 0);
+    })();
+    return () => { cancelled = true; };
+  }, [profile, reloadKey]);
+
   // Gate
   useEffect(() => {
     if (authLoading || profileLoading) return;
@@ -50,7 +72,7 @@ function MerchantDashboardPage() {
     }
   }, [authLoading, profileLoading, user, profile, navigate]);
 
-  if (authLoading || profileLoading || !profile || profile.role !== "merchant") {
+  if (authLoading || profileLoading || !profile || profile.role !== "merchant" || needsOnboarding === null) {
     return <DashboardSkeleton />;
   }
 
