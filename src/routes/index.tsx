@@ -79,6 +79,9 @@ import {
   type CityKey,
   type Merchant,
 } from "@/lib/cityStore";
+import { useGeolocation } from "@/hooks/useGeolocation";
+import { getOrCreateSessionId, haversineKm } from "@/lib/geo";
+import { LiveWorkspaceRadar } from "@/components/LiveWorkspaceRadar";
 
 // ---------- Client-side spam guard ----------
 const RATE_KEY = "drinkedin.rate.posts";
@@ -273,6 +276,12 @@ type PendingDraft = {
 };
 
 function Index() {
+  // Live geolocation (jittered). Coords here are ALREADY fuzzed by ±50–100 m
+  // before they leave the useGeolocation hook — precise lat/lng never reach
+  // the database or any other client. Declared first so all submit/insert
+  // callbacks below can close over it.
+  const { coords: geoCoords, status: geoStatus } = useGeolocation();
+
   const [posts, setPosts] = useState<Post[]>([]);
   const [commentsByPost, setCommentsByPost] = useState<Record<string, Comment[]>>({});
   const [body, setBody] = useState("");
@@ -882,12 +891,25 @@ function Index() {
         user_id: user?.id ?? null,
         post_type: "user",
         attached_visual_url: attachedUrl ?? null,
+        latitude: geoCoords?.latitude ?? null,
+        longitude: geoCoords?.longitude ?? null,
       })
       .select()
       .single();
     if (!error && data) {
       recordPostTimestamp();
       try { localStorage.removeItem(PENDING_DRAFT_KEY); } catch {}
+      // Fire a presence beacon so the radar lights up for nearby colleagues.
+      if (geoCoords) {
+        void (supabase as any).from("check_ins").insert({
+          session_id: getOrCreateSessionId(),
+          user_id: user?.id ?? null,
+          activity: "posting",
+          city: selectedCity,
+          latitude: geoCoords.latitude,
+          longitude: geoCoords.longitude,
+        });
+      }
       setPosts((prev) => (prev.some((p) => p.id === data.id) ? prev : [data as Post, ...prev]));
       setBody("");
       setGifUrl(null);
@@ -972,6 +994,8 @@ function Index() {
           author_name: alias,
           author_alias: alias,
           user_id: user.id,
+          latitude: geoCoords?.latitude ?? null,
+          longitude: geoCoords?.longitude ?? null,
         })
         .select()
         .single();
@@ -990,7 +1014,7 @@ function Index() {
       }));
       toast.error("Couldn't post your reply. Try again in a sec.");
     }
-  }, [user]);
+  }, [user, geoCoords?.latitude, geoCoords?.longitude]);
 
   const reportPost = useCallback(async (post: Post) => {
     if (isSimulatedPost(post) || post.post_type === "merchant" || post.id.startsWith("merchant-")) {
@@ -1109,6 +1133,21 @@ function Index() {
     return subscribeCity(setSelectedCityState);
   }, []);
 
+  // Drop a "browsing_deals" presence beacon whenever we first acquire a fix.
+  useEffect(() => {
+    if (!geoCoords) return;
+    const sessionId = getOrCreateSessionId();
+    void (supabase as any).from("check_ins").insert({
+      session_id: sessionId,
+      user_id: user?.id ?? null,
+      activity: "browsing_deals",
+      city: selectedCity,
+      latitude: geoCoords.latitude,
+      longitude: geoCoords.longitude,
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [geoCoords?.latitude, geoCoords?.longitude]);
+
   // Sort posts by selected mode, inject merchant ads at fixed slots, pin highlighted
   // Employee of the Day — most-cheered real user post in the last 24h.
   const employeeOfDay = useMemo(() => {
@@ -1143,6 +1182,21 @@ function Index() {
     const visible = [...posts].filter((p) => !p.is_hidden);
     const sorted = visible.sort((a, b) => {
       if (sortMode === "top") return b.cheers_count - a.cheers_count;
+      // "recent" mode: when we have a live geo fix, elevate physically-close
+      // posts (within 5 km) above the rest. Recency still wins inside each band.
+      if (sortMode === "recent" && geoCoords) {
+        const da = haversineKm(geoCoords, {
+          latitude: (a as any).latitude,
+          longitude: (a as any).longitude,
+        });
+        const db = haversineKm(geoCoords, {
+          latitude: (b as any).latitude,
+          longitude: (b as any).longitude,
+        });
+        const aNear = isFinite(da) && da <= 5 ? 0 : 1;
+        const bNear = isFinite(db) && db <= 5 ? 0 : 1;
+        if (aNear !== bNear) return aNear - bNear;
+      }
       return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
     });
 
@@ -1163,7 +1217,7 @@ function Index() {
     const idx = withPin.findIndex((p) => p.id === highlightedId);
     if (idx < 0) return withPin;
     return [withPin[idx], ...withPin.slice(0, idx), ...withPin.slice(idx + 1)];
-  }, [posts, highlightedId, sortMode, selectedCity, user, employeeOfDay]);
+  }, [posts, highlightedId, sortMode, selectedCity, user, employeeOfDay, geoCoords?.latitude, geoCoords?.longitude]);
 
   // List of the signed-in user's own posts, used by the Tickets accordion.
   const myPosts = useMemo(() => {
@@ -1540,6 +1594,9 @@ function Index() {
         <section className="col-span-12 lg:col-span-6 space-y-3">
           {view === "home" && (
             <>
+              {/* Live Workspace Radar — proximity-aware ambient ticker */}
+              <LiveWorkspaceRadar origin={geoCoords} geoStatus={geoStatus} />
+
               {/* Composer */}
               <Card className="p-4 border-border">
                 <form onSubmit={submitPost} className="space-y-3">

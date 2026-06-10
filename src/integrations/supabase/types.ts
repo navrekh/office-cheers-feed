@@ -38,6 +38,42 @@ export type Database = {
         }
         Relationships: []
       }
+      check_ins: {
+        Row: {
+          activity: string
+          city: string | null
+          created_at: string
+          expires_at: string
+          id: string
+          latitude: number
+          longitude: number
+          session_id: string
+          user_id: string | null
+        }
+        Insert: {
+          activity: string
+          city?: string | null
+          created_at?: string
+          expires_at?: string
+          id?: string
+          latitude: number
+          longitude: number
+          session_id: string
+          user_id?: string | null
+        }
+        Update: {
+          activity?: string
+          city?: string | null
+          created_at?: string
+          expires_at?: string
+          id?: string
+          latitude?: number
+          longitude?: number
+          session_id?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       comments: {
         Row: {
           author_alias: string | null
@@ -45,6 +81,8 @@ export type Database = {
           body_text: string
           created_at: string
           id: string
+          latitude: number | null
+          longitude: number | null
           post_id: string
           user_id: string | null
         }
@@ -54,6 +92,8 @@ export type Database = {
           body_text: string
           created_at?: string
           id?: string
+          latitude?: number | null
+          longitude?: number | null
           post_id: string
           user_id?: string | null
         }
@@ -63,6 +103,8 @@ export type Database = {
           body_text?: string
           created_at?: string
           id?: string
+          latitude?: number | null
+          longitude?: number | null
           post_id?: string
           user_id?: string | null
         }
@@ -190,6 +232,8 @@ export type Database = {
           is_author_view: boolean
           is_hidden: boolean
           is_in_tribunal: boolean
+          latitude: number | null
+          longitude: number | null
           misconduct_votes: number
           post_type: string
           user_id: string | null
@@ -207,6 +251,8 @@ export type Database = {
           is_author_view?: boolean
           is_hidden?: boolean
           is_in_tribunal?: boolean
+          latitude?: number | null
+          longitude?: number | null
           misconduct_votes?: number
           post_type?: string
           user_id?: string | null
@@ -224,6 +270,8 @@ export type Database = {
           is_author_view?: boolean
           is_hidden?: boolean
           is_in_tribunal?: boolean
+          latitude?: number | null
+          longitude?: number | null
           misconduct_votes?: number
           post_type?: string
           user_id?: string | null
@@ -236,6 +284,8 @@ export type Database = {
           created_at: string
           flash_deal_text: string | null
           id: string
+          latitude: number | null
+          longitude: number | null
           map_query_address: string | null
           merchant_website: string | null
           pub_name: string | null
@@ -248,6 +298,8 @@ export type Database = {
           created_at?: string
           flash_deal_text?: string | null
           id: string
+          latitude?: number | null
+          longitude?: number | null
           map_query_address?: string | null
           merchant_website?: string | null
           pub_name?: string | null
@@ -260,6 +312,8 @@ export type Database = {
           created_at?: string
           flash_deal_text?: string | null
           id?: string
+          latitude?: number | null
+          longitude?: number | null
           map_query_address?: string | null
           merchant_website?: string | null
           pub_name?: string | null
