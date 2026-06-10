@@ -133,7 +133,10 @@ import ClaimTicketModal from "@/components/ClaimTicketModal";
 import AuthModal from "@/components/AuthModal";
 import { useAuth, emailPrefix, signOut, corporateCodename } from "@/lib/useAuth";
 import { Skeleton } from "@/components/ui/skeleton";
-import { LogOut } from "lucide-react";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { LogOut, Copy, Briefcase, KeyRound, FileText as DraftIcon } from "lucide-react";
+
 
 function isHappyHourNow(d: Date = new Date()): boolean {
   const minutes = d.getHours() * 60 + d.getMinutes();
@@ -233,6 +236,18 @@ function initials(name: string) {
 
 type ViewKey = "home" | "barhop" | "pubs" | "messages" | "notifications";
 
+const PENDING_DRAFT_KEY = "drinkedin.pendingDraft.v1";
+type PendingDraft = {
+  body: string;
+  gifUrl: string | null;
+  vibeId: string | null;
+  anonymous: boolean;
+  authorName: string;
+  authorHeadline: string;
+  autoSubmit: boolean;
+  ts: number;
+};
+
 function Index() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [commentsByPost, setCommentsByPost] = useState<Record<string, Comment[]>>({});
@@ -251,7 +266,8 @@ function Index() {
   const [feedError, setFeedError] = useState<string | null>(null);
   const cheeredRef = useRef<Set<string>>(new Set());
   const [hangoverIndex, setHangoverIndex] = useState<number>(37);
-  const [sortMode, setSortMode] = useState<"recent" | "top">("recent");
+  const [sortMode, setSortMode] = useState<"recent" | "top" | "mine">("recent");
+  const [notifOpen, setNotifOpen] = useState(false);
   const [anonymous, setAnonymous] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(false);
   const [loopCount, setLoopCount] = useState<number>(1847);
@@ -272,6 +288,80 @@ function Index() {
   // Auto-fill composer alias from the signed-in user's email prefix (never the full email)
   const userAlias = user ? emailPrefix(user.email) : null;
   const userCodename = user ? corporateCodename(user.email) : null;
+  const restoredDraftRef = useRef(false);
+
+  // Seamless auth handoff: once the user is signed in, restore their saved
+  // composer draft and auto-submit if the original action was a Post click.
+  useEffect(() => {
+    if (!user || restoredDraftRef.current) return;
+    let raw: string | null = null;
+    try { raw = localStorage.getItem(PENDING_DRAFT_KEY); } catch {}
+    if (!raw) return;
+    restoredDraftRef.current = true;
+    let draft: PendingDraft | null = null;
+    try { draft = JSON.parse(raw) as PendingDraft; } catch {}
+    if (!draft) {
+      try { localStorage.removeItem(PENDING_DRAFT_KEY); } catch {}
+      return;
+    }
+    // Stale drafts (older than 1 hour) are dropped silently.
+    if (Date.now() - (draft.ts || 0) > 60 * 60_000) {
+      try { localStorage.removeItem(PENDING_DRAFT_KEY); } catch {}
+      return;
+    }
+    // Hydrate the composer for visibility.
+    setBody(draft.body || "");
+    setGifUrl(draft.gifUrl || null);
+    setVibeId(draft.vibeId || null);
+    setAnonymous(!!draft.anonymous);
+    if (draft.authorName) setAuthorName(draft.authorName);
+    if (draft.authorHeadline) setAuthorHeadline(draft.authorHeadline);
+
+    if (!draft.autoSubmit) return;
+
+    // Auto-submit the saved draft directly under the new UID, then surface at top.
+    (async () => {
+      const hasVisual = !!(draft!.gifUrl || draft!.vibeId);
+      const bodyForSanitize = draft!.body.trim() ? draft!.body : hasVisual ? "🍻" : draft!.body;
+      const sanitized = sanitizePostBody(bodyForSanitize);
+      if (!sanitized.ok) {
+        toast.error(sanitized.reason || "Your saved draft didn't make the cut.");
+        try { localStorage.removeItem(PENDING_DRAFT_KEY); } catch {}
+        return;
+      }
+      const composed = encodePostMeta(
+        { vibe: draft!.vibeId || undefined, gif: draft!.gifUrl || undefined },
+        sanitized.clean
+      );
+      const { data, error } = await (supabase as any)
+        .from("posts")
+        .insert({
+          author_name: draft!.anonymous ? "Anonymous Colleague" : (draft!.authorName || "Anonymous Intern"),
+          author_headline: draft!.anonymous ? "Incognito | Drinking to Cope" : (draft!.authorHeadline || "Specializing in Liquid Refactoring"),
+          body_text: composed,
+          user_id: user.id,
+        })
+        .select()
+        .single();
+      try { localStorage.removeItem(PENDING_DRAFT_KEY); } catch {}
+      if (!error && data) {
+        setPosts((prev) => (prev.some((p) => p.id === data.id) ? prev : [data as Post, ...prev]));
+        setBody("");
+        setGifUrl(null);
+        setVibeId(null);
+        setSortMode("recent");
+        setHighlightedId((data as Post).id);
+        if ((data as any).claim_ticket) {
+          setClaimTicket((data as any).claim_ticket as string);
+          setClaimModalOpen(true);
+        }
+        toast.success("Welcome back — your draft just published 🍻", { description: "It's pinned to the top of the feed." });
+      } else if (error) {
+        toast.error("Couldn't auto-publish your saved draft. It's restored in the composer above.");
+      }
+    })();
+  }, [user]);
+
 
   // Happy Hour Mode (16:30–18:00 local time)
   useEffect(() => {
@@ -654,7 +744,16 @@ function Index() {
   async function submitPost(e: FormEvent) {
     e.preventDefault();
     if (submitting) return;
-    if (!requireAuth("Sign in to post — your alias stays anonymous in the feed, but we need a verified session on the backend.")) return;
+    if (!user) {
+      // Stash the draft so it survives the Magic-Link round-trip / Google redirect.
+      try {
+        const draft = { body, gifUrl, vibeId, anonymous, authorName, authorHeadline, autoSubmit: true, ts: Date.now() };
+        localStorage.setItem(PENDING_DRAFT_KEY, JSON.stringify(draft));
+      } catch {}
+      setAuthReason("Sign in to post — your draft is saved and will publish the moment your session activates.");
+      setAuthModalOpen(true);
+      return;
+    }
     // Allow body-less posts when a vibe or GIF is attached — the visual carries the post.
     const hasVisual = !!(gifUrl || vibeId);
     const bodyForSanitize = body.trim() ? body : hasVisual ? "🍻" : body;
@@ -687,6 +786,7 @@ function Index() {
       .single();
     if (!error && data) {
       recordPostTimestamp();
+      try { localStorage.removeItem(PENDING_DRAFT_KEY); } catch {}
       setPosts((prev) => (prev.some((p) => p.id === data.id) ? prev : [data as Post, ...prev]));
       setBody("");
       setGifUrl(null);
@@ -825,6 +925,13 @@ function Index() {
 
   // Sort posts by selected mode, inject merchant ads at fixed slots, pin highlighted
   const orderedPosts = useMemo(() => {
+    // "My Desk" — strictly the signed-in user's own posts, newest first, no ads.
+    if (sortMode === "mine") {
+      if (!user) return [];
+      return [...posts]
+        .filter((p) => (p as any).user_id === user.id)
+        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    }
     const sorted = [...posts].sort((a, b) => {
       if (sortMode === "top") return b.cheers_count - a.cheers_count;
       return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
@@ -840,7 +947,15 @@ function Index() {
     const idx = withAds.findIndex((p) => p.id === highlightedId);
     if (idx < 0) return withAds;
     return [withAds[idx], ...withAds.slice(0, idx), ...withAds.slice(idx + 1)];
-  }, [posts, highlightedId, sortMode, selectedCity]);
+  }, [posts, highlightedId, sortMode, selectedCity, user]);
+
+  // List of the signed-in user's own posts, used by the Tickets accordion.
+  const myPosts = useMemo(() => {
+    if (!user) return [] as Post[];
+    return [...posts]
+      .filter((p) => (p as any).user_id === user.id)
+      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+  }, [posts, user]);
 
   const hangoverStatus = useMemo(() => {
     if (hangoverIndex <= 20)
@@ -968,7 +1083,7 @@ function Index() {
             <NavItem icon={<Users className="size-5" />} label="Bar Hop" active={view === "barhop"} onClick={() => setView("barhop")} />
             <NavItem icon={<Beer className="size-5" />} label="Pubs" active={view === "pubs"} onClick={() => setView("pubs")} />
             <NavItem icon={<MessageSquare className="size-5" />} label="Messages" active={view === "messages"} onClick={() => setView("messages")} />
-            <NavItem icon={<Bell className="size-5" />} label="Notifications" badge={4} active={view === "notifications"} onClick={() => setView("notifications")} />
+            <NavItem icon={<Bell className="size-5" />} label="Notifications" badge={4} active={notifOpen} onClick={() => setNotifOpen((o) => !o)} />
           </nav>
         </div>
         <HappyHourTicker />
@@ -1002,6 +1117,46 @@ function Index() {
                   <p className="text-[11px] text-muted-foreground/80 mt-2 leading-snug">
                     Signed in as <span className="font-mono text-foreground/70">{userAlias}</span> · feed alias stays anonymous
                   </p>
+                  <Accordion type="single" collapsible className="mt-3 -mx-1">
+                    <AccordionItem value="tickets" className="border border-amber-400/30 rounded-md bg-amber-500/5">
+                      <AccordionTrigger className="px-3 py-2 text-[11px] font-semibold text-amber-200 hover:no-underline hover:text-amber-100">
+                        <span className="inline-flex items-center gap-1.5">
+                          <KeyRound className="size-3.5" />
+                          My Administrative Access Tickets
+                        </span>
+                      </AccordionTrigger>
+                      <AccordionContent className="px-2 pt-1 pb-2">
+                        {myPosts.length === 0 ? (
+                          <p className="text-[11px] text-muted-foreground px-1 py-2 leading-snug">
+                            No tickets yet. Post your first story to mint a tracking key.
+                          </p>
+                        ) : (
+                          <ul className="space-y-1 max-h-48 overflow-y-auto pr-1">
+                            {myPosts.map((p) => {
+                              const ticket = (p as any).claim_ticket as string | undefined;
+                              if (!ticket) return null;
+                              return (
+                                <li key={p.id} className="flex items-center gap-1.5 group rounded px-1.5 py-1 hover:bg-amber-500/10">
+                                  <code className="flex-1 text-[10.5px] font-mono text-amber-200 truncate" title={ticket}>{ticket}</code>
+                                  <button
+                                    type="button"
+                                    onClick={async () => {
+                                      const link = SITE.trackUrl(ticket);
+                                      try { await navigator.clipboard.writeText(link); toast.success("Tracking link copied 📋", { description: link }); } catch { toast.error("Copy failed"); }
+                                    }}
+                                    aria-label={`Copy tracking link for ${ticket}`}
+                                    className="shrink-0 p-1 rounded text-muted-foreground hover:text-amber-200 hover:bg-amber-500/15 opacity-60 group-hover:opacity-100 transition"
+                                  >
+                                    <Copy className="size-3" />
+                                  </button>
+                                </li>
+                              );
+                            })}
+                          </ul>
+                        )}
+                      </AccordionContent>
+                    </AccordionItem>
+                  </Accordion>
                 </>
               ) : (
                 <>
@@ -1308,12 +1463,26 @@ function Index() {
                   >
                     🏆 Top Brews
                   </button>
+                  {user && (
+                    <button
+                      type="button"
+                      onClick={() => setSortMode("mine")}
+                      className={`px-3 py-1 rounded-full text-[11px] font-semibold transition inline-flex items-center gap-1 ${
+                        sortMode === "mine"
+                          ? "bg-amber-400 text-zinc-950 shadow-[0_0_14px_rgba(251,191,36,0.5)]"
+                          : "text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      <Briefcase className="size-3" /> My Desk 💼
+                    </button>
+                  )}
                 </div>
                 <div className="h-px flex-1 bg-border" />
                 <span className="text-muted-foreground">
-                  {sortMode === "top" ? "Most Cheered 🍻" : "Freshly poured"}
+                  {sortMode === "top" ? "Most Cheered 🍻" : sortMode === "mine" ? "Your timeline 💼" : "Freshly poured"}
                 </span>
               </div>
+
 
 
               {feedError && orderedPosts.length === 0 && (
@@ -1344,7 +1513,19 @@ function Index() {
                 </div>
               )}
 
-              {!feedLoading && !feedError && orderedPosts.length === 0 && (
+              {!feedLoading && !feedError && orderedPosts.length === 0 && sortMode === "mine" && (
+                <Card className="p-8 text-center border-amber-400/40 bg-gradient-to-br from-amber-950/30 via-card to-card shadow-[0_0_30px_rgba(251,191,36,0.1)]">
+                  <div className="mx-auto size-14 rounded-2xl bg-amber-500/15 border border-amber-400/40 grid place-items-center text-2xl mb-3">
+                    📝
+                  </div>
+                  <h3 className="font-display text-lg font-bold text-foreground">Your desk is currently clear!</h3>
+                  <p className="text-sm text-muted-foreground mt-2 max-w-sm mx-auto leading-relaxed">
+                    Write your first office coping story above to see its live global telemetry and upvotes tracking here.
+                  </p>
+                </Card>
+              )}
+
+              {!feedLoading && !feedError && orderedPosts.length === 0 && sortMode !== "mine" && (
                 <Card className="p-8 text-center text-sm text-muted-foreground border-border">
                   Pouring the first round…
                 </Card>
@@ -1435,6 +1616,13 @@ function Index() {
         open={authModalOpen}
         onOpenChange={setAuthModalOpen}
         reason={authReason}
+      />
+
+      <NotificationsDrawer
+        open={notifOpen}
+        onOpenChange={setNotifOpen}
+        signedIn={!!user}
+        myPosts={myPosts}
       />
     </div>
   );
@@ -2247,5 +2435,100 @@ function NotificationsView() {
     </div>
   );
 }
+
+function NotificationsDrawer({
+  open,
+  onOpenChange,
+  signedIn,
+  myPosts,
+}: {
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+  signedIn: boolean;
+  myPosts: Post[];
+}) {
+  // Contextual alerts derived from current state.
+  const items = useMemo(() => {
+    const list: { id: string; emoji: string; title: string; body: string; tone: string }[] = [];
+
+    list.push({
+      id: "sec",
+      emoji: "🛡️",
+      title: "Security Check",
+      body: signedIn
+        ? "Your session is fully verified. Your real identity is protected, and posts are rendered anonymously."
+        : "You're browsing in Off-the-Clock Preview Mode. Sign in to unlock posting and personal telemetry.",
+      tone: "border-emerald-500/30 bg-emerald-500/5",
+    });
+
+    // Dynamic milestone alert per qualifying post (10 or 50+ cheers).
+    for (const p of myPosts) {
+      if (p.cheers_count >= 50) {
+        list.push({
+          id: `milestone-50-${p.id}`,
+          emoji: "🔥",
+          title: "Breakthrough! 50 Cheers cleared",
+          body: `Your post "${snippetOf(p.body_text)}" just hit ${p.cheers_count} Cheers. Your corporate synergy index is skyrocketing.`,
+          tone: "border-amber-400/40 bg-amber-500/10",
+        });
+      } else if (p.cheers_count >= 10) {
+        list.push({
+          id: `milestone-10-${p.id}`,
+          emoji: "🔥",
+          title: "Breakthrough! 10 Cheers cleared",
+          body: `Your post "${snippetOf(p.body_text)}" just hit ${p.cheers_count} Cheers. Your corporate synergy index is skyrocketing.`,
+          tone: "border-amber-400/40 bg-amber-500/10",
+        });
+      }
+    }
+
+    list.push({
+      id: "pm",
+      emoji: "⚠️",
+      title: "Urgent PM Ping",
+      body: "A sprint retrospective has been scheduled for 5:00 PM. Better prepare a double pour.",
+      tone: "border-destructive/40 bg-destructive/5",
+    });
+
+    return list;
+  }, [signedIn, myPosts]);
+
+  return (
+    <Sheet open={open} onOpenChange={onOpenChange}>
+      <SheetContent side="right" className="w-[380px] sm:max-w-[420px] bg-gradient-to-b from-zinc-950 via-zinc-950/95 to-zinc-900 border-l border-amber-500/20">
+        <SheetHeader>
+          <SheetTitle className="flex items-center gap-2 text-base">
+            <Bell className="size-4 text-amber-300" />
+            Notifications Hub
+          </SheetTitle>
+          <SheetDescription className="text-xs">
+            Contextual corporate alerts. Refilled at every sip.
+          </SheetDescription>
+        </SheetHeader>
+        <div className="mt-4 space-y-2.5 overflow-y-auto max-h-[calc(100dvh-7rem)] pr-1">
+          {items.map((n) => (
+            <div key={n.id} className={`rounded-lg border ${n.tone} p-3`}>
+              <div className="flex items-start gap-2.5">
+                <div className="size-9 shrink-0 rounded-md bg-card border border-border grid place-items-center text-lg">
+                  {n.emoji}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[13px] font-semibold leading-snug text-foreground">{n.title}</p>
+                  <p className="text-[11.5px] text-muted-foreground mt-1 leading-relaxed">{n.body}</p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </SheetContent>
+    </Sheet>
+  );
+}
+
+function snippetOf(s: string): string {
+  const clean = s.replace(/«di-meta»[\s\S]*?«\/di-meta»/g, "").trim();
+  return clean.length > 60 ? clean.slice(0, 57) + "…" : clean || "(visual post)";
+}
+
 
 
