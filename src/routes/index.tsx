@@ -48,6 +48,9 @@ import {
   UserPlus,
   Check,
   Clock,
+  Rocket,
+  Volume2,
+  VolumeX,
 } from "lucide-react";
 
 export const Route = createFileRoute("/")({
@@ -143,7 +146,96 @@ function Index() {
   const [hangoverIndex, setHangoverIndex] = useState<number>(37);
   const [sortMode, setSortMode] = useState<"recent" | "top">("recent");
   const [anonymous, setAnonymous] = useState(false);
+  const [soundEnabled, setSoundEnabled] = useState(false);
+  const [loopCount, setLoopCount] = useState<number>(() => 1400 + Math.floor(Math.random() * 1101));
   const [, force] = useState(0);
+
+  useEffect(() => {
+    const id = setInterval(() => setLoopCount((n) => n + 1), 180000);
+    return () => clearInterval(id);
+  }, []);
+
+  const playClink = useCallback(() => {
+    if (!soundEnabled) return;
+    try {
+      const AC = (window as any).AudioContext || (window as any).webkitAudioContext;
+      if (!AC) return;
+      const ctx = new AC();
+      const now = ctx.currentTime;
+      [1760, 2640].forEach((freq, i) => {
+        const o = ctx.createOscillator();
+        const g = ctx.createGain();
+        o.type = "triangle";
+        o.frequency.value = freq;
+        g.gain.setValueAtTime(0.0001, now + i * 0.04);
+        g.gain.exponentialRampToValueAtTime(0.18, now + i * 0.04 + 0.01);
+        g.gain.exponentialRampToValueAtTime(0.0001, now + i * 0.04 + 0.35);
+        o.connect(g).connect(ctx.destination);
+        o.start(now + i * 0.04);
+        o.stop(now + i * 0.04 + 0.4);
+      });
+      setTimeout(() => ctx.close().catch(() => {}), 800);
+    } catch {}
+  }, [soundEnabled]);
+
+  const broetrify = useCallback((raw: string) => {
+    const text = raw.trim() || "I drank a beer during a meeting";
+    const openers = [
+      "I did it.",
+      "Let that sink in.",
+      "Nobody is talking about this.",
+      "This changed everything for me.",
+      "Hot take, but somebody had to say it.",
+    ];
+    const setups = [
+      `Yesterday, ${text.toLowerCase()}. Camera off. Microphone muted.`,
+      `Last quarter, ${text.toLowerCase()}. No slide deck. No agenda. Just vibes.`,
+      `This morning, ${text.toLowerCase()}. While my calendar was on fire.`,
+      `Mid-standup, ${text.toLowerCase()}. The Jira board was screaming.`,
+    ];
+    const whys = ["Why?", "Here's the thing:", "And the lesson?", "But here's what nobody tells you:"];
+    const philosophies = [
+      "Because true leadership isn't about sitting through 60-minute slide decks sober. It's about optimizing liquid infrastructure when project scope creeps.",
+      "Because synergy is a lie. Hydration with hops is the only real KPI.",
+      "Because the best 1:1s happen at the bar, not in a Zoom breakout room.",
+      "Because you can't refactor a meeting, but you can absolutely refactor your sobriety.",
+    ];
+    const realizations = [
+      "It made me realize: Sometimes, you have to let the codebase crash to appreciate the happy hour.",
+      "It hit me: Burnout is just dehydration with a sprint review attached.",
+      "And just like that, I understood: Every great pivot starts with a pint.",
+      "That's when it clicked: The roadmap was never the destination. The bar was.",
+    ];
+    const ctas = [
+      "Agree? Let's take it offline. 🍻",
+      "Thoughts? Drop a 🍺 if this resonates.",
+      "Who else is brave enough to admit it? 👇",
+      "Repost if you've been there. Mute if you can't handle the truth.",
+    ];
+    const hashtags = [
+      "#Mindset #Growth #LiquidRefactoring",
+      "#Leadership #Hustle #HoppyHour",
+      "#Synergy #Wellness #BrewedDifferent",
+      "#Founders #Resilience #PintDriven",
+    ];
+    const pick = <T,>(arr: T[]) => arr[Math.floor(Math.random() * arr.length)];
+    return [
+      pick(openers),
+      "",
+      pick(setups),
+      "",
+      pick(whys),
+      "",
+      pick(philosophies),
+      "",
+      pick(realizations),
+      "",
+      pick(ctas),
+      "",
+      pick(hashtags),
+    ].join("\n");
+  }, []);
+
 
   const ANON_NAME = "Anonymous Colleague";
   const ANON_HEADLINE = "Incognito | Drinking to Cope";
@@ -257,11 +349,12 @@ function Index() {
     if (cheeredRef.current.has(post.id)) return;
     cheeredRef.current.add(post.id);
     force((n) => n + 1);
+    playClink();
     setPosts((prev) =>
       prev.map((p) => (p.id === post.id ? { ...p, cheers_count: p.cheers_count + 1 } : p))
     );
     await (supabase as any).rpc("increment_cheers", { post_id: post.id });
-  }, []);
+  }, [playClink]);
 
   const addComment = useCallback(async (postId: string, text: string, name: string) => {
     const trimmed = text.trim();
@@ -366,9 +459,11 @@ function Index() {
       {/* Premium permanent TokenLens banner with neon-amber glow */}
       <div className="tokenlens-banner relative w-full">
         <div className="mx-auto max-w-7xl px-4 py-2.5 text-center text-[13px] font-medium leading-snug flex items-center justify-center gap-2 flex-wrap">
-          <Sparkles className="size-3.5 text-primary shrink-0" />
+          <span className="shrink-0">🔥</span>
           <span className="text-foreground/90">
-            Sobered up and need to fix your actual cloud infrastructure bills?
+            Running commercial LLMs? TokenLens has caught{" "}
+            <span className="font-bold text-primary tabular-nums">{loopCount.toLocaleString()}</span>{" "}
+            runaway prompt loops this week alone.
           </span>
           <a
             href="https://tokenlens.co.in/"
@@ -377,11 +472,20 @@ function Index() {
             onClick={trackTokenLensClick}
             className="inline-flex items-center gap-1 font-bold text-primary hover:text-primary/80 underline decoration-primary/50 decoration-2 underline-offset-4 transition"
           >
-            Check out my real engineering tool: TokenLens →
+            Secure your API budget now →
           </a>
-
+          <button
+            type="button"
+            onClick={() => setSoundEnabled((s) => !s)}
+            aria-label={soundEnabled ? "Mute clink sound" : "Unmute clink sound"}
+            title={soundEnabled ? "Clink sound: ON" : "Clink sound: OFF"}
+            className="ml-1 inline-flex items-center justify-center size-6 rounded-full border border-border/60 hover:border-primary/60 hover:text-primary text-muted-foreground transition"
+          >
+            {soundEnabled ? <Volume2 className="size-3.5" /> : <VolumeX className="size-3.5" />}
+          </button>
         </div>
       </div>
+
 
       {/* Top Nav */}
       <header className="sticky top-0 z-40 bg-card/95 backdrop-blur border-b border-border shadow-sm">
@@ -527,14 +631,27 @@ function Index() {
                       />
                     </div>
                   </div>
-                  <div className="flex items-center gap-3 pl-14">
+                  <div className="flex items-center gap-2 flex-wrap pl-14">
                     <label className={`flex items-center gap-2 cursor-pointer rounded-md px-2.5 py-1.5 border transition ${anonymous ? "border-primary/50 bg-primary/10" : "border-border hover:bg-muted/40"}`}>
                       <Switch checked={anonymous} onCheckedChange={setAnonymous} aria-label="Post anonymously" />
                       <span className="text-[11px] font-semibold">
                         Post Anonymously <span className="text-muted-foreground font-normal">(Confession Mode 🎭)</span>
                       </span>
                     </label>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const next = broetrify(body);
+                        setBody(next);
+                        toast.success("Broetry engaged 🚀", { description: "Your hot take is now LinkedIn-grade." });
+                      }}
+                      className="inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 border border-primary/40 bg-primary/10 text-primary text-[11px] font-semibold hover:bg-primary/20 hover:border-primary/60 transition"
+                    >
+                      <Rocket className="size-3.5" />
+                      Make it Broetry 🚀
+                    </button>
                   </div>
+
                   <div className="flex items-center gap-1 flex-wrap pl-14">
                     <ComposerChip icon={<ImageIcon className="size-4 text-accent" />} label="Bar pic" />
                     <ComposerChip icon={<Video className="size-4 text-primary" />} label="Tasting" />
