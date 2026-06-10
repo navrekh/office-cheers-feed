@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState, useRef, type FormEvent } from "react";
+import { useEffect, useState, useRef, useCallback, type FormEvent } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,6 +22,9 @@ import {
   BookmarkPlus,
   MoreHorizontal,
   Plus,
+  Shuffle,
+  Send,
+  Sparkles,
 } from "lucide-react";
 
 export const Route = createFileRoute("/")({
@@ -45,6 +48,42 @@ type Post = {
   created_at: string;
 };
 
+type Comment = {
+  id: string;
+  post_id: string;
+  author_name: string;
+  body_text: string;
+  created_at: string;
+};
+
+const RANDOM_FIRST = ["Brittany", "Chad", "Devon", "Marcus", "Priya", "Ainsley", "Trent", "Kelsey", "Jordan", "Avery", "Skyler", "Hunter"];
+const RANDOM_LAST = ["Sullivan", "Hollows", "Volkov", "Park", "Reyes", "Lambert", "O'Brien", "Ngata", "Whitaker", "Stein", "Vasquez", "Bloom"];
+const RANDOM_TITLES = [
+  "Principal Synergy Drinker",
+  "Chief Hangover Officer",
+  "VP of Liquid Infrastructure",
+  "Director of Strategic Pours",
+  "Head of Pint-Driven Development",
+  "Senior Manager, After-Hours Alignment",
+  "Lead Evangelist, Craft Brew Operations",
+  "Distinguished Fellow of Post-Mortem Cocktails",
+  "Chief of Staff to the Open Bar",
+  "Global Lead, Mandatory Fun",
+  "Staff Engineer of Liquid Refactoring",
+  "Fractional CFO (Chief Fermentation Officer)",
+];
+const RANDOM_COMMENT_NAMES = ["Anonymous Intern", "Casey from Comms", "Mid-Level Manager", "Recruiter Bot 9000", "Probably-A-VP"];
+
+function pick<T>(arr: T[]) {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+function randomIdentity() {
+  return {
+    name: `${pick(RANDOM_FIRST)} ${pick(RANDOM_LAST)}`,
+    headline: pick(RANDOM_TITLES),
+  };
+}
+
 function timeAgo(iso: string) {
   const diff = Math.max(1, Math.floor((Date.now() - new Date(iso).getTime()) / 1000));
   if (diff < 60) return `${diff}s`;
@@ -64,8 +103,12 @@ function initials(name: string) {
 
 function Index() {
   const [posts, setPosts] = useState<Post[]>([]);
+  const [commentsByPost, setCommentsByPost] = useState<Record<string, Comment[]>>({});
   const [body, setBody] = useState("");
   const [authorName, setAuthorName] = useState("Alex Morgan");
+  const [authorHeadline, setAuthorHeadline] = useState(
+    "Senior Program Manager | Specialize in Liquid Refactoring"
+  );
   const [submitting, setSubmitting] = useState(false);
   const cheeredRef = useRef<Set<string>>(new Set());
   const [, force] = useState(0);
@@ -73,23 +116,30 @@ function Index() {
   useEffect(() => {
     let mounted = true;
     (async () => {
-      const { data } = await (supabase as any)
-        .from("posts")
-        .select("*")
-        .order("created_at", { ascending: false });
-      if (mounted && data) setPosts(data as Post[]);
+      const [{ data: postRows }, { data: commentRows }] = await Promise.all([
+        (supabase as any).from("posts").select("*").order("created_at", { ascending: false }),
+        (supabase as any).from("comments").select("*").order("created_at", { ascending: true }),
+      ]);
+      if (!mounted) return;
+      if (postRows) setPosts(postRows as Post[]);
+      if (commentRows) {
+        const grouped: Record<string, Comment[]> = {};
+        (commentRows as Comment[]).forEach((c) => {
+          (grouped[c.post_id] ||= []).push(c);
+        });
+        setCommentsByPost(grouped);
+      }
     })();
 
     const channel = (supabase as any)
-      .channel("posts-feed")
+      .channel("drinkedin-feed")
       .on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "posts" },
         (payload: any) => {
-          setPosts((prev) => {
-            if (prev.some((p) => p.id === payload.new.id)) return prev;
-            return [payload.new as Post, ...prev];
-          });
+          setPosts((prev) =>
+            prev.some((p) => p.id === payload.new.id) ? prev : [payload.new as Post, ...prev]
+          );
         }
       )
       .on(
@@ -99,6 +149,18 @@ function Index() {
           setPosts((prev) =>
             prev.map((p) => (p.id === payload.new.id ? (payload.new as Post) : p))
           );
+        }
+      )
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "comments" },
+        (payload: any) => {
+          const c = payload.new as Comment;
+          setCommentsByPost((prev) => {
+            const existing = prev[c.post_id] || [];
+            if (existing.some((x) => x.id === c.id)) return prev;
+            return { ...prev, [c.post_id]: [...existing, c] };
+          });
         }
       )
       .subscribe();
@@ -117,7 +179,7 @@ function Index() {
       .from("posts")
       .insert({
         author_name: authorName || "Anonymous Intern",
-        author_headline: "Senior Program Manager | Specialize in Liquid Refactoring",
+        author_headline: authorHeadline || "Specializing in Liquid Refactoring",
         body_text: body.trim(),
       })
       .select()
@@ -129,28 +191,63 @@ function Index() {
     setSubmitting(false);
   }
 
-  async function cheers(post: Post) {
+  const cheers = useCallback(async (post: Post) => {
     if (cheeredRef.current.has(post.id)) return;
     cheeredRef.current.add(post.id);
     force((n) => n + 1);
-    // optimistic
     setPosts((prev) =>
       prev.map((p) => (p.id === post.id ? { ...p, cheers_count: p.cheers_count + 1 } : p))
     );
     await (supabase as any).rpc("increment_cheers", { post_id: post.id });
+  }, []);
+
+  const addComment = useCallback(async (postId: string, text: string, name: string) => {
+    const trimmed = text.trim();
+    if (!trimmed) return;
+    const optimistic: Comment = {
+      id: `tmp-${Date.now()}-${Math.random()}`,
+      post_id: postId,
+      author_name: name || "Anonymous Intern",
+      body_text: trimmed,
+      created_at: new Date().toISOString(),
+    };
+    setCommentsByPost((prev) => ({
+      ...prev,
+      [postId]: [...(prev[postId] || []), optimistic],
+    }));
+    const { data, error } = await (supabase as any)
+      .from("comments")
+      .insert({ post_id: postId, body_text: trimmed, author_name: name || "Anonymous Intern" })
+      .select()
+      .single();
+    if (!error && data) {
+      setCommentsByPost((prev) => ({
+        ...prev,
+        [postId]: (prev[postId] || []).map((c) => (c.id === optimistic.id ? (data as Comment) : c)),
+      }));
+    }
+  }, []);
+
+  function randomize() {
+    const id = randomIdentity();
+    setAuthorName(id.name);
+    setAuthorHeadline(id.headline);
   }
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      {/* Permanent premium banner */}
-      <div className="w-full bg-gradient-to-r from-accent/90 via-accent to-primary/90 text-accent-foreground border-b border-border/50">
-        <div className="mx-auto max-w-7xl px-4 py-2 text-center text-[13px] font-medium leading-snug">
-          Sobered up and need to fix your cloud infrastructure bills?{" "}
+      {/* Premium permanent TokenLens banner with neon-amber glow */}
+      <div className="tokenlens-banner relative w-full">
+        <div className="mx-auto max-w-7xl px-4 py-2.5 text-center text-[13px] font-medium leading-snug flex items-center justify-center gap-2 flex-wrap">
+          <Sparkles className="size-3.5 text-primary shrink-0" />
+          <span className="text-foreground/90">
+            Sobered up and need to fix your actual cloud infrastructure bills?
+          </span>
           <a
             href="https://tokenlens.co.in/"
             target="_blank"
             rel="noopener noreferrer"
-            className="underline decoration-2 underline-offset-2 font-semibold hover:opacity-90"
+            className="inline-flex items-center gap-1 font-bold text-primary hover:text-primary/80 underline decoration-primary/50 decoration-2 underline-offset-4 transition"
           >
             Check out my real engineering tool: TokenLens →
           </a>
@@ -200,8 +297,8 @@ function Index() {
                 🍺
               </div>
               <h3 className="mt-2 font-semibold text-base leading-tight">{authorName}</h3>
-              <p className="text-xs text-muted-foreground mt-1 leading-snug">
-                Senior Program Manager | Specialize in Liquid Refactoring
+              <p className="text-xs text-muted-foreground mt-1 leading-snug line-clamp-2">
+                {authorHeadline}
               </p>
               <p className="text-[11px] text-muted-foreground/80 mt-1">
                 📍 Brewlyn, NY · BigCorp Holdings
@@ -243,12 +340,29 @@ function Index() {
                 <div className="size-11 shrink-0 rounded-full bg-primary/20 grid place-items-center text-lg font-bold text-primary">
                   {initials(authorName)}
                 </div>
-                <div className="flex-1 space-y-2">
+                <div className="flex-1 space-y-2 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <Input
+                      value={authorName}
+                      onChange={(e) => setAuthorName(e.target.value)}
+                      placeholder="Your corporate alias"
+                      className="h-8 text-xs bg-transparent border-dashed flex-1"
+                    />
+                    <button
+                      type="button"
+                      onClick={randomize}
+                      title="Randomize a corporate identity"
+                      className="shrink-0 inline-flex items-center gap-1 h-8 px-2.5 rounded-md text-[11px] font-semibold border border-primary/40 text-primary hover:bg-primary/15 hover:border-primary transition"
+                    >
+                      <Shuffle className="size-3.5" />
+                      Randomize
+                    </button>
+                  </div>
                   <Input
-                    value={authorName}
-                    onChange={(e) => setAuthorName(e.target.value)}
-                    placeholder="Your corporate alias"
-                    className="h-8 text-xs bg-transparent border-dashed"
+                    value={authorHeadline}
+                    onChange={(e) => setAuthorHeadline(e.target.value)}
+                    placeholder="Your parody headline"
+                    className="h-8 text-xs bg-transparent border-dashed italic text-muted-foreground"
                   />
                   <Textarea
                     value={body}
@@ -291,7 +405,9 @@ function Index() {
             <PostCard
               key={p.id}
               post={p}
+              comments={commentsByPost[p.id] || []}
               onCheers={() => cheers(p)}
+              onComment={(text, name) => addComment(p.id, text, name)}
               cheered={cheeredRef.current.has(p.id)}
             />
           ))}
@@ -307,48 +423,20 @@ function Index() {
               <MoreHorizontal className="size-4 text-muted-foreground" />
             </div>
             <ul className="space-y-3 text-xs">
-              <TrendItem
-                title="O'Malley's $3 Lager Thursday"
-                meta="Midtown · 1.2k professionals attending"
-              />
-              <TrendItem
-                title="The Rooftop @ FinTech HQ"
-                meta="Today 4pm · 'Mandatory team bonding'"
-              />
-              <TrendItem
-                title="Whiskey & Wireframes"
-                meta="Designers only · pretzel bar included"
-              />
-              <TrendItem
-                title="Margarita Standup"
-                meta="Daily 11:30am · attendance optional"
-              />
+              <TrendItem title="O'Malley's $3 Lager Thursday" meta="Midtown · 1.2k professionals attending" />
+              <TrendItem title="The Rooftop @ FinTech HQ" meta="Today 4pm · 'Mandatory team bonding'" />
+              <TrendItem title="Whiskey & Wireframes" meta="Designers only · pretzel bar included" />
+              <TrendItem title="Margarita Standup" meta="Daily 11:30am · attendance optional" />
             </ul>
           </Card>
 
           <Card className="p-4 border-border">
             <h4 className="text-sm font-semibold mb-3">Corporate Coping Strategies</h4>
             <ul className="space-y-3 text-xs">
-              <CopeItem
-                tag="Trending"
-                title="The 'Camera Off' Mimosa"
-                stat="+312% this Q"
-              />
-              <CopeItem
-                tag="Hot"
-                title="LinkedIn Posting While Buzzed"
-                stat="ROI: undefined"
-              />
-              <CopeItem
-                tag="Promoted"
-                title="OOO autoresponder: 'Hydrating'"
-                stat="98% open rate"
-              />
-              <CopeItem
-                tag="New"
-                title="Scheduling 'focus time' at the pub"
-                stat="Synergy unlocked"
-              />
+              <CopeItem tag="Trending" title="The 'Camera Off' Mimosa" stat="+312% this Q" />
+              <CopeItem tag="Hot" title="LinkedIn Posting While Buzzed" stat="ROI: undefined" />
+              <CopeItem tag="Promoted" title="OOO autoresponder: 'Hydrating'" stat="98% open rate" />
+              <CopeItem tag="New" title="Scheduling 'focus time' at the pub" stat="Synergy unlocked" />
             </ul>
           </Card>
 
@@ -409,13 +497,29 @@ function ComposerChip({ icon, label }: { icon: React.ReactNode; label: string })
 
 function PostCard({
   post,
+  comments,
   onCheers,
+  onComment,
   cheered,
 }: {
   post: Post;
+  comments: Comment[];
   onCheers: () => void;
+  onComment: (text: string, name: string) => void;
   cheered: boolean;
 }) {
+  const [showComments, setShowComments] = useState(false);
+  const [popKey, setPopKey] = useState(0);
+  const [bumpKey, setBumpKey] = useState(0);
+
+  function handleCheers() {
+    if (!cheered) {
+      setPopKey((k) => k + 1);
+      setBumpKey((k) => k + 1);
+    }
+    onCheers();
+  }
+
   return (
     <Card className="border-border overflow-hidden">
       <div className="p-4 pb-2 flex items-start gap-3">
@@ -444,14 +548,24 @@ function PostCard({
       </div>
 
       <div className="px-4 pb-2 flex items-center justify-between text-xs text-muted-foreground">
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1.5">
           <span className="size-4 rounded-full bg-primary grid place-items-center text-[9px]">
             🍻
           </span>
-          <span>{post.cheers_count.toLocaleString()} cheers</span>
+          <span
+            key={bumpKey}
+            className={bumpKey > 0 ? "animate-count-bump inline-block" : "inline-block"}
+          >
+            {post.cheers_count.toLocaleString()} cheers
+          </span>
         </div>
         <div className="flex items-center gap-2">
-          <span>{Math.floor(post.cheers_count / 7)} comments</span>
+          <button
+            onClick={() => setShowComments((v) => !v)}
+            className="hover:text-foreground hover:underline"
+          >
+            {comments.length} comments
+          </button>
           <span>·</span>
           <span>{Math.floor(post.cheers_count / 12)} reposts</span>
         </div>
@@ -459,15 +573,105 @@ function PostCard({
 
       <div className="border-t border-border grid grid-cols-3 px-2 py-1">
         <ActionBtn
-          onClick={onCheers}
+          onClick={handleCheers}
           active={cheered}
           label="Cheers 🍻"
-          icon={<Beer className="size-5" />}
+          icon={
+            <span
+              key={popKey}
+              className={`inline-flex ${popKey > 0 ? "animate-cheers-pop" : ""}`}
+            >
+              <Beer className="size-5" />
+            </span>
+          }
         />
-        <ActionBtn label="Comment" icon={<MessageCircle className="size-5" />} />
+        <ActionBtn
+          label="Comment"
+          icon={<MessageCircle className="size-5" />}
+          onClick={() => setShowComments((v) => !v)}
+          active={showComments}
+        />
         <ActionBtn label="Share" icon={<Share2 className="size-5" />} />
       </div>
+
+      {showComments && (
+        <CommentSection
+          comments={comments}
+          onSubmit={onComment}
+        />
+      )}
     </Card>
+  );
+}
+
+function CommentSection({
+  comments,
+  onSubmit,
+}: {
+  comments: Comment[];
+  onSubmit: (text: string, name: string) => void;
+}) {
+  const [text, setText] = useState("");
+  const [name] = useState(() => pick(RANDOM_COMMENT_NAMES));
+
+  function handle(e: FormEvent) {
+    e.preventDefault();
+    if (!text.trim()) return;
+    onSubmit(text, name);
+    setText("");
+  }
+
+  return (
+    <div className="border-t border-border bg-muted/20 px-4 py-3 space-y-3 animate-in fade-in slide-in-from-top-1 duration-200">
+      <form onSubmit={handle} className="flex items-center gap-2">
+        <div className="size-8 shrink-0 rounded-full bg-accent/30 grid place-items-center text-[11px] font-bold text-accent">
+          {initials(name)}
+        </div>
+        <div className="flex-1 relative">
+          <Input
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            placeholder={`Comment as ${name}…`}
+            className="h-9 rounded-full bg-background pr-10 text-sm"
+          />
+          <button
+            type="submit"
+            disabled={!text.trim()}
+            className="absolute right-1 top-1/2 -translate-y-1/2 size-7 rounded-full grid place-items-center text-primary disabled:text-muted-foreground hover:bg-primary/10 transition"
+            aria-label="Post comment"
+          >
+            <Send className="size-3.5" />
+          </button>
+        </div>
+      </form>
+
+      {comments.length === 0 ? (
+        <p className="text-xs text-muted-foreground italic pl-10">
+          Be the first to commenting-for-beer-reach (cfbr) on this masterpiece.
+        </p>
+      ) : (
+        <ul className="space-y-2">
+          {comments.map((c) => (
+            <li key={c.id} className="flex items-start gap-2">
+              <div className="size-8 shrink-0 rounded-full bg-primary/20 grid place-items-center text-[11px] font-bold text-primary">
+                {initials(c.author_name)}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="bg-card border border-border rounded-2xl rounded-tl-sm px-3 py-2">
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-xs font-semibold truncate">{c.author_name}</span>
+                    <span className="text-[10px] text-muted-foreground shrink-0">
+                      {timeAgo(c.created_at)}
+                    </span>
+                  </div>
+                  <p className="text-sm leading-snug mt-0.5">{c.body_text}</p>
+                </div>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
   );
 }
 

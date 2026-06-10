@@ -147,3 +147,49 @@
     color: var(--color-foreground);
   }
 }
+
+@keyframes cheers-pop {
+  0%   { transform: scale(1) rotate(0deg); }
+  25%  { transform: scale(1.35) rotate(-12deg); }
+  50%  { transform: scale(0.92) rotate(8deg); }
+  75%  { transform: scale(1.12) rotate(-4deg); }
+  100% { transform: scale(1) rotate(0deg); }
+}
+@utility animate-cheers-pop {
+  animation: cheers-pop 0.55s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes count-bump {
+  0%   { transform: translateY(0); opacity: 1; }
+  50%  { transform: translateY(-6px); opacity: 0.7; color: var(--color-primary); }
+  100% { transform: translateY(0); opacity: 1; }
+}
+@utility animate-count-bump {
+  animation: count-bump 0.45s ease-out;
+}
+
+@keyframes neon-amber-glow {
+  0%, 100% {
+    box-shadow:
+      0 0 0 1px color-mix(in oklab, var(--color-primary) 55%, transparent),
+      0 0 22px -4px color-mix(in oklab, var(--color-primary) 50%, transparent),
+      0 0 40px -10px color-mix(in oklab, var(--color-accent) 35%, transparent);
+  }
+  50% {
+    box-shadow:
+      0 0 0 1px color-mix(in oklab, var(--color-primary) 80%, transparent),
+      0 0 32px -2px color-mix(in oklab, var(--color-primary) 70%, transparent),
+      0 0 55px -6px color-mix(in oklab, var(--color-accent) 55%, transparent);
+  }
+}
+@utility tokenlens-banner {
+  background:
+    linear-gradient(
+      90deg,
+      color-mix(in oklab, var(--color-background) 70%, transparent) 0%,
+      color-mix(in oklab, var(--color-primary) 22%, var(--color-background)) 50%,
+      color-mix(in oklab, var(--color-background) 70%, transparent) 100%
+    );
+  border-bottom: 1px solid color-mix(in oklab, var(--color-primary) 45%, transparent);
+  animation: neon-amber-glow 3.2s ease-in-out infinite;
+}
