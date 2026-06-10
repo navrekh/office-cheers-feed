@@ -254,15 +254,33 @@ export default function VerifiedWateringHole({
             size="sm"
             onClick={() => {
               if (onRequireAuth && !onRequireAuth()) return;
+              if (profile?.role === "merchant") {
+                setMerchantDashOpen(true);
+                return;
+              }
               resetForm();
               setOpen(true);
             }}
             className="w-full mt-3 border-amber-400/50 hover:border-amber-300 hover:bg-amber-500/10 text-amber-200 hover:text-amber-100 font-semibold text-[12px] h-9"
           >
-            Own a Pub? Sponsor this slot for ₹599/week 🍻
+            {profile?.role === "merchant"
+              ? "Open Merchant Ad Dashboard 🛡️"
+              : "Own a Pub? Sponsor this slot for ₹599/week 🍻"}
           </Button>
         </Card>
       </div>
+
+      {profile?.role === "merchant" && (
+        <MerchantAdDashboard
+          open={merchantDashOpen}
+          onOpenChange={setMerchantDashOpen}
+          profile={profile}
+          onSaved={(p) => {
+            onProfileUpdated?.(p);
+            setMerchantDashOpen(false);
+          }}
+        />
+      )}
 
       <Dialog
         open={open}
