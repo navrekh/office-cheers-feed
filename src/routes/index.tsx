@@ -146,6 +146,7 @@ import AuthModal from "@/components/AuthModal";
 import CommentsDrawer from "@/components/CommentsDrawer";
 import { useAuth, emailPrefix, signOut, corporateCodename } from "@/lib/useAuth";
 import { useProfile, isRlsDenied, RLS_DENIED_MESSAGE } from "@/lib/useProfile";
+import { downloadBroetryCard } from "@/lib/downloadBroetryCard";
 import { reportPost as reportPostRpc, tribunalVote as tribunalVoteRpc } from "@/lib/tribunal";
 import BeerTipPopover from "@/components/BeerTipPopover";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -1807,6 +1808,27 @@ function Index() {
                       <Lightbulb className="size-3.5 text-accent" />
                       Need an Idea? 💡
                     </button>
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        try { await navigator.clipboard.writeText(body); toast.success("Copied to clipboard 📋"); } catch { toast.error("Copy failed"); }
+                      }}
+                      disabled={!body.trim()}
+                      className="inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 border border-border bg-muted/30 text-foreground/80 text-[11px] font-semibold hover:bg-muted/60 transition disabled:opacity-40 disabled:cursor-not-allowed"
+                    >
+                      <Copy className="size-3.5" />
+                      Copy Text
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => downloadBroetryCard(body)}
+                      disabled={!body.trim()}
+                      className="inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 border border-border bg-muted/30 text-foreground/80 text-[11px] font-semibold hover:bg-muted/60 hover:text-primary transition disabled:opacity-40 disabled:cursor-not-allowed"
+                    >
+                      <Download className="size-3.5" />
+                      Save to Phone 📷
+                    </button>
+
                   </div>
 
                   {/* Current Vibe matrix */}
