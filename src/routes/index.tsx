@@ -772,6 +772,70 @@ function Index() {
 
 
 
+  async function handlePicSelected(file: File) {
+    if (!user) {
+      setAuthReason("Sign in to upload a bar pic — keeps uploads tied to a real account.");
+      setAuthModalOpen(true);
+      return;
+    }
+    if (!/^image\/(jpe?g|png)$/i.test(file.type)) {
+      toast.error("Only JPG, JPEG, or PNG files please.");
+      return;
+    }
+    if (file.size > 8 * 1024 * 1024) {
+      toast.error("That image is over 8 MB — pick a smaller pour.");
+      return;
+    }
+    const kind = picKindRef.current;
+    setUploadingPic(kind);
+    try {
+      const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
+      const path = `${user.id}/${Date.now()}_${kind}_${safeName}`;
+      const { error: upErr } = await supabase.storage
+        .from("bar_pics")
+        .upload(path, file, { cacheControl: "3600", upsert: false, contentType: file.type });
+      if (upErr) {
+        toast.error("Upload failed", { description: upErr.message });
+        return;
+      }
+      // Long-lived signed URL (~10 years) since the bucket is private but the
+      // RLS policy on storage.objects allows public read for bar_pics.
+      const { data: signed, error: signErr } = await supabase.storage
+        .from("bar_pics")
+        .createSignedUrl(path, 60 * 60 * 24 * 365 * 10);
+      if (signErr || !signed?.signedUrl) {
+        toast.error("Couldn't generate a preview link. Try again.");
+        return;
+      }
+      setAttachedPath(path);
+      setAttachedUrl(signed.signedUrl);
+      toast.success(kind === "tasting" ? "Tasting locked in 📷" : "Bar pic attached 📷");
+    } catch (e: any) {
+      toast.error("Upload failed", { description: e?.message });
+    } finally {
+      setUploadingPic(null);
+    }
+  }
+
+  function triggerPicUpload(kind: "bar" | "tasting") {
+    if (!user) {
+      setAuthReason("Sign in to upload a bar pic — keeps uploads tied to a real account.");
+      setAuthModalOpen(true);
+      return;
+    }
+    picKindRef.current = kind;
+    picInputRef.current?.click();
+  }
+
+  async function clearAttachedPic() {
+    if (attachedPath) {
+      // Best-effort delete; RLS allows the owner only.
+      void supabase.storage.from("bar_pics").remove([attachedPath]).catch(() => {});
+    }
+    setAttachedPath(null);
+    setAttachedUrl(null);
+  }
+
   async function submitPost(e: FormEvent) {
     e.preventDefault();
     if (submitting) return;
