@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
 import { Card } from "@/components/ui/card";
 import { Radio, Loader2, Compass, MapPinOff, Beer } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { applyJitter, haversineKm, type LatLng } from "@/lib/geo";
+import { getScrubbedRadarBlips, type ScrubbedBlip } from "@/lib/radar.functions";
 
 type CheckIn = {
   id: string;
