@@ -17,6 +17,8 @@ type DealRow = {
   deal_text: string;
   urgency_level: number;
   is_active: boolean;
+  activated_at?: string | null;
+  expires_at?: string | null;
 };
 
 const MAX = 120;
