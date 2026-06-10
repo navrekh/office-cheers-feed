@@ -717,7 +717,7 @@ function NavItem({
       <div className="relative">
         {icon}
         {badge ? (
-          <span className="absolute -top-1.5 -right-2 bg-destructive text-destructive-foreground text-[9px] font-bold rounded-full size-4 grid place-items-center">
+          <span className="absolute -top-1.5 -right-2 bg-primary text-primary-foreground text-[9px] font-bold rounded-full size-4 grid place-items-center shadow-[0_0_8px_hsl(var(--primary))] animate-notif-glow">
             {badge}
           </span>
         ) : null}
