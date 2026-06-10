@@ -766,6 +766,11 @@ function Index() {
               </ul>
             </div>
           </div>
+          {happyHour && (
+            <span className="ml-1 inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-bold bg-amber-500/20 text-amber-200 border border-amber-400/60 shadow-[0_0_14px_rgba(251,191,36,0.5)] animate-fade-in">
+              🍻 Happy Hour is Active! All 'Cheers' clicks give double telemetry points.
+            </span>
+          )}
           <button
             type="button"
             onClick={() => setSoundEnabled((s) => !s)}
