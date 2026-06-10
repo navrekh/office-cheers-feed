@@ -147,13 +147,51 @@ function Index() {
   const [sortMode, setSortMode] = useState<"recent" | "top">("recent");
   const [anonymous, setAnonymous] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(false);
-  const [loopCount, setLoopCount] = useState<number>(() => 1400 + Math.floor(Math.random() * 1101));
+  const [loopCount, setLoopCount] = useState<number>(1847);
   const [, force] = useState(0);
 
+  // Hydrate persistent TokenLens counter on the client only (avoids SSR hydration mismatch)
   useEffect(() => {
-    const id = setInterval(() => setLoopCount((n) => n + 1), 180000);
+    try {
+      const saved = localStorage.getItem("drinkedin.tokenlens.loopCount");
+      const parsed = saved ? parseInt(saved, 10) : NaN;
+      const start = Number.isFinite(parsed) && parsed >= 1400 ? parsed : 1400 + Math.floor(Math.random() * 1101);
+      setLoopCount(start);
+      localStorage.setItem("drinkedin.tokenlens.loopCount", String(start));
+    } catch {}
+    const id = setInterval(() => {
+      setLoopCount((n) => {
+        const next = n + 1;
+        try { localStorage.setItem("drinkedin.tokenlens.loopCount", String(next)); } catch {}
+        return next;
+      });
+    }, 180000);
     return () => clearInterval(id);
   }, []);
+
+  // First-time visitor onboarding toast
+  useEffect(() => {
+    try {
+      if (localStorage.getItem("drinkedin.visited") === "1") return;
+      const t = setTimeout(() => {
+        toast("Welcome to DrinkedIn! 🍻", {
+          description:
+            "Draft your corporate coping stories, turn simple complaints into dramatic LinkedIn-style 'Broetry' using our custom engine, and check the top banner to see how your engineering team can save on token bills.",
+          duration: 14000,
+          className: "drinkedin-onboard-toast",
+          action: {
+            label: "Let's drink! 🚀",
+            onClick: () => {
+              try { localStorage.setItem("drinkedin.visited", "1"); } catch {}
+            },
+          },
+        });
+        try { localStorage.setItem("drinkedin.visited", "1"); } catch {}
+      }, 900);
+      return () => clearTimeout(t);
+    } catch {}
+  }, []);
+
 
   const playClink = useCallback(() => {
     if (!soundEnabled) return;
