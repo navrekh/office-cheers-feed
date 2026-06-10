@@ -127,26 +127,45 @@ function Index() {
   const [submitting, setSubmitting] = useState(false);
   const [view, setView] = useState<ViewKey>("home");
   const [highlightedId, setHighlightedId] = useState<string | null>(null);
+  const [feedLoading, setFeedLoading] = useState(true);
+  const [feedError, setFeedError] = useState<string | null>(null);
   const cheeredRef = useRef<Set<string>>(new Set());
   const [, force] = useState(0);
 
+
   useEffect(() => {
     let mounted = true;
-    (async () => {
-      const [{ data: postRows }, { data: commentRows }] = await Promise.all([
-        (supabase as any).from("posts").select("*").order("created_at", { ascending: false }),
-        (supabase as any).from("comments").select("*").order("created_at", { ascending: true }),
-      ]);
+    let retryTimer: ReturnType<typeof setTimeout> | null = null;
+
+    async function loadFeed() {
       if (!mounted) return;
-      if (postRows) setPosts(postRows as Post[]);
-      if (commentRows) {
-        const grouped: Record<string, Comment[]> = {};
-        (commentRows as Comment[]).forEach((c) => {
-          (grouped[c.post_id] ||= []).push(c);
-        });
-        setCommentsByPost(grouped);
+      setFeedError(null);
+      try {
+        const [postsRes, commentsRes] = await Promise.all([
+          (supabase as any).from("posts").select("*").order("created_at", { ascending: false }),
+          (supabase as any).from("comments").select("*").order("created_at", { ascending: true }),
+        ]);
+        if (!mounted) return;
+        if (postsRes.error) throw postsRes.error;
+        if (commentsRes.error) throw commentsRes.error;
+        if (postsRes.data) setPosts(postsRes.data as Post[]);
+        if (commentsRes.data) {
+          const grouped: Record<string, Comment[]> = {};
+          (commentsRes.data as Comment[]).forEach((c) => {
+            (grouped[c.post_id] ||= []).push(c);
+          });
+          setCommentsByPost(grouped);
+        }
+        setFeedLoading(false);
+      } catch (err: any) {
+        console.warn("[DrinkedIn] feed load hiccup, retrying…", err?.message || err);
+        if (!mounted) return;
+        setFeedError("The bartender dropped the connection. Re-pouring…");
+        retryTimer = setTimeout(loadFeed, 3000);
       }
-    })();
+    }
+
+    loadFeed();
 
     const channel = (supabase as any)
       .channel("drinkedin-feed")
@@ -180,13 +199,20 @@ function Index() {
           });
         }
       )
-      .subscribe();
+      .subscribe((status: string) => {
+        // Gracefully surface transient realtime hiccups without breaking the UI
+        if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
+          console.warn("[DrinkedIn] realtime status:", status);
+        }
+      });
 
     return () => {
       mounted = false;
+      if (retryTimer) clearTimeout(retryTimer);
       (supabase as any).removeChannel(channel);
     };
   }, []);
+
 
   async function submitPost(e: FormEvent) {
     e.preventDefault();
@@ -263,7 +289,8 @@ function Index() {
   }, []);
 
   const sharePost = useCallback(async (postId: string) => {
-    const url = `${window.location.origin}${window.location.pathname}?post=${postId}`;
+    // Production-canonical share URL (always points to drinkedin.me regardless of preview host)
+    const url = `https://drinkedin.me/?post=${postId}`;
     try {
       await navigator.clipboard.writeText(url);
       toast.success("Link copied to clipboard! 🍻", {
@@ -275,6 +302,21 @@ function Index() {
       });
     }
   }, []);
+
+  // Lightweight, anonymous click tracker for the TokenLens banner CTA
+  const trackTokenLensClick = useCallback(() => {
+    const event = {
+      event: "tokenlens_banner_click",
+      ts: new Date().toISOString(),
+      path: typeof window !== "undefined" ? window.location.pathname : "/",
+    };
+    console.log("[DrinkedIn Analytics]", event);
+    if (typeof window !== "undefined") {
+      const w = window as any;
+      (w.__drinkedinEvents ||= []).push(event);
+    }
+  }, []);
+
 
   // Sort posts with highlighted one pinned at top
   const orderedPosts = useMemo(() => {
@@ -298,10 +340,12 @@ function Index() {
             href="https://tokenlens.co.in/"
             target="_blank"
             rel="noopener noreferrer"
+            onClick={trackTokenLensClick}
             className="inline-flex items-center gap-1 font-bold text-primary hover:text-primary/80 underline decoration-primary/50 decoration-2 underline-offset-4 transition"
           >
             Check out my real engineering tool: TokenLens →
           </a>
+
         </div>
       </div>
 
@@ -467,11 +511,40 @@ function Index() {
                 <span>Sort by: <span className="text-foreground font-medium">Most Tipsy ▾</span></span>
               </div>
 
-              {orderedPosts.length === 0 && (
+              {feedError && orderedPosts.length === 0 && (
+                <Card className="p-4 text-center text-xs text-primary/90 border-primary/30 bg-primary/5 animate-pulse">
+                  {feedError}
+                </Card>
+              )}
+
+              {feedLoading && orderedPosts.length === 0 && !feedError && (
+                <div className="space-y-3" aria-label="Loading feed" role="status">
+                  {[0, 1, 2].map((i) => (
+                    <Card key={i} className="p-4 border-border animate-pulse">
+                      <div className="flex items-start gap-3">
+                        <div className="size-11 rounded-full bg-muted/60" />
+                        <div className="flex-1 space-y-2">
+                          <div className="h-3 w-1/3 rounded bg-muted/60" />
+                          <div className="h-2 w-1/2 rounded bg-muted/40" />
+                        </div>
+                      </div>
+                      <div className="mt-4 space-y-2">
+                        <div className="h-2.5 w-11/12 rounded bg-muted/50" />
+                        <div className="h-2.5 w-10/12 rounded bg-muted/50" />
+                        <div className="h-2.5 w-8/12 rounded bg-muted/40" />
+                      </div>
+                      <div className="mt-4 h-32 rounded-lg bg-muted/30" />
+                    </Card>
+                  ))}
+                </div>
+              )}
+
+              {!feedLoading && !feedError && orderedPosts.length === 0 && (
                 <Card className="p-8 text-center text-sm text-muted-foreground border-border">
                   Pouring the first round…
                 </Card>
               )}
+
 
               {orderedPosts.map((p) => (
                 <PostCard
