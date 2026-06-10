@@ -133,6 +133,8 @@ import ClaimTicketModal from "@/components/ClaimTicketModal";
 import AuthModal from "@/components/AuthModal";
 import { useAuth, emailPrefix, signOut, corporateCodename } from "@/lib/useAuth";
 import { useProfile, isRlsDenied, RLS_DENIED_MESSAGE } from "@/lib/useProfile";
+import { reportPost as reportPostRpc, tribunalVote as tribunalVoteRpc } from "@/lib/tribunal";
+import BeerTipPopover from "@/components/BeerTipPopover";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
@@ -166,6 +168,11 @@ type Post = {
   post_type?: "user" | "merchant";
   merchant_website?: string;
   map_query_address?: string;
+  user_id?: string | null;
+  is_hidden?: boolean;
+  is_in_tribunal?: boolean;
+  valid_votes?: number;
+  misconduct_votes?: number;
 };
 
 function merchantToPost(m: Merchant, city: CityKey): Post {
@@ -267,7 +274,7 @@ function Index() {
   const [feedError, setFeedError] = useState<string | null>(null);
   const cheeredRef = useRef<Set<string>>(new Set());
   const [hangoverIndex, setHangoverIndex] = useState<number>(37);
-  const [sortMode, setSortMode] = useState<"recent" | "top" | "mine">("recent");
+  const [sortMode, setSortMode] = useState<"recent" | "top" | "mine" | "tribunal">("recent");
   const [notifOpen, setNotifOpen] = useState(false);
   const [anonymous, setAnonymous] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(false);
@@ -875,6 +882,68 @@ function Index() {
     }
   }, [user]);
 
+  const reportPost = useCallback(async (post: Post) => {
+    if (isSimulatedPost(post) || post.post_type === "merchant" || post.id.startsWith("merchant-")) {
+      toast("Merchant ads can't be sent to the tribunal 🛡️");
+      return;
+    }
+    if (!user) {
+      setAuthReason("Sign in to flag a post — keeps our tribunal honest.");
+      setAuthModalOpen(true);
+      return;
+    }
+    setPosts((prev) =>
+      prev.map((p) => (p.id === post.id ? { ...p, is_in_tribunal: true } : p))
+    );
+    const res = await reportPostRpc(post.id);
+    if (!res.ok) {
+      toast.error("Couldn't file your report. Try again in a sec.");
+      return;
+    }
+    toast("🚨 Sent to the HR Tribunal ⚖️", {
+      description: "Three Gross Misconduct votes and this post is auto-scrubbed.",
+    });
+  }, [user]);
+
+  const voteTribunal = useCallback(async (post: Post, vote: "valid" | "misconduct") => {
+    if (!user) {
+      setAuthReason("Sign in to cast a tribunal vote — one vote per colleague.");
+      setAuthModalOpen(true);
+      return;
+    }
+    const res = await tribunalVoteRpc(post.id, vote);
+    if (!res.ok) {
+      if (isRlsDenied(res.error)) toast.error(RLS_DENIED_MESSAGE);
+      else toast.error("Vote didn't go through. Try again in a sec.");
+      return;
+    }
+    if (res.data) {
+      setPosts((prev) =>
+        prev.map((p) =>
+          p.id === post.id
+            ? {
+                ...p,
+                valid_votes: res.data!.valid_votes,
+                misconduct_votes: res.data!.misconduct_votes,
+                is_hidden: res.data!.is_hidden,
+              }
+            : p
+        )
+      );
+      if (res.data.is_hidden) {
+        toast("🛑 Scrubbed from the feed", {
+          description: "The tribunal has spoken — post permanently hidden.",
+        });
+      } else if (vote === "valid") {
+        toast.success("Valid coping mechanism 🍺");
+      } else {
+        toast(`Gross Misconduct strike ${res.data.misconduct_votes}/3 🛑`);
+      }
+    }
+  }, [user]);
+
+
+
   function randomize() {
     const id = randomIdentity();
     setAuthorName(id.name);
@@ -931,15 +1000,38 @@ function Index() {
   }, []);
 
   // Sort posts by selected mode, inject merchant ads at fixed slots, pin highlighted
+  // Employee of the Day — most-cheered real user post in the last 24h.
+  const employeeOfDay = useMemo(() => {
+    const cutoff = Date.now() - 24 * 60 * 60 * 1000;
+    const candidates = posts.filter(
+      (p) =>
+        !p.is_hidden &&
+        !p.is_in_tribunal &&
+        p.post_type !== "merchant" &&
+        !isSimulatedPost(p) &&
+        new Date(p.created_at).getTime() >= cutoff &&
+        p.cheers_count >= 1
+    );
+    if (!candidates.length) return null;
+    return candidates.reduce((best, p) => (p.cheers_count > best.cheers_count ? p : best));
+  }, [posts]);
+
   const orderedPosts = useMemo(() => {
+    // Tribunal — flagged posts not yet auto-hidden, newest first.
+    if (sortMode === "tribunal") {
+      return [...posts]
+        .filter((p) => p.is_in_tribunal && !p.is_hidden)
+        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    }
     // "My Desk" — strictly the signed-in user's own posts, newest first, no ads.
     if (sortMode === "mine") {
       if (!user) return [];
       return [...posts]
-        .filter((p) => (p as any).user_id === user.id)
+        .filter((p) => (p as any).user_id === user.id && !p.is_hidden)
         .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
     }
-    const sorted = [...posts].sort((a, b) => {
+    const visible = [...posts].filter((p) => !p.is_hidden);
+    const sorted = visible.sort((a, b) => {
       if (sortMode === "top") return b.cheers_count - a.cheers_count;
       return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
     });
@@ -950,11 +1042,18 @@ function Index() {
     if (merchants[0]) withAds.splice(Math.min(2, withAds.length), 0, merchantToPost(merchants[0], selectedCity));
     if (merchants[1]) withAds.splice(Math.min(6, withAds.length), 0, merchantToPost(merchants[1], selectedCity));
 
-    if (!highlightedId) return withAds;
-    const idx = withAds.findIndex((p) => p.id === highlightedId);
-    if (idx < 0) return withAds;
-    return [withAds[idx], ...withAds.slice(0, idx), ...withAds.slice(idx + 1)];
-  }, [posts, highlightedId, sortMode, selectedCity, user]);
+    // Pin Employee of the Day in "recent" mode.
+    let withPin = withAds;
+    if (sortMode === "recent" && employeeOfDay) {
+      const rest = withAds.filter((p) => p.id !== employeeOfDay.id);
+      withPin = [employeeOfDay, ...rest];
+    }
+
+    if (!highlightedId) return withPin;
+    const idx = withPin.findIndex((p) => p.id === highlightedId);
+    if (idx < 0) return withPin;
+    return [withPin[idx], ...withPin.slice(0, idx), ...withPin.slice(idx + 1)];
+  }, [posts, highlightedId, sortMode, selectedCity, user, employeeOfDay]);
 
   // List of the signed-in user's own posts, used by the Tickets accordion.
   const myPosts = useMemo(() => {
@@ -1164,6 +1263,11 @@ function Index() {
                       </AccordionContent>
                     </AccordionItem>
                   </Accordion>
+                  <UpiVpaEditor
+                    userId={user.id}
+                    initial={profile?.upi_vpa ?? null}
+                    onSaved={() => void refreshProfile()}
+                  />
                 </>
               ) : (
                 <>
@@ -1483,12 +1587,35 @@ function Index() {
                       <Briefcase className="size-3" /> My Desk 💼
                     </button>
                   )}
+                  <button
+                    type="button"
+                    onClick={() => setSortMode("tribunal")}
+                    className={`px-3 py-1 rounded-full text-[11px] font-semibold transition inline-flex items-center gap-1 ${
+                      sortMode === "tribunal"
+                        ? "bg-red-500 text-white shadow-[0_0_14px_rgba(239,68,68,0.55)]"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    ⚖️ HR Tribunal
+                    {posts.filter((p) => p.is_in_tribunal && !p.is_hidden).length > 0 && (
+                      <span className="ml-1 rounded-full bg-red-500/20 px-1.5 text-[10px] font-bold text-red-200">
+                        {posts.filter((p) => p.is_in_tribunal && !p.is_hidden).length}
+                      </span>
+                    )}
+                  </button>
                 </div>
                 <div className="h-px flex-1 bg-border" />
                 <span className="text-muted-foreground">
-                  {sortMode === "top" ? "Most Cheered 🍻" : sortMode === "mine" ? "Your timeline 💼" : "Freshly poured"}
+                  {sortMode === "top"
+                    ? "Most Cheered 🍻"
+                    : sortMode === "mine"
+                      ? "Your timeline 💼"
+                      : sortMode === "tribunal"
+                        ? "Community-flagged ⚖️"
+                        : "Freshly poured"}
                 </span>
               </div>
+
 
 
 
@@ -1548,8 +1675,14 @@ function Index() {
                     onCheers={cheers}
                     onComment={addComment}
                     onShare={sharePost}
+                    onReport={reportPost}
+                    onTribunalVote={voteTribunal}
                     cheered={cheeredRef.current.has(p.id)}
                     highlighted={p.id === highlightedId}
+                    tribunalMode={sortMode === "tribunal"}
+                    isEmployeeOfDay={
+                      sortMode === "recent" && employeeOfDay?.id === p.id
+                    }
                   />
                 ))}
               </div>
@@ -1700,16 +1833,24 @@ const PostCard = memo(function PostCard({
   onCheers,
   onComment,
   onShare,
+  onReport,
+  onTribunalVote,
   cheered,
   highlighted,
+  tribunalMode,
+  isEmployeeOfDay,
 }: {
   post: Post;
   comments: Comment[];
   onCheers: (post: Post) => void;
   onComment: (postId: string, text: string, name: string) => void;
   onShare: (postId: string) => void;
+  onReport: (post: Post) => void;
+  onTribunalVote: (post: Post, vote: "valid" | "misconduct") => void;
   cheered: boolean;
   highlighted?: boolean;
+  tribunalMode?: boolean;
+  isEmployeeOfDay?: boolean;
 }) {
   const [showComments, setShowComments] = useState(false);
   const [popKey, setPopKey] = useState(0);
@@ -1736,6 +1877,11 @@ const PostCard = memo(function PostCard({
           : "border-border"
       }`}
     >
+      {isEmployeeOfDay && !isMerchant && (
+        <div className="px-4 py-1.5 text-[11px] font-extrabold uppercase tracking-wider text-amber-200 bg-gradient-to-r from-amber-500/30 via-fuchsia-500/20 to-amber-500/30 border-b border-amber-400/40 shadow-[0_0_18px_rgba(251,191,36,0.45)] animate-pulse flex items-center justify-center gap-1.5">
+          🏆 Employee of the Day · Most Cheered post in the last 24h
+        </div>
+      )}
       {highlighted && (
         <div className="px-4 pt-2 pb-1 text-[10px] uppercase tracking-wider text-primary font-bold flex items-center gap-1.5">
           <Sparkles className="size-3" /> Shared with you · spotlight
@@ -1918,6 +2064,52 @@ const PostCard = memo(function PostCard({
           icon={<Download className="size-5" />}
         />
       </div>
+
+      {!isMerchant && (
+        <div className="border-t border-border px-4 py-2 flex items-center justify-between gap-3 text-[11px] text-muted-foreground">
+          <BeerTipPopover
+            authorUserId={(post as any).user_id ?? null}
+            authorName={post.author_name}
+          />
+          <button
+            type="button"
+            onClick={() => onReport(post)}
+            disabled={post.is_in_tribunal}
+            className="inline-flex items-center gap-1 font-semibold hover:text-red-300 disabled:text-red-300/60 disabled:cursor-default transition"
+            title={post.is_in_tribunal ? "Already in the tribunal" : "Send to HR Tribunal"}
+          >
+            <AlertTriangle className="size-3.5" />
+            {post.is_in_tribunal ? "In Tribunal ⚖️" : "Report 🚨"}
+          </button>
+        </div>
+      )}
+
+      {tribunalMode && !isMerchant && (
+        <div className="border-t border-red-400/30 bg-red-500/5 px-4 py-3">
+          <div className="flex items-center justify-between text-[10px] uppercase tracking-wider font-bold mb-2">
+            <span className="text-red-300">⚖️ HR Tribunal Vote</span>
+            <span className="text-muted-foreground">
+              🍺 {post.valid_votes ?? 0} · 🛑 {post.misconduct_votes ?? 0}/3
+            </span>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={() => onTribunalVote(post, "valid")}
+              className="h-9 rounded-md border border-emerald-400/40 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-200 text-[12px] font-bold transition"
+            >
+              Valid Coping 🍺
+            </button>
+            <button
+              type="button"
+              onClick={() => onTribunalVote(post, "misconduct")}
+              className="h-9 rounded-md border border-red-400/40 bg-red-500/10 hover:bg-red-500/20 text-red-200 text-[12px] font-bold transition"
+            >
+              Gross Misconduct 🛑
+            </button>
+          </div>
+        </div>
+      )}
 
       {showComments && (
         <CommentSection
@@ -2564,5 +2756,68 @@ function snippetOf(s: string): string {
   return clean.length > 60 ? clean.slice(0, 57) + "…" : clean || "(visual post)";
 }
 
+function UpiVpaEditor({
+  userId,
+  initial,
+  onSaved,
+}: {
+  userId: string;
+  initial: string | null;
+  onSaved: () => void;
+}) {
+  const [vpa, setVpa] = useState(initial ?? "");
+  const [saving, setSaving] = useState(false);
+  useEffect(() => {
+    setVpa(initial ?? "");
+  }, [initial]);
 
+  async function save() {
+    const clean = vpa.trim();
+    if (clean && !/^[a-z0-9._-]{2,}@[a-z]{2,}$/i.test(clean)) {
+      toast.error("That doesn't look like a UPI VPA (e.g. yourname@upi).");
+      return;
+    }
+    setSaving(true);
+    const { error } = await (supabase as any)
+      .from("profiles")
+      .update({ upi_vpa: clean || null })
+      .eq("id", userId);
+    setSaving(false);
+    if (error) {
+      toast.error("Couldn't save your tip handle. Try again in a sec.");
+      return;
+    }
+    toast.success("Beer fund handle saved 🍺");
+    onSaved();
+  }
+
+  return (
+    <div className="mt-3 rounded-md border border-amber-400/30 bg-amber-500/5 p-2.5">
+      <label className="text-[10px] uppercase tracking-wider font-bold text-amber-200/90">
+        Beer-Fund UPI VPA
+      </label>
+      <p className="text-[10px] text-muted-foreground mb-1.5">
+        Optional. Lets colleagues tip you ₹50 via the "Buy them a Beer 🍺" QR.
+      </p>
+      <div className="flex gap-1.5">
+        <Input
+          value={vpa}
+          onChange={(e) => setVpa(e.target.value)}
+          placeholder="yourname@upi"
+          maxLength={120}
+          className="h-8 text-[12px]"
+        />
+        <Button
+          type="button"
+          size="sm"
+          onClick={save}
+          disabled={saving || vpa === (initial ?? "")}
+          className="h-8 px-3 bg-amber-500 hover:bg-amber-400 text-amber-950 text-[11px] font-bold"
+        >
+          {saving ? "…" : "Save"}
+        </Button>
+      </div>
+    </div>
+  );
+}
 

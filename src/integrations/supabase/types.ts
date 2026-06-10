@@ -94,6 +94,38 @@ export type Database = {
         }
         Relationships: []
       }
+      post_reports: {
+        Row: {
+          created_at: string
+          id: string
+          post_id: string
+          user_id: string
+          vote: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          post_id: string
+          user_id: string
+          vote: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          post_id?: string
+          user_id?: string
+          vote?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "post_reports_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       posts: {
         Row: {
           author_headline: string
@@ -104,8 +136,12 @@ export type Database = {
           created_at: string
           id: string
           is_author_view: boolean
+          is_hidden: boolean
+          is_in_tribunal: boolean
+          misconduct_votes: number
           post_type: string
           user_id: string | null
+          valid_votes: number
         }
         Insert: {
           author_headline?: string
@@ -116,8 +152,12 @@ export type Database = {
           created_at?: string
           id?: string
           is_author_view?: boolean
+          is_hidden?: boolean
+          is_in_tribunal?: boolean
+          misconduct_votes?: number
           post_type?: string
           user_id?: string | null
+          valid_votes?: number
         }
         Update: {
           author_headline?: string
@@ -128,8 +168,12 @@ export type Database = {
           created_at?: string
           id?: string
           is_author_view?: boolean
+          is_hidden?: boolean
+          is_in_tribunal?: boolean
+          misconduct_votes?: number
           post_type?: string
           user_id?: string | null
+          valid_votes?: number
         }
         Relationships: []
       }
@@ -143,6 +187,7 @@ export type Database = {
           pub_name: string | null
           role: Database["public"]["Enums"]["app_role"]
           updated_at: string
+          upi_vpa: string | null
           verified_hub_city: string | null
         }
         Insert: {
@@ -154,6 +199,7 @@ export type Database = {
           pub_name?: string | null
           role?: Database["public"]["Enums"]["app_role"]
           updated_at?: string
+          upi_vpa?: string | null
           verified_hub_city?: string | null
         }
         Update: {
@@ -165,6 +211,7 @@ export type Database = {
           pub_name?: string | null
           role?: Database["public"]["Enums"]["app_role"]
           updated_at?: string
+          upi_vpa?: string | null
           verified_hub_city?: string | null
         }
         Relationships: []
@@ -183,6 +230,15 @@ export type Database = {
         Returns: boolean
       }
       increment_cheers: { Args: { post_id: string }; Returns: number }
+      report_post: { Args: { p_post_id: string }; Returns: undefined }
+      tribunal_vote: {
+        Args: { p_post_id: string; p_vote: string }
+        Returns: {
+          is_hidden: boolean
+          misconduct_votes: number
+          valid_votes: number
+        }[]
+      }
     }
     Enums: {
       app_role: "employee" | "merchant"
