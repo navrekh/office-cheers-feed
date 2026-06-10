@@ -166,6 +166,11 @@ type Post = {
   post_type?: "user" | "merchant";
   merchant_website?: string;
   map_query_address?: string;
+  user_id?: string | null;
+  is_hidden?: boolean;
+  is_in_tribunal?: boolean;
+  valid_votes?: number;
+  misconduct_votes?: number;
 };
 
 function merchantToPost(m: Merchant, city: CityKey): Post {
