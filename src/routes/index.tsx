@@ -101,6 +101,14 @@ async function triggerDownloadPostCard(post: { id: string; author_name: string; 
   mod.downloadPostAsImage(post);
 }
 
+
+import AchievementBadges, { ACH_KEYS, bumpAchievement } from "@/components/AchievementBadges";
+import CorporateBingo from "@/components/CorporateBingo";
+
+function isHappyHourNow(d: Date = new Date()): boolean {
+  const minutes = d.getHours() * 60 + d.getMinutes();
+  return minutes >= 16 * 60 + 30 && minutes < 18 * 60;
+}
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
@@ -198,6 +206,43 @@ function Index() {
   const [loopCount, setLoopCount] = useState<number>(1847);
   const [, force] = useState(0);
   const [devOpen, setDevOpen] = useState(false);
+  const [happyHour, setHappyHour] = useState<boolean>(false);
+
+  // Happy Hour Mode (16:30–18:00 local time)
+  useEffect(() => {
+    function tick() { setHappyHour(isHappyHourNow()); }
+    tick();
+    const id = setInterval(tick, 30_000);
+    return () => clearInterval(id);
+  }, []);
+
+  // Bingo-win listener: pre-fill composer with a humblebrag draft
+  useEffect(() => {
+    function onBingo(e: Event) {
+      const draft = ((e as CustomEvent).detail as any)?.draft as string | undefined;
+      if (draft) {
+        setBody(draft);
+        toast.success("BINGO! 🎯", { description: "Draft loaded into your composer." });
+      }
+    }
+    window.addEventListener("drinkedin:bingo-win", onBingo as EventListener);
+    return () => window.removeEventListener("drinkedin:bingo-win", onBingo as EventListener);
+  }, []);
+
+  // Legendary Asset badge: any of my posts crosses 100 cheers
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (localStorage.getItem(ACH_KEYS.legendary) === "1") return;
+    let mine: string[] = [];
+    try { mine = JSON.parse(localStorage.getItem(ACH_KEYS.myPosts) || "[]"); } catch {}
+    if (!mine.length) return;
+    const hit = posts.some((p) => mine.includes(p.id) && p.cheers_count >= 100);
+    if (hit) {
+      bumpAchievement("legendary", true);
+      toast.success("🏆 Legendary Asset unlocked!", { description: "One of your posts broke 100 cheers." });
+    }
+  }, [posts]);
+
   const [mockOutage, setMockOutage] = useState(false);
   const logoPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -539,6 +584,14 @@ function Index() {
       recordPostTimestamp();
       setPosts((prev) => (prev.some((p) => p.id === data.id) ? prev : [data as Post, ...prev]));
       setBody("");
+      try {
+        const mine: string[] = JSON.parse(localStorage.getItem(ACH_KEYS.myPosts) || "[]");
+        if (!mine.includes(data.id)) {
+          mine.push(data.id);
+          localStorage.setItem(ACH_KEYS.myPosts, JSON.stringify(mine.slice(-50)));
+        }
+      } catch {}
+      if (anonymous) bumpAchievement("whistleblower", true);
     } else if (error) {
       toast.error("Couldn't post that round. Try again in a sec.");
     }
@@ -550,6 +603,7 @@ function Index() {
     cheeredRef.current.add(post.id);
     force((n) => n + 1);
     playClink();
+    bumpAchievement("cheers", 1);
     setPosts((prev) =>
       prev.map((p) => (p.id === post.id ? { ...p, cheers_count: p.cheers_count + 1 } : p))
     );
@@ -687,16 +741,36 @@ function Index() {
             </button>
             <div
               role="tooltip"
-              className="pointer-events-none absolute left-1/2 top-full z-50 mt-2 w-72 -translate-x-1/2 rounded-lg border border-border bg-popover/95 backdrop-blur p-3 text-left text-[11px] leading-relaxed shadow-2xl opacity-0 translate-y-1 group-hover:opacity-100 group-hover:translate-y-0 group-focus-within:opacity-100 transition"
+              className="absolute left-1/2 top-full z-50 mt-2 w-72 -translate-x-1/2 rounded-lg border border-border bg-popover/95 backdrop-blur p-3 text-left text-[11px] leading-relaxed shadow-2xl opacity-0 translate-y-1 pointer-events-none group-hover:opacity-100 group-hover:translate-y-0 group-hover:pointer-events-auto group-focus-within:opacity-100 group-focus-within:pointer-events-auto transition"
             >
-              <div className="text-[10px] uppercase tracking-wider font-bold text-primary mb-1.5">Live leaks caught</div>
+              <div className="text-[10px] uppercase tracking-wider font-bold text-primary mb-1.5">Live leaks caught · click to fix</div>
               <ul className="space-y-1 text-foreground/90">
-                <li className="flex items-start gap-1.5"><span>⚠️</span><span>Runaway Agent Loops Stopped: <span className="font-bold text-primary tabular-nums">412</span></span></li>
-                <li className="flex items-start gap-1.5"><span>⚠️</span><span>Opaque Multi-Tenant Waste Caught: <span className="font-bold text-primary tabular-nums">$8,420</span></span></li>
-                <li className="flex items-start gap-1.5"><span>⚠️</span><span>Idle Sandbox API Key Leakage Blocked: <span className="font-bold text-primary tabular-nums">1,105</span></span></li>
+                {[
+                  { emoji: "⚠️", label: "Runaway Agent Loops Stopped", stat: "412" },
+                  { emoji: "⚠️", label: "Opaque Multi-Tenant Waste Caught", stat: "$8,420" },
+                  { emoji: "⚠️", label: "Idle Sandbox API Key Leakage Blocked", stat: "1,105" },
+                ].map((leak) => (
+                  <li key={leak.label}>
+                    <a
+                      href="https://tokenlens.co.in/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={trackTokenLensClick}
+                      className="flex items-start gap-1.5 rounded px-1.5 py-1 -mx-1.5 hover:bg-primary/10 hover:text-primary transition"
+                    >
+                      <span>{leak.emoji}</span>
+                      <span>{leak.label}: <span className="font-bold text-primary tabular-nums">{leak.stat}</span></span>
+                    </a>
+                  </li>
+                ))}
               </ul>
             </div>
           </div>
+          {happyHour && (
+            <span className="ml-1 inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-bold bg-amber-500/20 text-amber-200 border border-amber-400/60 shadow-[0_0_14px_rgba(251,191,36,0.5)] animate-fade-in">
+              🍻 Happy Hour is Active! All 'Cheers' clicks give double telemetry points.
+            </span>
+          )}
           <button
             type="button"
             onClick={() => setSoundEnabled((s) => !s)}
@@ -711,7 +785,7 @@ function Index() {
 
 
       {/* Top Nav */}
-      <header className="sticky top-0 z-40 bg-card/95 backdrop-blur border-b border-border shadow-sm">
+      <header className={`sticky top-0 z-40 backdrop-blur border-b shadow-sm transition-colors ${happyHour ? "happy-hour-header border-amber-300/50" : "bg-card/95 border-border"}`}>
         <div className="mx-auto max-w-7xl px-4 h-14 flex items-center gap-3">
           <div
             className="flex items-center gap-2 select-none"
@@ -807,6 +881,7 @@ function Index() {
               <span className="text-muted-foreground">Saved </span>
               <span className="font-semibold">🍷 Wine cellar bookmarks</span>
             </div>
+            <AchievementBadges />
           </Card>
 
           <Card className="p-4 border-border">
@@ -878,6 +953,7 @@ function Index() {
                       onClick={() => {
                         const next = broetrify(body);
                         setBody(next);
+                        bumpAchievement("broetry", 1);
                         toast.success("Broetry engaged 🚀", { description: "Your hot take is now LinkedIn-grade." });
                       }}
                       className="inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 border border-primary/40 bg-primary/10 text-primary text-[11px] font-semibold hover:bg-primary/20 hover:border-primary/60 transition"
@@ -1062,6 +1138,8 @@ function Index() {
           </Card>
 
           <BuzzwordDecrypter />
+
+          <CorporateBingo />
 
 
 
