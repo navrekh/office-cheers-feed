@@ -2060,6 +2060,52 @@ const PostCard = memo(function PostCard({
         />
       </div>
 
+      {!isMerchant && (
+        <div className="border-t border-border px-4 py-2 flex items-center justify-between gap-3 text-[11px] text-muted-foreground">
+          <BeerTipPopover
+            authorUserId={(post as any).user_id ?? null}
+            authorName={post.author_name}
+          />
+          <button
+            type="button"
+            onClick={() => onReport(post)}
+            disabled={post.is_in_tribunal}
+            className="inline-flex items-center gap-1 font-semibold hover:text-red-300 disabled:text-red-300/60 disabled:cursor-default transition"
+            title={post.is_in_tribunal ? "Already in the tribunal" : "Send to HR Tribunal"}
+          >
+            <AlertTriangle className="size-3.5" />
+            {post.is_in_tribunal ? "In Tribunal ⚖️" : "Report 🚨"}
+          </button>
+        </div>
+      )}
+
+      {tribunalMode && !isMerchant && (
+        <div className="border-t border-red-400/30 bg-red-500/5 px-4 py-3">
+          <div className="flex items-center justify-between text-[10px] uppercase tracking-wider font-bold mb-2">
+            <span className="text-red-300">⚖️ HR Tribunal Vote</span>
+            <span className="text-muted-foreground">
+              🍺 {post.valid_votes ?? 0} · 🛑 {post.misconduct_votes ?? 0}/3
+            </span>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={() => onTribunalVote(post, "valid")}
+              className="h-9 rounded-md border border-emerald-400/40 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-200 text-[12px] font-bold transition"
+            >
+              Valid Coping 🍺
+            </button>
+            <button
+              type="button"
+              onClick={() => onTribunalVote(post, "misconduct")}
+              className="h-9 rounded-md border border-red-400/40 bg-red-500/10 hover:bg-red-500/20 text-red-200 text-[12px] font-bold transition"
+            >
+              Gross Misconduct 🛑
+            </button>
+          </div>
+        </div>
+      )}
+
       {showComments && (
         <CommentSection
           comments={comments}
