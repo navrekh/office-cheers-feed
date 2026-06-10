@@ -2116,7 +2116,12 @@ function PubsView({
 
   return (
     <div className="space-y-3 animate-in fade-in duration-300">
-      <VerifiedWateringHole onRequireAuth={() => requireAuth("Sign in before sponsoring a slot — keeps merchant leads verified.")} />
+      <VerifiedWateringHole
+        onRequireAuth={() => requireAuth("Sign in before sponsoring a slot — keeps merchant leads verified.")}
+        profile={profile}
+        userId={userId}
+        onProfileUpdated={onProfileUpdated}
+      />
 
       <Card className="p-5 border-amber-400/30 bg-gradient-to-br from-amber-950/30 via-card to-card">
         <div className="flex items-center gap-3">
