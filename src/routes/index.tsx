@@ -278,6 +278,7 @@ function Index() {
   const [claimTicket, setClaimTicket] = useState<string | null>(null);
   const [claimModalOpen, setClaimModalOpen] = useState(false);
   const { user, loading: authLoading } = useAuth();
+  const { profile, refresh: refreshProfile } = useProfile(user?.id ?? null);
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authReason, setAuthReason] = useState<string | undefined>(undefined);
   function requireAuth(reason?: string): boolean {
