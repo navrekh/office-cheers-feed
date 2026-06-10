@@ -1139,6 +1139,8 @@ function Index() {
 
           <BuzzwordDecrypter />
 
+          <CorporateBingo />
+
 
 
           <p className="text-[10px] text-muted-foreground/60 px-2 leading-relaxed">
