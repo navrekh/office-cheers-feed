@@ -2340,4 +2340,99 @@ function NotificationsView() {
   );
 }
 
+function NotificationsDrawer({
+  open,
+  onOpenChange,
+  signedIn,
+  myPosts,
+}: {
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+  signedIn: boolean;
+  myPosts: Post[];
+}) {
+  // Contextual alerts derived from current state.
+  const items = useMemo(() => {
+    const list: { id: string; emoji: string; title: string; body: string; tone: string }[] = [];
+
+    list.push({
+      id: "sec",
+      emoji: "🛡️",
+      title: "Security Check",
+      body: signedIn
+        ? "Your session is fully verified. Your real identity is protected, and posts are rendered anonymously."
+        : "You're browsing in Off-the-Clock Preview Mode. Sign in to unlock posting and personal telemetry.",
+      tone: "border-emerald-500/30 bg-emerald-500/5",
+    });
+
+    // Dynamic milestone alert per qualifying post (10 or 50+ cheers).
+    for (const p of myPosts) {
+      if (p.cheers_count >= 50) {
+        list.push({
+          id: `milestone-50-${p.id}`,
+          emoji: "🔥",
+          title: "Breakthrough! 50 Cheers cleared",
+          body: `Your post "${snippetOf(p.body_text)}" just hit ${p.cheers_count} Cheers. Your corporate synergy index is skyrocketing.`,
+          tone: "border-amber-400/40 bg-amber-500/10",
+        });
+      } else if (p.cheers_count >= 10) {
+        list.push({
+          id: `milestone-10-${p.id}`,
+          emoji: "🔥",
+          title: "Breakthrough! 10 Cheers cleared",
+          body: `Your post "${snippetOf(p.body_text)}" just hit ${p.cheers_count} Cheers. Your corporate synergy index is skyrocketing.`,
+          tone: "border-amber-400/40 bg-amber-500/10",
+        });
+      }
+    }
+
+    list.push({
+      id: "pm",
+      emoji: "⚠️",
+      title: "Urgent PM Ping",
+      body: "A sprint retrospective has been scheduled for 5:00 PM. Better prepare a double pour.",
+      tone: "border-destructive/40 bg-destructive/5",
+    });
+
+    return list;
+  }, [signedIn, myPosts]);
+
+  return (
+    <Sheet open={open} onOpenChange={onOpenChange}>
+      <SheetContent side="right" className="w-[380px] sm:max-w-[420px] bg-gradient-to-b from-zinc-950 via-zinc-950/95 to-zinc-900 border-l border-amber-500/20">
+        <SheetHeader>
+          <SheetTitle className="flex items-center gap-2 text-base">
+            <Bell className="size-4 text-amber-300" />
+            Notifications Hub
+          </SheetTitle>
+          <SheetDescription className="text-xs">
+            Contextual corporate alerts. Refilled at every sip.
+          </SheetDescription>
+        </SheetHeader>
+        <div className="mt-4 space-y-2.5 overflow-y-auto max-h-[calc(100dvh-7rem)] pr-1">
+          {items.map((n) => (
+            <div key={n.id} className={`rounded-lg border ${n.tone} p-3`}>
+              <div className="flex items-start gap-2.5">
+                <div className="size-9 shrink-0 rounded-md bg-card border border-border grid place-items-center text-lg">
+                  {n.emoji}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[13px] font-semibold leading-snug text-foreground">{n.title}</p>
+                  <p className="text-[11.5px] text-muted-foreground mt-1 leading-relaxed">{n.body}</p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </SheetContent>
+    </Sheet>
+  );
+}
+
+function snippetOf(s: string): string {
+  const clean = s.replace(/«di-meta»[\s\S]*?«\/di-meta»/g, "").trim();
+  return clean.length > 60 ? clean.slice(0, 57) + "…" : clean || "(visual post)";
+}
+
+
 
