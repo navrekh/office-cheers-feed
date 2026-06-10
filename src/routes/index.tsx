@@ -556,6 +556,28 @@ function Index() {
           >
             Secure your API budget now →
           </a>
+          <div className="relative group">
+            <button
+              type="button"
+              onClick={trackTokenLensClick}
+              className="inline-flex items-center gap-1 rounded-md border border-border/60 hover:border-primary/60 px-2 py-0.5 text-[11px] font-semibold text-foreground/80 hover:text-primary transition"
+              aria-label="View simulated LLM cost leak categories"
+            >
+              <AlertTriangle className="size-3" />
+              View Leaks
+            </button>
+            <div
+              role="tooltip"
+              className="pointer-events-none absolute left-1/2 top-full z-50 mt-2 w-72 -translate-x-1/2 rounded-lg border border-border bg-popover/95 backdrop-blur p-3 text-left text-[11px] leading-relaxed shadow-2xl opacity-0 translate-y-1 group-hover:opacity-100 group-hover:translate-y-0 group-focus-within:opacity-100 transition"
+            >
+              <div className="text-[10px] uppercase tracking-wider font-bold text-primary mb-1.5">Live leaks caught</div>
+              <ul className="space-y-1 text-foreground/90">
+                <li className="flex items-start gap-1.5"><span>⚠️</span><span>Runaway Agent Loops Stopped: <span className="font-bold text-primary tabular-nums">412</span></span></li>
+                <li className="flex items-start gap-1.5"><span>⚠️</span><span>Opaque Multi-Tenant Waste Caught: <span className="font-bold text-primary tabular-nums">$8,420</span></span></li>
+                <li className="flex items-start gap-1.5"><span>⚠️</span><span>Idle Sandbox API Key Leakage Blocked: <span className="font-bold text-primary tabular-nums">1,105</span></span></li>
+              </ul>
+            </div>
+          </div>
           <button
             type="button"
             onClick={() => setSoundEnabled((s) => !s)}
