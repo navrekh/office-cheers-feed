@@ -1630,46 +1630,9 @@ function CopeItem({ tag, title, stat }: { tag: string; title: string; stat: stri
 }
 
 // ============================================================
-// Pubs view (parody Jobs board)
+// Pubs view — trending neighborhood watering holes (city-filtered)
 // ============================================================
-const PUB_JOBS = [
-  {
-    title: "Lead Happy Hour Architect",
-    company: "Brewstack Inc.",
-    location: "Remote · Anywhere with a tap",
-    salary: "$160k + Unlimited IPA",
-    type: "Full-time",
-    tags: ["Remote", "Senior", "Pints/PR"],
-    posted: "2h",
-  },
-  {
-    title: "Senior Post-Mortem Email Drafter",
-    company: "Latework Labs",
-    location: "Hybrid · 2 days at the bar",
-    salary: "$145k + Whiskey stipend",
-    type: "Hybrid",
-    tags: ["Hybrid", "Writing", "Damage control"],
-    posted: "5h",
-  },
-  {
-    title: "VP of Liquid Infrastructure",
-    company: "Synergy & Sons LLC",
-    location: "On-site · Must bring own flask",
-    salary: "$220k + Equity in keg",
-    type: "Executive",
-    tags: ["Leadership", "Onsite", "BYOF"],
-    posted: "1d",
-  },
-  {
-    title: "Principal Engineer, Beer-Driven Development",
-    company: "Stack Overpour",
-    location: "Remote · Pacific Pint Time",
-    salary: "$190k + Sabbatical at vineyard",
-    type: "Full-time",
-    tags: ["Remote", "Engineering"],
-    posted: "1d",
-  },
-];
+
 
 function PubsView() {
   const [selectedCity, setSelectedCityLocal] = useState<CityKey>("Bangalore");
