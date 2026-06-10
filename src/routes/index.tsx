@@ -251,6 +251,40 @@ function Index() {
     setAuthorHeadline(id.headline);
   }
 
+  // Deep-link: ?post=<id> spotlights a post at the top of the feed
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    const target = params.get("post");
+    if (target) {
+      setHighlightedId(target);
+      setView("home");
+    }
+  }, []);
+
+  const sharePost = useCallback(async (postId: string) => {
+    const url = `${window.location.origin}${window.location.pathname}?post=${postId}`;
+    try {
+      await navigator.clipboard.writeText(url);
+      toast.success("Link copied to clipboard! 🍻", {
+        description: "Now go forth and overshare on Slack.",
+      });
+    } catch {
+      toast.error("Couldn't copy. Try long-pressing the link.", {
+        description: url,
+      });
+    }
+  }, []);
+
+  // Sort posts with highlighted one pinned at top
+  const orderedPosts = useMemo(() => {
+    if (!highlightedId) return posts;
+    const idx = posts.findIndex((p) => p.id === highlightedId);
+    if (idx < 0) return posts;
+    return [posts[idx], ...posts.slice(0, idx), ...posts.slice(idx + 1)];
+  }, [posts, highlightedId]);
+
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       {/* Premium permanent TokenLens banner with neon-amber glow */}
