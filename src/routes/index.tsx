@@ -277,6 +277,11 @@ function Index() {
   const [hangoverIndex, setHangoverIndex] = useState<number>(37);
   const [sortMode, setSortMode] = useState<"recent" | "top" | "mine" | "tribunal">("recent");
   const [notifOpen, setNotifOpen] = useState(false);
+  const [notifUnread, setNotifUnread] = useState<number>(4);
+  const [notifPulseKey, setNotifPulseKey] = useState<number>(0);
+  const seenMilestonesRef = useRef<Set<string>>(new Set());
+  const seenCommentIdsRef = useRef<Set<string>>(new Set());
+  const [activeCommentPostId, setActiveCommentPostId] = useState<string | null>(null);
   const [anonymous, setAnonymous] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(false);
   const [loopCount, setLoopCount] = useState<number>(1847);
