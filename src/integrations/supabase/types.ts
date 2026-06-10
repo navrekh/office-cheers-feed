@@ -130,6 +130,57 @@ export type Database = {
           },
         ]
       }
+      city_campaign_votes: {
+        Row: {
+          city: string
+          created_at: string
+          id: string
+          session_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          city: string
+          created_at?: string
+          id?: string
+          session_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          city?: string
+          created_at?: string
+          id?: string
+          session_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      city_campaigns: {
+        Row: {
+          city: string
+          created_at: string
+          launched: boolean
+          target: number
+          updated_at: string
+          vote_count: number
+        }
+        Insert: {
+          city: string
+          created_at?: string
+          launched?: boolean
+          target?: number
+          updated_at?: string
+          vote_count?: number
+        }
+        Update: {
+          city?: string
+          created_at?: string
+          launched?: boolean
+          target?: number
+          updated_at?: string
+          vote_count?: number
+        }
+        Relationships: []
+      }
       comments: {
         Row: {
           author_alias: string | null
@@ -439,6 +490,15 @@ export type Database = {
       claim_first_admin: { Args: never; Returns: boolean }
       claim_merchant_role: { Args: { p_pub_name?: string }; Returns: boolean }
       delete_post_by_ticket: { Args: { ticket: string }; Returns: boolean }
+      get_city_status: {
+        Args: { p_city: string }
+        Returns: {
+          active_merchants: number
+          launched: boolean
+          target: number
+          vote_count: number
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -469,6 +529,15 @@ export type Database = {
           is_hidden: boolean
           misconduct_votes: number
           valid_votes: number
+        }[]
+      }
+      vote_for_city: {
+        Args: { p_city: string; p_session_id?: string }
+        Returns: {
+          already_voted: boolean
+          launched: boolean
+          target: number
+          vote_count: number
         }[]
       }
     }
