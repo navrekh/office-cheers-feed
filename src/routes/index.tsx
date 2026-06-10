@@ -53,7 +53,147 @@ import {
   VolumeX,
   Lightbulb,
   AlertTriangle,
+  Download,
 } from "lucide-react";
+
+// ---------- Client-side spam guard ----------
+const RATE_KEY = "drinkedin.rate.posts";
+const RATE_WINDOW_MS = 60_000;
+const RATE_MAX = 2;
+function checkRateLimit(): { ok: boolean; retryInMs: number } {
+  try {
+    const raw = localStorage.getItem(RATE_KEY);
+    const now = Date.now();
+    const arr: number[] = raw ? JSON.parse(raw) : [];
+    const recent = arr.filter((t) => now - t < RATE_WINDOW_MS);
+    if (recent.length >= RATE_MAX) {
+      const retry = RATE_WINDOW_MS - (now - recent[0]);
+      return { ok: false, retryInMs: Math.max(retry, 30_000) };
+    }
+    return { ok: true, retryInMs: 0 };
+  } catch {
+    return { ok: true, retryInMs: 0 };
+  }
+}
+function recordPostTimestamp() {
+  try {
+    const raw = localStorage.getItem(RATE_KEY);
+    const arr: number[] = raw ? JSON.parse(raw) : [];
+    arr.push(Date.now());
+    const trimmed = arr.slice(-10);
+    localStorage.setItem(RATE_KEY, JSON.stringify(trimmed));
+  } catch {}
+}
+function sanitizePostBody(raw: string): { ok: boolean; reason?: string; clean: string } {
+  const clean = raw.trim();
+  if (!clean) return { ok: false, reason: "Empty post — even silence costs HR money.", clean };
+  if (/(.)\1{6,}/.test(clean)) return { ok: false, reason: "Repetitive character spam detected. Sober up the keyboard.", clean };
+  if (clean.length < 2) return { ok: false, reason: "Too short to be a hot take.", clean };
+  return { ok: true, clean };
+}
+
+// ---------- Post card image export ----------
+function downloadPostAsImage(post: Post) {
+  const W = 1200, H = 1500;
+  const canvas = document.createElement("canvas");
+  canvas.width = W; canvas.height = H;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return;
+
+  // dark background gradient
+  const bg = ctx.createLinearGradient(0, 0, 0, H);
+  bg.addColorStop(0, "#0b0f1a");
+  bg.addColorStop(1, "#111827");
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, W, H);
+
+  // accent corner
+  const accent = ctx.createLinearGradient(0, 0, 400, 400);
+  accent.addColorStop(0, "rgba(56,189,248,0.25)");
+  accent.addColorStop(1, "rgba(56,189,248,0)");
+  ctx.fillStyle = accent;
+  ctx.fillRect(0, 0, 600, 600);
+
+  // brand
+  ctx.fillStyle = "#38bdf8";
+  ctx.font = "bold 36px ui-sans-serif, system-ui, -apple-system, sans-serif";
+  ctx.fillText("DrinkedIn 🍻", 80, 110);
+
+  // avatar circle
+  const initials = post.author_name.split(" ").map((s) => s[0]).slice(0, 2).join("").toUpperCase();
+  ctx.beginPath();
+  ctx.arc(130, 240, 60, 0, Math.PI * 2);
+  ctx.fillStyle = "#1e293b";
+  ctx.fill();
+  ctx.fillStyle = "#e2e8f0";
+  ctx.font = "bold 40px ui-sans-serif, system-ui, sans-serif";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText(initials || "?", 130, 240);
+  ctx.textAlign = "start";
+  ctx.textBaseline = "alphabetic";
+
+  // author name + headline
+  ctx.fillStyle = "#f1f5f9";
+  ctx.font = "bold 38px ui-sans-serif, system-ui, sans-serif";
+  ctx.fillText(post.author_name, 220, 230);
+  ctx.fillStyle = "#94a3b8";
+  ctx.font = "26px ui-sans-serif, system-ui, sans-serif";
+  ctx.fillText(post.author_headline.slice(0, 60), 220, 270);
+
+  // divider
+  ctx.strokeStyle = "rgba(148,163,184,0.2)";
+  ctx.beginPath();
+  ctx.moveTo(80, 340);
+  ctx.lineTo(W - 80, 340);
+  ctx.stroke();
+
+  // body text — word-wrap
+  ctx.fillStyle = "#e2e8f0";
+  ctx.font = "34px ui-sans-serif, system-ui, sans-serif";
+  const maxWidth = W - 160;
+  const lineHeight = 50;
+  const words = post.body_text.split(/\s+/);
+  let line = "";
+  let y = 410;
+  const maxY = H - 240;
+  for (const word of words) {
+    const test = line ? line + " " + word : word;
+    if (ctx.measureText(test).width > maxWidth) {
+      ctx.fillText(line, 80, y);
+      line = word;
+      y += lineHeight;
+      if (y > maxY) { line = line + " …"; break; }
+    } else {
+      line = test;
+    }
+  }
+  if (y <= maxY) ctx.fillText(line, 80, y);
+
+  // cheers badge
+  ctx.fillStyle = "#38bdf8";
+  ctx.font = "bold 32px ui-sans-serif, system-ui, sans-serif";
+  ctx.fillText(`🍻 ${post.cheers_count.toLocaleString()} cheers`, 80, H - 140);
+
+  // watermark
+  ctx.fillStyle = "rgba(148,163,184,0.7)";
+  ctx.font = "22px ui-sans-serif, system-ui, sans-serif";
+  ctx.textAlign = "right";
+  ctx.fillText("Made on DrinkedIn.me 🍻", W - 80, H - 60);
+  ctx.textAlign = "start";
+
+  canvas.toBlob((blob) => {
+    if (!blob) return;
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `drinkedin-${post.id.slice(0, 8)}.png`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }, "image/png");
+}
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -409,20 +549,35 @@ function Index() {
 
   async function submitPost(e: FormEvent) {
     e.preventDefault();
-    if (!body.trim() || submitting) return;
+    if (submitting) return;
+    const sanitized = sanitizePostBody(body);
+    if (!sanitized.ok) {
+      toast.error(sanitized.reason || "That post didn't make the cut.");
+      return;
+    }
+    const rate = checkRateLimit();
+    if (!rate.ok) {
+      setSubmitting(true);
+      toast.error("Whoa there, colleague! Your blood alcohol content or posting speed is too high for HR. Take a sip of water and try again in 30 seconds. 🍻");
+      setTimeout(() => setSubmitting(false), Math.min(rate.retryInMs, 30_000));
+      return;
+    }
     setSubmitting(true);
     const { data, error } = await (supabase as any)
       .from("posts")
       .insert({
         author_name: anonymous ? ANON_NAME : (authorName || "Anonymous Intern"),
         author_headline: anonymous ? ANON_HEADLINE : (authorHeadline || "Specializing in Liquid Refactoring"),
-        body_text: body.trim(),
+        body_text: sanitized.clean,
       })
       .select()
       .single();
     if (!error && data) {
+      recordPostTimestamp();
       setPosts((prev) => (prev.some((p) => p.id === data.id) ? prev : [data as Post, ...prev]));
       setBody("");
+    } else if (error) {
+      toast.error("Couldn't post that round. Try again in a sec.");
     }
     setSubmitting(false);
   }
@@ -1077,7 +1232,7 @@ function PostCard({
         </div>
       </div>
 
-      <div className="border-t border-border grid grid-cols-3 px-2 py-1">
+      <div className="border-t border-border grid grid-cols-4 px-2 py-1">
         <ActionBtn
           onClick={handleCheers}
           active={cheered}
@@ -1098,6 +1253,14 @@ function PostCard({
           active={showComments}
         />
         <ActionBtn onClick={onShare} label="Share" icon={<Share2 className="size-5" />} />
+        <ActionBtn
+          onClick={() => {
+            downloadPostAsImage(post);
+            toast.success("Post card downloading 🍻");
+          }}
+          label="Download"
+          icon={<Download className="size-5" />}
+        />
       </div>
 
       {showComments && (
