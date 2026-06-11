@@ -2044,6 +2044,78 @@ function Index() {
         reason={authReason}
       />
 
+      <Dialog open={profileOpen} onOpenChange={setProfileOpen}>
+        <DialogContent className="max-w-md p-0 overflow-hidden border-border">
+          <div className="h-16 bg-gradient-to-br from-primary/40 via-accent/50 to-primary/30" />
+          <div className="px-5 -mt-8 pb-5">
+            <div className="size-16 rounded-full bg-card border-4 border-card grid place-items-center text-2xl shadow ring-2 ring-primary/40">
+              🍻
+            </div>
+            <DialogHeader className="mt-2 text-left">
+              <DialogTitle className="text-base">
+                Welcome, <span className="text-primary">{userCodename ?? "Guest"}</span> 🍺
+              </DialogTitle>
+              <DialogDescription className="text-[11px]">
+                Signed in as <span className="font-mono text-foreground/70">{userAlias}</span> · feed alias stays anonymous
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="mt-4 rounded-lg border border-border bg-muted/30 px-3 py-3 space-y-2.5">
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                  Your Hangover Index
+                </span>
+                <span className="text-xs font-bold text-primary tabular-nums">{hangoverIndex}%</span>
+              </div>
+              <Slider
+                value={[hangoverIndex]}
+                onValueChange={(v) => setHangoverIndex(v[0] ?? 0)}
+                min={0}
+                max={100}
+                step={1}
+                aria-label="Your current hangover index"
+              />
+              <div className={`rounded-md border px-2.5 py-1.5 text-[11px] leading-snug transition-colors ${hangoverStatus.tone}`}>
+                <div className="font-bold">{hangoverStatus.label}</div>
+                <div className="text-foreground/70 mt-0.5">{hangoverStatus.copy}</div>
+              </div>
+            </div>
+
+            {user && (
+              <div className="mt-4">
+                <UpiVpaEditor
+                  userId={user.id}
+                  initial={profile?.upi_vpa ?? null}
+                  onSaved={() => void refreshProfile()}
+                />
+              </div>
+            )}
+
+            <div className="mt-4 rounded-lg border border-border overflow-hidden">
+              <AchievementBadges />
+            </div>
+
+            {user && (
+              <button
+                type="button"
+                onClick={async () => {
+                  await signOut();
+                  setProfileOpen(false);
+                  toast("Logged out. The bar is closing… for now. 🚪", {
+                    description: "Your session token has been cleared.",
+                  });
+                }}
+                className="mt-4 w-full inline-flex items-center justify-center gap-2 rounded-md px-3 py-2 text-[12px] font-medium text-muted-foreground hover:text-foreground border border-border/60 hover:border-border bg-card/40 hover:bg-muted/40 transition"
+              >
+                <LogOut className="size-3.5" />
+                Logout 🚪
+              </button>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+
       <ProximityAdDispatcher origin={geoCoords} userId={user?.id ?? null} />
 
       <NotificationsDrawer
