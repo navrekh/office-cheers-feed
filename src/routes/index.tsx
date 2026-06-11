@@ -1528,6 +1528,7 @@ function Index() {
 
       {/* 3-column layout */}
       <main className="mx-auto max-w-7xl px-4 py-6 grid grid-cols-12 gap-6">
+
         <h1 className="sr-only">
           DrinkedIn — the corporate sanctuary for anonymous coping, viral Broetry, and verified local happy hours
         </h1>
