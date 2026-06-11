@@ -335,6 +335,7 @@ function Index() {
   const { profile, refresh: refreshProfile } = useProfile(user?.id ?? null);
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authReason, setAuthReason] = useState<string | undefined>(undefined);
+  const [profileOpen, setProfileOpen] = useState(false);
   function requireAuth(reason?: string): boolean {
     if (user) return true;
     setAuthReason(reason);
@@ -1502,6 +1503,21 @@ function Index() {
             <NavItem icon={<Beer className="size-5" />} label="Pubs" active={view === "pubs"} onClick={() => setView("pubs")} />
             <NavItem icon={<MessageSquare className="size-5" />} label="Messages" active={view === "messages"} onClick={() => setView("messages")} />
             <NavItem icon={<Bell className="size-5" />} label="Notifications" badge={notifUnread} pulseKey={notifPulseKey} active={notifOpen} onClick={() => setNotifOpen((o) => !o)} />
+            <button
+              type="button"
+              onClick={() => {
+                if (!user) {
+                  setAuthReason("Sign in to access your profile.");
+                  setAuthModalOpen(true);
+                  return;
+                }
+                setProfileOpen(true);
+              }}
+              aria-label="Open profile menu"
+              className={`ml-1 size-9 shrink-0 rounded-full grid place-items-center text-base font-bold transition ${user ? "bg-primary/20 text-primary ring-2 ring-primary/40 hover:bg-primary/30" : "bg-muted text-muted-foreground ring-2 ring-zinc-700/60 hover:bg-muted/70"}`}
+            >
+              {user ? "🍻" : "🕵️"}
+            </button>
           </nav>
         </div>
         <HappyHourTicker />
@@ -1512,192 +1528,17 @@ function Index() {
 
       {/* 3-column layout */}
       <main className="mx-auto max-w-7xl px-4 py-6 grid grid-cols-12 gap-6">
+
         <h1 className="sr-only">
           DrinkedIn — the corporate sanctuary for anonymous coping, viral Broetry, and verified local happy hours
         </h1>
         {/* Left sidebar */}
-        <aside className="hidden lg:block col-span-3 space-y-4">
-          <Card className="overflow-hidden p-0 border-border">
-            <div className="h-16 bg-gradient-to-br from-primary/40 via-accent/50 to-primary/30" />
-            <div className="px-4 pb-4 -mt-8">
-              <div className={`size-16 rounded-full bg-card border-4 border-card grid place-items-center text-2xl shadow transition ${user ? "ring-2 ring-primary/40" : "ring-2 ring-zinc-700/60 grayscale"}`}>
-                {authLoading ? "…" : user ? "🍻" : "🕵️‍♂️"}
-              </div>
-              {authLoading ? (
-                <div className="mt-2 space-y-2">
-                  <Skeleton className="h-4 w-3/4" />
-                  <Skeleton className="h-3 w-2/3" />
-                  <Skeleton className="h-3 w-1/2" />
-                </div>
-              ) : user ? (
-                <>
-                  <h3 className="mt-2 font-semibold text-base leading-tight">
-                    Welcome, <span className="text-primary">{userCodename}</span> 🍺
-                  </h3>
-                  <div className="mt-1.5 inline-flex items-center gap-1 rounded-full border border-emerald-500/40 bg-emerald-500/10 px-2 py-0.5 text-[10px] font-semibold text-emerald-300">
-                    <ShieldCheck className="size-3" />
-                    Verified Session ✔️
-                  </div>
-                  <p className="text-[11px] text-muted-foreground/80 mt-2 leading-snug">
-                    Signed in as <span className="font-mono text-foreground/70">{userAlias}</span> · feed alias stays anonymous
-                  </p>
-                  <Accordion type="single" collapsible className="mt-3 -mx-1">
-                    <AccordionItem value="tickets" className="border border-amber-400/30 rounded-md bg-amber-500/5">
-                      <AccordionTrigger className="px-3 py-2 text-[11px] font-semibold text-amber-200 hover:no-underline hover:text-amber-100">
-                        <span className="inline-flex items-center gap-1.5">
-                          <KeyRound className="size-3.5" />
-                          My Administrative Access Tickets
-                        </span>
-                      </AccordionTrigger>
-                      <AccordionContent className="px-2 pt-1 pb-2">
-                        {myPosts.length === 0 ? (
-                          <p className="text-[11px] text-muted-foreground px-1 py-2 leading-snug">
-                            No tickets yet. Post your first story to mint a tracking key.
-                          </p>
-                        ) : (
-                          <ul className="space-y-1 max-h-48 overflow-y-auto pr-1">
-                            {myPosts.map((p) => {
-                              const ticket = (p as any).claim_ticket as string | undefined;
-                              if (!ticket) return null;
-                              return (
-                                <li key={p.id} className="flex items-center gap-1.5 group rounded px-1.5 py-1 hover:bg-amber-500/10">
-                                  <code className="flex-1 text-[10.5px] font-mono text-amber-200 truncate" title={ticket}>{ticket}</code>
-                                  <button
-                                    type="button"
-                                    onClick={async () => {
-                                      const link = SITE.trackUrl(ticket);
-                                      try { await navigator.clipboard.writeText(link); toast.success("Tracking link copied 📋", { description: link }); } catch { toast.error("Copy failed"); }
-                                    }}
-                                    aria-label={`Copy tracking link for ${ticket}`}
-                                    className="shrink-0 p-1 rounded text-muted-foreground hover:text-amber-200 hover:bg-amber-500/15 opacity-60 group-hover:opacity-100 transition"
-                                  >
-                                    <Copy className="size-3" />
-                                  </button>
-                                </li>
-                              );
-                            })}
-                          </ul>
-                        )}
-                      </AccordionContent>
-                    </AccordionItem>
-                  </Accordion>
-                  <UpiVpaEditor
-                    userId={user.id}
-                    initial={profile?.upi_vpa ?? null}
-                    onSaved={() => void refreshProfile()}
-                  />
-                </>
-              ) : (
-                <>
-                  <h3 className="mt-2 font-semibold text-base leading-tight text-foreground/90">
-                    Status: Off-the-Clock <span className="text-muted-foreground">Preview Mode</span> 🕵️‍♂️
-                  </h3>
-                  <p className="text-[11px] text-muted-foreground mt-1 leading-snug">
-                    Browsing anonymously. Sign in to post, cheers, and claim your stash.
-                  </p>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setAuthReason("Sign in to unlock posting, cheering, and your private dashboards.");
-                      setAuthModalOpen(true);
-                    }}
-                    className="mt-3 w-full inline-flex items-center justify-center gap-1.5 rounded-md px-3 py-2 text-[12px] font-bold text-zinc-950 bg-amber-400 hover:bg-amber-300 border border-amber-300/60 shadow-[0_0_20px_rgba(251,191,36,0.45)] hover:shadow-[0_0_28px_rgba(251,191,36,0.65)] transition"
-                  >
-                    Sign In to Post 🚀
-                  </button>
-                </>
-              )}
-            </div>
-            <div className="border-t border-border px-4 py-3 space-y-2.5">
-              <div className="flex items-center justify-between gap-2">
-                <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-                  Your Hangover Index
-                </span>
-                <span className="text-xs font-bold text-primary tabular-nums">{hangoverIndex}%</span>
-              </div>
-              <Slider
-                value={[hangoverIndex]}
-                onValueChange={(v) => setHangoverIndex(v[0] ?? 0)}
-                min={0}
-                max={100}
-                step={1}
-                aria-label="Your current hangover index"
-              />
-              <div className={`rounded-md border px-2.5 py-1.5 text-[11px] leading-snug transition-colors ${hangoverStatus.tone}`}>
-                <div className="font-bold">{hangoverStatus.label}</div>
-                <div className="text-foreground/70 mt-0.5">{hangoverStatus.copy}</div>
-              </div>
-            </div>
-
-            <div className="border-t border-border px-4 py-3 text-xs space-y-2 hover:bg-muted/40 cursor-pointer">
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Cheers received on your posts</span>
-                <span className="font-semibold text-primary tabular-nums">
-                  {user ? (liveViewers ?? "…") : "—"}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Impressions of your last excuse</span>
-                <span className="font-semibold text-primary tabular-nums">
-                  {user ? (lastExcuseImpressions ?? "…") : "—"}
-                </span>
-              </div>
-            </div>
-
-            <div className="border-t border-border px-4 py-2 text-xs hover:bg-muted/40 cursor-pointer">
-              <span className="text-muted-foreground">Saved </span>
-              <span className="font-semibold">🍷 Wine cellar bookmarks</span>
-            </div>
-            <AchievementBadges />
-          </Card>
-
-          {profile?.role === "merchant" && (
-            <MerchantFlashControl profile={profile} />
-          )}
-
-
-
-          <Card className="p-4 border-border">
-            <h4 className="text-sm font-semibold mb-2">Recent</h4>
-            <ul className="text-xs space-y-1.5 text-muted-foreground">
-              <li className="hover:text-foreground cursor-pointer"># RemoteWorkBeers</li>
-              <li className="hover:text-foreground cursor-pointer"># SlackToPub</li>
-              <li className="hover:text-foreground cursor-pointer"># PromotedToBartender</li>
-              <li className="hover:text-foreground cursor-pointer"># OOO_AtTheBar</li>
-            </ul>
-          </Card>
-
-          {user ? (
-            <button
-              type="button"
-              onClick={async () => {
-                await signOut();
-                toast("Logged out. The bar is closing… for now. 🚪", {
-                  description: "Your session token has been cleared.",
-                });
-              }}
-              className="w-full inline-flex items-center justify-center gap-2 rounded-md px-3 py-2 text-[12px] font-medium text-muted-foreground hover:text-foreground border border-border/60 hover:border-border bg-card/40 hover:bg-muted/40 transition"
-            >
-              <LogOut className="size-3.5" />
-              Logout 🚪
-            </button>
-          ) : (
-            <button
-              type="button"
-              onClick={() => {
-                setAuthReason("Sign in to unlock posting, Cheers, and your personal Desk.");
-                setAuthModalOpen(true);
-              }}
-              className="w-full inline-flex items-center justify-center gap-2 rounded-md px-3 py-2 text-[12px] font-medium text-amber-200/90 hover:text-amber-100 border border-amber-500/30 hover:border-amber-400/50 bg-amber-500/5 hover:bg-amber-500/10 transition"
-            >
-              <KeyRound className="size-3.5" />
-              Sign in 🔑
-            </button>
-          )}
+        <aside className="hidden lg:block col-span-2" aria-hidden="true">
+          {/* Intentional negative space — profile lives in the top-right avatar */}
         </aside>
 
         {/* Feed */}
-        <section className="col-span-12 lg:col-span-6 space-y-3">
+        <section className="col-span-12 lg:col-span-7 space-y-6">
           {view === "home" && (
             <>
               {/* First-time employees: pick a corporate mask before the feed */}
@@ -1709,24 +1550,26 @@ function Index() {
               )}
 
               {/* Live Workspace Radar — proximity-aware ambient ticker */}
-              <LiveWorkspaceRadar
-                origin={geoCoords}
-                geoStatus={geoStatus}
-                posts={posts.map((p) => ({
-                  id: p.id,
-                  latitude: (p as any).latitude ?? null,
-                  longitude: (p as any).longitude ?? null,
-                  created_at: p.created_at,
-                  author_name: p.author_name,
-                }))}
-                merchants={(MERCHANTS[selectedCity] ?? []).map((m) => ({
-                  id: m.id,
-                  name: m.name,
-                  area: m.area,
-                }))}
-                proximity={proximity}
-                onProximityChange={setProximity}
-              />
+              <div className="rounded-2xl border border-border/60 bg-gradient-to-br from-card via-card to-muted/20 p-6 sm:p-8 shadow-[0_10px_40px_-15px_rgba(0,0,0,0.4)]">
+                <LiveWorkspaceRadar
+                  origin={geoCoords}
+                  geoStatus={geoStatus}
+                  posts={posts.map((p) => ({
+                    id: p.id,
+                    latitude: (p as any).latitude ?? null,
+                    longitude: (p as any).longitude ?? null,
+                    created_at: p.created_at,
+                    author_name: p.author_name,
+                  }))}
+                  merchants={(MERCHANTS[selectedCity] ?? []).map((m) => ({
+                    id: m.id,
+                    name: m.name,
+                    area: m.area,
+                  }))}
+                  proximity={proximity}
+                  onProximityChange={setProximity}
+                />
+              </div>
 
 
               {/* Composer */}
@@ -2159,8 +2002,7 @@ function Index() {
 
 
         {/* Right sidebar */}
-        <aside className="hidden lg:block col-span-3 space-y-4">
-          <DesperationGauge />
+        <aside className="hidden lg:block col-span-3 space-y-6">
           <Card className="p-4 border-border">
             <div className="flex items-center justify-between mb-3">
               <h4 className="text-sm font-semibold flex items-center gap-1.5">
@@ -2176,32 +2018,7 @@ function Index() {
             </ul>
           </Card>
 
-          <Card className="p-4 border-border">
-            <h4 className="text-sm font-semibold mb-3">Corporate Coping Strategies</h4>
-            <ul className="space-y-3 text-xs">
-              <CopeItem tag="Trending" title="The 'Camera Off' Mimosa" stat="+312% this Q" />
-              <CopeItem tag="Hot" title="LinkedIn Posting While Buzzed" stat="ROI: undefined" />
-              <CopeItem tag="Promoted" title="OOO autoresponder: 'Hydrating'" stat="98% open rate" />
-              <CopeItem tag="New" title="Scheduling 'focus time' at the pub" stat="Synergy unlocked" />
-            </ul>
-          </Card>
-
-          <BuzzwordDecrypter />
-
           <LiveVibeBoard />
-
-          <CorporateBingo />
-
-
-          <VerifiedWateringHole
-            onRequireAuth={() => requireAuth("Sign in before sponsoring a slot — keeps merchant leads verified.")}
-            profile={profile}
-            userId={user?.id ?? null}
-            onProfileUpdated={() => void refreshProfile()}
-          />
-
-
-
 
           <p className="text-[10px] text-muted-foreground/60 px-2 leading-relaxed">
             DrinkedIn © 2026 · A parody. Please drink responsibly.
@@ -2228,6 +2045,78 @@ function Index() {
         onOpenChange={setAuthModalOpen}
         reason={authReason}
       />
+
+      <Dialog open={profileOpen} onOpenChange={setProfileOpen}>
+        <DialogContent className="max-w-md p-0 overflow-hidden border-border">
+          <div className="h-16 bg-gradient-to-br from-primary/40 via-accent/50 to-primary/30" />
+          <div className="px-5 -mt-8 pb-5">
+            <div className="size-16 rounded-full bg-card border-4 border-card grid place-items-center text-2xl shadow ring-2 ring-primary/40">
+              🍻
+            </div>
+            <DialogHeader className="mt-2 text-left">
+              <DialogTitle className="text-base">
+                Welcome, <span className="text-primary">{userCodename ?? "Guest"}</span> 🍺
+              </DialogTitle>
+              <DialogDescription className="text-[11px]">
+                Signed in as <span className="font-mono text-foreground/70">{userAlias}</span> · feed alias stays anonymous
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="mt-4 rounded-lg border border-border bg-muted/30 px-3 py-3 space-y-2.5">
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                  Your Hangover Index
+                </span>
+                <span className="text-xs font-bold text-primary tabular-nums">{hangoverIndex}%</span>
+              </div>
+              <Slider
+                value={[hangoverIndex]}
+                onValueChange={(v) => setHangoverIndex(v[0] ?? 0)}
+                min={0}
+                max={100}
+                step={1}
+                aria-label="Your current hangover index"
+              />
+              <div className={`rounded-md border px-2.5 py-1.5 text-[11px] leading-snug transition-colors ${hangoverStatus.tone}`}>
+                <div className="font-bold">{hangoverStatus.label}</div>
+                <div className="text-foreground/70 mt-0.5">{hangoverStatus.copy}</div>
+              </div>
+            </div>
+
+            {user && (
+              <div className="mt-4">
+                <UpiVpaEditor
+                  userId={user.id}
+                  initial={profile?.upi_vpa ?? null}
+                  onSaved={() => void refreshProfile()}
+                />
+              </div>
+            )}
+
+            <div className="mt-4 rounded-lg border border-border overflow-hidden">
+              <AchievementBadges />
+            </div>
+
+            {user && (
+              <button
+                type="button"
+                onClick={async () => {
+                  await signOut();
+                  setProfileOpen(false);
+                  toast("Logged out. The bar is closing… for now. 🚪", {
+                    description: "Your session token has been cleared.",
+                  });
+                }}
+                className="mt-4 w-full inline-flex items-center justify-center gap-2 rounded-md px-3 py-2 text-[12px] font-medium text-muted-foreground hover:text-foreground border border-border/60 hover:border-border bg-card/40 hover:bg-muted/40 transition"
+              >
+                <LogOut className="size-3.5" />
+                Logout 🚪
+              </button>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
 
       <ProximityAdDispatcher origin={geoCoords} userId={user?.id ?? null} />
 
