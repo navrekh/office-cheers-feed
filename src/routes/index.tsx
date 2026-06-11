@@ -1503,6 +1503,21 @@ function Index() {
             <NavItem icon={<Beer className="size-5" />} label="Pubs" active={view === "pubs"} onClick={() => setView("pubs")} />
             <NavItem icon={<MessageSquare className="size-5" />} label="Messages" active={view === "messages"} onClick={() => setView("messages")} />
             <NavItem icon={<Bell className="size-5" />} label="Notifications" badge={notifUnread} pulseKey={notifPulseKey} active={notifOpen} onClick={() => setNotifOpen((o) => !o)} />
+            <button
+              type="button"
+              onClick={() => {
+                if (!user) {
+                  setAuthReason("Sign in to access your profile.");
+                  setAuthModalOpen(true);
+                  return;
+                }
+                setProfileOpen(true);
+              }}
+              aria-label="Open profile menu"
+              className={`ml-1 size-9 shrink-0 rounded-full grid place-items-center text-base font-bold transition ${user ? "bg-primary/20 text-primary ring-2 ring-primary/40 hover:bg-primary/30" : "bg-muted text-muted-foreground ring-2 ring-zinc-700/60 hover:bg-muted/70"}`}
+            >
+              {user ? "🍻" : "🕵️"}
+            </button>
           </nav>
         </div>
         <HappyHourTicker />
