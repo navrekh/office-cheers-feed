@@ -335,6 +335,7 @@ function Index() {
   const { profile, refresh: refreshProfile } = useProfile(user?.id ?? null);
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authReason, setAuthReason] = useState<string | undefined>(undefined);
+  const [profileOpen, setProfileOpen] = useState(false);
   function requireAuth(reason?: string): boolean {
     if (user) return true;
     setAuthReason(reason);
