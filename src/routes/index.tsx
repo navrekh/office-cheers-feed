@@ -1550,24 +1550,26 @@ function Index() {
               )}
 
               {/* Live Workspace Radar — proximity-aware ambient ticker */}
-              <LiveWorkspaceRadar
-                origin={geoCoords}
-                geoStatus={geoStatus}
-                posts={posts.map((p) => ({
-                  id: p.id,
-                  latitude: (p as any).latitude ?? null,
-                  longitude: (p as any).longitude ?? null,
-                  created_at: p.created_at,
-                  author_name: p.author_name,
-                }))}
-                merchants={(MERCHANTS[selectedCity] ?? []).map((m) => ({
-                  id: m.id,
-                  name: m.name,
-                  area: m.area,
-                }))}
-                proximity={proximity}
-                onProximityChange={setProximity}
-              />
+              <div className="rounded-2xl border border-border/60 bg-gradient-to-br from-card via-card to-muted/20 p-6 sm:p-8 shadow-[0_10px_40px_-15px_rgba(0,0,0,0.4)]">
+                <LiveWorkspaceRadar
+                  origin={geoCoords}
+                  geoStatus={geoStatus}
+                  posts={posts.map((p) => ({
+                    id: p.id,
+                    latitude: (p as any).latitude ?? null,
+                    longitude: (p as any).longitude ?? null,
+                    created_at: p.created_at,
+                    author_name: p.author_name,
+                  }))}
+                  merchants={(MERCHANTS[selectedCity] ?? []).map((m) => ({
+                    id: m.id,
+                    name: m.name,
+                    area: m.area,
+                  }))}
+                  proximity={proximity}
+                  onProximityChange={setProximity}
+                />
+              </div>
 
 
               {/* Composer */}
