@@ -2000,8 +2000,7 @@ function Index() {
 
 
         {/* Right sidebar */}
-        <aside className="hidden lg:block col-span-3 space-y-4">
-          <DesperationGauge />
+        <aside className="hidden lg:block col-span-3 space-y-6">
           <Card className="p-4 border-border">
             <div className="flex items-center justify-between mb-3">
               <h4 className="text-sm font-semibold flex items-center gap-1.5">
@@ -2017,32 +2016,7 @@ function Index() {
             </ul>
           </Card>
 
-          <Card className="p-4 border-border">
-            <h4 className="text-sm font-semibold mb-3">Corporate Coping Strategies</h4>
-            <ul className="space-y-3 text-xs">
-              <CopeItem tag="Trending" title="The 'Camera Off' Mimosa" stat="+312% this Q" />
-              <CopeItem tag="Hot" title="LinkedIn Posting While Buzzed" stat="ROI: undefined" />
-              <CopeItem tag="Promoted" title="OOO autoresponder: 'Hydrating'" stat="98% open rate" />
-              <CopeItem tag="New" title="Scheduling 'focus time' at the pub" stat="Synergy unlocked" />
-            </ul>
-          </Card>
-
-          <BuzzwordDecrypter />
-
           <LiveVibeBoard />
-
-          <CorporateBingo />
-
-
-          <VerifiedWateringHole
-            onRequireAuth={() => requireAuth("Sign in before sponsoring a slot — keeps merchant leads verified.")}
-            profile={profile}
-            userId={user?.id ?? null}
-            onProfileUpdated={() => void refreshProfile()}
-          />
-
-
-
 
           <p className="text-[10px] text-muted-foreground/60 px-2 leading-relaxed">
             DrinkedIn © 2026 · A parody. Please drink responsibly.
