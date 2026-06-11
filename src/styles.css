@@ -146,6 +146,14 @@
     background-color: var(--color-background);
     color: var(--color-foreground);
   }
+
+  /* Global soft-glass pass for all shadcn Card containers in dark mode
+     (sidebars, radar chassis, composer card, etc.) — weightless & premium */
+  .dark .bg-card {
+    background-color: rgba(24, 20, 20, 0.65) !important;
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.05) !important;
+  }
 }
 
 @keyframes cheers-pop {
