@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { shuffleArray } from "@/lib/mockFeed";
 
 // Pool of plausible escape micro-broadcasts across global tech hubs.
 const ROLES = [
@@ -23,6 +24,15 @@ const ACTIONS = [
   "joined the burnout leaderboard in {hub} 🔥",
   "smashed their laptop shut in {hub} 💻",
 ];
+
+// Front-loaded urgent stamps so the ticker always feels live on load.
+const STAMP_MINUTES = [0, 1, 2, 4, 7, 11, 16, 22, 30, 40, 55, 75, 100, 140];
+function stampFor(i: number): string {
+  const m = STAMP_MINUTES[i] ?? STAMP_MINUTES[STAMP_MINUTES.length - 1] + i;
+  if (m <= 0) return "just now";
+  if (m < 60) return `${m}m ago`;
+  return `${Math.round(m / 60)}h ago`;
+}
 
 function genItem(seed: number): string {
   const role = ROLES[seed % ROLES.length];
