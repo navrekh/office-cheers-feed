@@ -70,26 +70,31 @@ function TrendingRow({ m, vibe }: { m: Merchant; vibe: Vibe }) {
 
 export default function TrendingHappyHoursList() {
   const [city, setCity] = useState<CityKey>("Bangalore");
-  const [now, setNow] = useState<Date>(() => new Date());
+  // SSR-safe: don't compute the time-dependent vibe (which depends on the
+  // visitor's local hour) until after mount, otherwise server (UTC) and
+  // client (local TZ) disagree and React throws hydration error #418.
+  const [now, setNow] = useState<Date | null>(null);
 
   useEffect(() => {
     setCity(getSelectedCity());
     return subscribeCity(setCity);
   }, []);
 
-  // Re-render every 60s so the vibe metric tracks local time changes.
   useEffect(() => {
+    setNow(new Date());
     const id = setInterval(() => setNow(new Date()), 60_000);
     return () => clearInterval(id);
   }, []);
 
   const merchants = MERCHANTS[city] ?? [];
-  const hour = now.getHours();
+  // Pre-mount we render a neutral "Low" baseline so SSR matches first paint.
+  const hour = now ? now.getHours() : 9;
 
   const rows = useMemo(
     () => merchants.slice(0, 6).map((m, i) => ({ m, vibe: vibeFor(m, hour, i) })),
     [merchants, hour],
   );
+
 
   return (
     <Card className="p-4 border-border">

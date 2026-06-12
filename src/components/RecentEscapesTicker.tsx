@@ -43,11 +43,13 @@ function genItem(seed: number): string {
 }
 
 export default function RecentEscapesTicker() {
-  // Start with a deterministic seed so SSR and first client render match,
-  // then jitter to randomized seed after mount to avoid hydration mismatch.
+  // SSR uses a stable deterministic order (seed=0, no shuffle, no jitter) so
+  // the first client paint matches the server. After mount we randomize.
+  const [mounted, setMounted] = useState(false);
   const [seed, setSeed] = useState(0);
 
   useEffect(() => {
+    setMounted(true);
     setSeed(Math.floor(Math.random() * 9999));
     const id = setInterval(() => setSeed((s) => s + 1), 7000);
     return () => clearInterval(id);
@@ -56,10 +58,12 @@ export default function RecentEscapesTicker() {
   const items = useMemo(() => {
     const raw: string[] = [];
     for (let i = 0; i < 14; i++) raw.push(genItem(seed + i));
-    // Fisher-Yates shuffle so the ticker sequence differs every page load.
-    const shuffled = shuffleArray(raw);
-    return shuffled.map((text, i) => `${text} · ${stampFor(i)}`);
-  }, [seed]);
+    // Only shuffle/jitter once mounted on the client — otherwise SSR and
+    // first client render diverge and hydration throws #418.
+    const ordered = mounted ? shuffleArray(raw) : raw;
+    return ordered.map((text, i) => `${text} · ${stampFor(i)}`);
+  }, [seed, mounted]);
+
 
   // Duplicate the run so the marquee can loop seamlessly.
   const line = items.concat(items);
