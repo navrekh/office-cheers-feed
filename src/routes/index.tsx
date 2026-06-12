@@ -1659,7 +1659,7 @@ function Index() {
 
 
               {/* Composer */}
-              <Card className="p-4 border-border">
+              <Card id="composer" className="p-4 border-border scroll-mt-24">
                 <form onSubmit={submitPost} className="space-y-3">
                   <div className="flex items-start gap-3">
                     <div className={`size-11 shrink-0 rounded-full grid place-items-center text-lg font-bold transition-colors ${anonymous ? "bg-muted text-muted-foreground" : "bg-primary/20 text-primary"}`}>
