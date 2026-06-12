@@ -83,6 +83,7 @@ import {
 import { useGeolocation } from "@/hooks/useGeolocation";
 import { getOrCreateSessionId, haversineKm } from "@/lib/geo";
 import { LiveWorkspaceRadar, type ProximityFilter } from "@/components/LiveWorkspaceRadar";
+import TrendingEscapeClusters from "@/components/TrendingEscapeClusters";
 import { WorkplaceSelectorCard } from "@/components/WorkplaceSelectorCard";
 import { ProximityAdDispatcher, dealCoord } from "@/components/ProximityAdDispatcher";
 import { useMerchantDeals, type MerchantDeal } from "@/lib/useMerchantDeals";
@@ -1582,6 +1583,11 @@ function Index() {
                   onSaved={() => void refreshProfile()}
                 />
               )}
+
+              {/* Trending Escape Clusters — live tribal leaderboard above the map */}
+              <ErrorBoundary label="Clusters" message="Leaderboard offline — refresh to retry.">
+                <TrendingEscapeClusters />
+              </ErrorBoundary>
 
               {/* Live Workspace Radar — proximity-aware ambient ticker */}
               <ErrorBoundary
