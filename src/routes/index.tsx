@@ -2324,6 +2324,14 @@ const PostCard = memo(function PostCard({
             {!isMerchant && (
               <span className="text-xs font-normal text-muted-foreground shrink-0">· 1st</span>
             )}
+            {companyTag && (
+              <span
+                className="inline-flex items-center gap-1 rounded-md border border-fuchsia-400/40 bg-fuchsia-500/10 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-fuchsia-200 shrink-0"
+                title={`Self-declared mask: ${companyTag}`}
+              >
+                🏢 {companyTag}
+              </span>
+            )}
             {isSim && !isMerchant && (
               <span
                 className="group/sim relative inline-flex items-center gap-1 rounded-md border border-amber-400/50 bg-amber-500/10 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-amber-300 shrink-0"
