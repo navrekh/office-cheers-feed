@@ -418,8 +418,9 @@ function Index() {
         try { localStorage.removeItem(PENDING_DRAFT_KEY); } catch {}
         return;
       }
+      const draftCo = profile?.declared_company?.trim() || undefined;
       const composed = encodePostMeta(
-        { vibe: draft!.vibeId || undefined, gif: draft!.gifUrl || undefined },
+        { vibe: draft!.vibeId || undefined, gif: draft!.gifUrl || undefined, company: draft!.anonymous ? undefined : draftCo },
         sanitized.clean
       );
       const { data, error } = await (supabase as any)
