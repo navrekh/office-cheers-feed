@@ -145,6 +145,8 @@ import CorporateBingo from "@/components/CorporateBingo";
 import VerifiedWateringHole from "@/components/VerifiedWateringHole";
 import LiveVibeBoard from "@/components/LiveVibeBoard";
 import HappyHourTicker from "@/components/HappyHourTicker";
+import HubSelector from "@/components/HubSelector";
+import BurnoutLeaderboard from "@/components/BurnoutLeaderboard";
 import ClaimTicketModal from "@/components/ClaimTicketModal";
 import AuthModal from "@/components/AuthModal";
 import CommentsDrawer from "@/components/CommentsDrawer";
