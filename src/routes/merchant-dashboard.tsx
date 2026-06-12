@@ -493,10 +493,10 @@ function detectRegion(lang: string): string {
 }
 
 function SubscribeCta({ expired }: { expired: boolean }) {
-  const t = useT();
   const { lang } = useI18n();
   const region = detectRegion(lang);
   const isIndia = region === "IN";
+
 
   if (isIndia) {
     return (
@@ -517,9 +517,18 @@ function SubscribeCta({ expired }: { expired: boolean }) {
       asChild
       className="w-full bg-gradient-to-r from-indigo-500 via-violet-500 to-fuchsia-500 hover:brightness-110 text-white font-bold text-[12px] h-10 shadow-[0_0_22px_rgba(139,92,246,0.45)]"
     >
-      <a href="https://buy.stripe.com/test_drinkedin-corporate-weekly" target="_blank" rel="noopener noreferrer">
+      <a
+        href="https://buy.stripe.com/test_drinkedin-corporate-weekly"
+        target="_blank"
+        rel="noopener noreferrer"
+        onClick={() => {
+          import("@/lib/analytics").then((m) =>
+            m.trackEngagement("merchant_sponsor_slot_click", { region, currency: "USD" })
+          );
+        }}
+      >
         <Beer className="size-4 mr-1.5" />
-        {t("sub.title")} — {t("sub.priceWeek")}
+        Sponsor Local Slot: $9.99 / Week
       </a>
     </Button>
   );

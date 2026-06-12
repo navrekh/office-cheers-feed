@@ -56,7 +56,13 @@ export default function HappyHourTicker() {
         <select
           aria-label="Select tech hub city"
           value={city}
-          onChange={(e) => setSelectedCity(e.target.value as CityKey)}
+          onChange={(e) => {
+            const next = e.target.value as CityKey;
+            setSelectedCity(next);
+            import("@/lib/analytics").then((m) =>
+              m.trackEngagement("city_sector_change", { city: next, surface: "ticker" })
+            );
+          }}
           className="shrink-0 h-5 text-[10px] font-bold uppercase tracking-wider bg-amber-500/20 border border-amber-400/50 rounded text-amber-100 px-1.5 py-0 leading-none cursor-pointer hover:bg-amber-500/30 focus:outline-none focus:ring-1 focus:ring-amber-300"
         >
           {CITIES.map((c) => (

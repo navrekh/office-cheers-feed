@@ -1538,7 +1538,7 @@ function Index() {
         </aside>
 
         {/* Feed */}
-        <section className="col-span-12 lg:col-span-7 space-y-6">
+        <section className="col-span-12 lg:col-span-7 space-y-8 lg:space-y-10 lg:py-2">
           {view === "home" && (
             <>
               {/* First-time employees: pick a corporate mask before the feed */}
@@ -1550,7 +1550,7 @@ function Index() {
               )}
 
               {/* Live Workspace Radar — proximity-aware ambient ticker */}
-              <div className="rounded-2xl border border-border/60 bg-gradient-to-br from-card via-card to-muted/20 p-6 sm:p-8 shadow-[0_10px_40px_-15px_rgba(0,0,0,0.4)]">
+              <div className="rounded-2xl border border-border/60 bg-gradient-to-br from-card via-card to-muted/20 p-8 sm:p-10 lg:p-12 shadow-[0_10px_40px_-15px_rgba(0,0,0,0.4)]">
                 <LiveWorkspaceRadar
                   origin={geoCoords}
                   geoStatus={geoStatus}
@@ -1567,7 +1567,12 @@ function Index() {
                     area: m.area,
                   }))}
                   proximity={proximity}
-                  onProximityChange={setProximity}
+                  onProximityChange={(p) => {
+                    setProximity(p);
+                    import("@/lib/analytics").then((m) =>
+                      m.trackEngagement("radar_proximity_change", { proximity: p })
+                    );
+                  }}
                 />
               </div>
 
@@ -1627,6 +1632,9 @@ function Index() {
                         const next = broetrify(body);
                         setBody(next);
                         bumpAchievement("broetry", 1);
+                        import("@/lib/analytics").then((m) =>
+                          m.trackEngagement("composer_broetrify_click", { len: next.length })
+                        );
                         toast.success("Broetry engaged 🚀", { description: "Your hot take is now LinkedIn-grade." });
                       }}
                       className="inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 border border-primary/40 bg-primary/10 text-primary text-[11px] font-semibold hover:bg-primary/20 hover:border-primary/60 transition"
@@ -2711,7 +2719,11 @@ function PubsView({
             aria-label="Filter by city"
             value={selectedCity}
             onChange={(e) => {
-              import("@/lib/cityStore").then((m) => m.setSelectedCity(e.target.value as CityKey));
+              const next = e.target.value as CityKey;
+              import("@/lib/cityStore").then((m) => m.setSelectedCity(next));
+              import("@/lib/analytics").then((m) =>
+                m.trackEngagement("city_sector_change", { city: next, surface: "trending" })
+              );
             }}
             className="hidden sm:block h-8 text-xs bg-muted/40 border border-border rounded-md px-2 cursor-pointer hover:border-amber-400/50"
           >
