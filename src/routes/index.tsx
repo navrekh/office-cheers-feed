@@ -1572,12 +1572,7 @@ function Index() {
       <EmergencyDealOverlay />
 
 
-      {/* 3-column layout */}
-      <main className="mx-auto max-w-7xl px-4 py-6 grid grid-cols-12 gap-6">
-
-        <h1 className="sr-only">
-          DrinkedIn — the corporate sanctuary for anonymous coping, viral Broetry, and verified local happy hours
-        </h1>
+      {/* Spacious 2-column social breakroom layout */}
       <main className="grid grid-cols-1 xl:grid-cols-12 gap-6 p-6 max-w-7xl mx-auto">
 
         <h1 className="sr-only">
