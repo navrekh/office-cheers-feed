@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { memo, useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { getSelectedCity, subscribeCity, type CityKey } from "@/lib/cityStore";
@@ -14,11 +14,51 @@ type Row = {
 };
 
 /**
+ * Memoized row — re-renders only when its own venue telemetry changes,
+ * so a single noisy bar can't trigger a full board repaint on slower
+ * mobile devices during the Friday rush.
+ */
+const VibeRow = memo(function VibeRow({ row }: { row: Row }) {
+  const c = row.crowd_density ?? 0;
+  const n = row.noise_level ?? 0;
+  const hot = c >= 0.8 && n >= 0.8;
+  return (
+    <li
+      className={`flex items-center justify-between gap-2 p-2 rounded-md border transition ${
+        hot
+          ? "border-rose-400/60 bg-rose-500/10 shadow-[0_0_18px_rgba(244,63,94,0.4)] animate-pulse"
+          : "border-zinc-800 bg-zinc-900/60"
+      }`}
+    >
+      <div className="min-w-0">
+        <p className="text-[12px] font-bold truncate">{row.pub_name}</p>
+        <p className="text-[10px] text-muted-foreground">
+          {hot ? "🔥 Happening Right Now" : "Live ambient telemetry"}
+        </p>
+      </div>
+      <LiveAmbientEqualizer
+        crowd={c}
+        noise={n}
+        vibe={row.vibe_type ?? 0}
+        compact
+        hideHotBadge
+      />
+    </li>
+  );
+}, (prev, next) =>
+  prev.row.id === next.row.id &&
+  prev.row.crowd_density === next.row.crowd_density &&
+  prev.row.noise_level === next.row.noise_level &&
+  prev.row.vibe_type === next.row.vibe_type &&
+  prev.row.pub_name === next.row.pub_name,
+);
+
+/**
  * Compact sidebar card. Lists up to 4 active venues in the current city
  * with a pulsing equalizer + a "Happening Right Now" tag when both
  * crowd_density and noise_level break 0.8.
  */
-export default function LiveVibeBoard() {
+function LiveVibeBoard() {
   const [city, setCity] = useState<CityKey>("Bangalore");
   const [rows, setRows] = useState<Row[]>([]);
 
@@ -62,36 +102,13 @@ export default function LiveVibeBoard() {
         <h4 className="text-sm font-semibold">Live Venue Vibe Board</h4>
       </div>
       <ul className="space-y-3">
-        {rows.map((r) => {
-          const c = r.crowd_density ?? 0;
-          const n = r.noise_level ?? 0;
-          const hot = c >= 0.8 && n >= 0.8;
-          return (
-            <li
-              key={r.id}
-              className={`flex items-center justify-between gap-2 p-2 rounded-md border transition ${
-                hot
-                  ? "border-rose-400/60 bg-rose-500/10 shadow-[0_0_18px_rgba(244,63,94,0.4)] animate-pulse"
-                  : "border-zinc-800 bg-zinc-900/60"
-              }`}
-            >
-              <div className="min-w-0">
-                <p className="text-[12px] font-bold truncate">{r.pub_name}</p>
-                <p className="text-[10px] text-muted-foreground">
-                  {hot ? "🔥 Happening Right Now" : "Live ambient telemetry"}
-                </p>
-              </div>
-              <LiveAmbientEqualizer
-                crowd={c}
-                noise={n}
-                vibe={r.vibe_type ?? 0}
-                compact
-                hideHotBadge
-              />
-            </li>
-          );
-        })}
+        {rows.map((r) => (
+          <VibeRow key={r.id} row={r} />
+        ))}
       </ul>
     </Card>
   );
 }
+
+export default memo(LiveVibeBoard);
+
