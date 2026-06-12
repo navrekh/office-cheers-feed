@@ -1690,6 +1690,9 @@ function Index() {
 
                   </div>
 
+                  {/* Broetry meme preview + download card */}
+                  {broetryPreview && <BroetryMemeCard text={broetryPreview} />}
+
                   {/* Current Vibe matrix */}
                   <div className="pl-14">
                     <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold mb-1.5">
