@@ -1578,10 +1578,14 @@ function Index() {
         <h1 className="sr-only">
           DrinkedIn — the corporate sanctuary for anonymous coping, viral Broetry, and verified local happy hours
         </h1>
-        {/* Left column intentionally collapsed on widescreen — profile lives in the top-right avatar */}
+      <main className="grid grid-cols-1 xl:grid-cols-12 gap-6 p-6 max-w-7xl mx-auto">
 
-        {/* Feed */}
-        <section className="col-span-12 lg:col-span-9 space-y-8 lg:space-y-10 lg:py-2">
+        <h1 className="sr-only">
+          DrinkedIn — the corporate sanctuary for anonymous coping, viral Broetry, and verified local happy hours
+        </h1>
+
+        {/* Feed — Social Core */}
+        <section className="col-span-1 xl:col-span-8 space-y-6">
           {view === "home" && (
             <>
               {/* First-time employees: pick a corporate mask before the feed */}
@@ -1592,75 +1596,63 @@ function Index() {
                 />
               )}
 
-              {/* Above-the-fold hero grid: 3-column strict viewport layout
-                  · 5 cols visual telemetry · 4 cols interactive poll · 3 cols community hub */}
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-                {/* Column 1 — Visual Telemetry */}
-                <div className="lg:col-span-5 space-y-4 min-w-0 lg:overflow-y-auto lg:max-h-[calc(100vh-120px)] lg:pr-1">
-                  <ErrorBoundary label="Clusters" message="Leaderboard offline — refresh to retry.">
-                    <TrendingEscapeClusters />
-                  </ErrorBoundary>
-                  <ErrorBoundary
-                    label="Radar"
-                    message="The radar hit a temporary cloud of corporate synergy. Refreshing the sonar scan…"
+              {/* Spacious social timeline stream */}
+              <div className="space-y-6">
+                {/* Welcome hero card */}
+                <div
+                  className="relative overflow-hidden rounded-3xl border border-amber-400/30 p-8 sm:p-10"
+                  style={{
+                    background:
+                      "radial-gradient(120% 140% at 0% 0%, rgba(251,191,36,0.18), transparent 55%), radial-gradient(120% 140% at 100% 100%, rgba(168,85,247,0.18), transparent 55%), linear-gradient(135deg, #0a0a0f, #16121f)",
+                    boxShadow: "0 20px 60px -20px rgba(251,191,36,0.35)",
+                  }}
+                >
+                  <p className="text-[11px] uppercase tracking-[0.25em] text-amber-300/80 font-semibold">
+                    The Breakroom · Live Now
+                  </p>
+                  <h2
+                    className="mt-3 font-display text-3xl sm:text-5xl font-black leading-[1.05] tracking-tight text-white"
+                    style={{ textShadow: "0 0 24px rgba(251,191,36,0.35)" }}
                   >
-                    <div className="rounded-2xl bg-card p-4 shadow-[0_10px_40px_-15px_rgba(0,0,0,0.4)]" style={{ border: "1px solid rgba(255,255,255,0.05)" }}>
-                      <LiveWorkspaceRadar
-                        origin={geoCoords}
-                        geoStatus={geoStatus}
-                        posts={posts.map((p) => ({
-                          id: p.id,
-                          latitude: (p as any).latitude ?? null,
-                          longitude: (p as any).longitude ?? null,
-                          created_at: p.created_at,
-                          author_name: p.author_name,
-                        }))}
-                        merchants={(MERCHANTS[selectedCity] ?? []).map((m) => ({
-                          id: m.id,
-                          name: m.name,
-                          area: m.area,
-                        }))}
-                        proximity={proximity}
-                        onProximityChange={(p) => {
-                          setProximity(p);
-                          import("@/lib/analytics").then((m) =>
-                            m.trackEngagement("radar_proximity_change", { proximity: p })
-                          );
-                        }}
-                      />
-                    </div>
-                  </ErrorBoundary>
-                  {!dayCtx.isFridayLive && !dayCtx.isWeekend && (
-                    <MidWeekSurvivalTracker />
-                  )}
-                  <StandupEscapeValve
-                    isAuthenticated={!!user}
-                    onSignUp={(reason) => requireAuth(reason)}
-                  />
+                    🍻 Welcome to the Breakroom.
+                    <br />
+                    <span className="bg-gradient-to-r from-amber-300 via-amber-400 to-fuchsia-400 bg-clip-text text-transparent">
+                      The Corporate Matrix is offline.
+                    </span>
+                  </h2>
+                  <p className="mt-3 max-w-xl text-sm sm:text-base text-zinc-300/85 leading-relaxed">
+                    Whisper anonymously. Vote in today&apos;s desperation poll. Find your local taproom. No HR. No metrics. Just the pod.
+                  </p>
                 </div>
 
-                {/* Column 2 — Interactive Engagement Engine */}
-                <aside
-                  id="poll-rail"
-                  className="lg:col-span-4 space-y-4 min-w-0 lg:overflow-y-auto lg:max-h-[calc(100vh-120px)] lg:pr-1"
-                >
-                  <DesperationPoll
-                    onSignUp={(reason) => requireAuth(reason ?? "Drop an anonymous confession — sign in once and you're masked.")}
-                  />
+                {/* Live Breakroom Chat — full-size messaging app feel */}
+                <ErrorBoundary label="Shoutbox" message="Chat is reconnecting…">
+                  <LocalShoutbox requireAuth={requireAuth} variant="hero" />
+                </ErrorBoundary>
+
+                {/* Desperation Poll — large card */}
+                <ErrorBoundary label="Poll" message="Poll engine is rebooting…">
+                  <div id="poll-rail" className="rounded-3xl border border-fuchsia-400/20 bg-gradient-to-br from-zinc-950/70 via-zinc-900/40 to-zinc-950/70 p-2 shadow-[0_20px_60px_-25px_rgba(217,70,239,0.4)]">
+                    <DesperationPoll
+                      onSignUp={(reason) => requireAuth(reason ?? "Drop an anonymous confession — sign in once and you're masked.")}
+                    />
+                  </div>
                   <DesperationPollModal
                     onSignUp={(reason) => requireAuth(reason ?? "Drop an anonymous confession — sign in once and you're masked.")}
                   />
-                </aside>
+                </ErrorBoundary>
 
-                {/* Column 3 — Global Community Hub */}
-                <div className="lg:col-span-3 space-y-3 min-w-0 lg:overflow-y-auto lg:max-h-[calc(100vh-120px)] lg:pr-1">
-                  <BurnoutLeaderboard />
-                  <LocalShoutbox requireAuth={requireAuth} />
-                </div>
+                {!dayCtx.isFridayLive && !dayCtx.isWeekend && (
+                  <MidWeekSurvivalTracker />
+                )}
+                <StandupEscapeValve
+                  isAuthenticated={!!user}
+                  onSignUp={(reason) => requireAuth(reason)}
+                />
               </div>
 
               {/* Mobile sticky quick-action drawer */}
-              <div className="lg:hidden fixed bottom-0 inset-x-0 z-40 px-3 pb-3 pt-2 pointer-events-none">
+              <div className="xl:hidden fixed bottom-0 inset-x-0 z-40 px-3 pb-3 pt-2 pointer-events-none">
                 <div className="pointer-events-auto mx-auto max-w-md rounded-2xl border border-fuchsia-400/30 bg-zinc-950/95 backdrop-blur p-2 shadow-[0_-8px_30px_-10px_rgba(217,70,239,0.4)] grid grid-cols-2 gap-2">
                   <button
                     type="button"
