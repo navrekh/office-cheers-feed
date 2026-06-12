@@ -538,13 +538,34 @@ export default function DesperationPoll({ onSignUp }: { onSignUp: (reason?: stri
     });
   }
 
-  function handleSignUp() {
+  function handleSignUp(reason?: string) {
     trackEngagement("desperation_poll_signup_click", {
       poll_id: poll?.id ?? "none",
       choice: choice ?? "none",
       hub,
     });
-    onSignUp();
+    onSignUp(reason);
+  }
+
+  function rollNextPoll() {
+    if (!user) {
+      handleSignUp(
+        "Want to keep rolling the burnout matrix? Lock in your permanent anonymous streak with 1-click Google Sign-In.",
+      );
+      return;
+    }
+    // Signed-in users get a fresh random poll (different from the current one).
+    const pool = poll ? POLLS.filter((p) => p.id !== poll.id) : POLLS;
+    const next = pool[Math.floor(Math.random() * pool.length)];
+    setPoll(next);
+    setCounts(simulatedCounts(next.id, hub));
+    try {
+      const prior = localStorage.getItem(VOTED_KEY(next.id));
+      setChoice(prior === "danger" || prior === "thread" || prior === "chill" ? prior : null);
+    } catch {
+      setChoice(null);
+    }
+    trackEngagement("desperation_poll_roll_next", { poll_id: next.id, hub });
   }
 
   return (
