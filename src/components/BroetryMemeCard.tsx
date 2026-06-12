@@ -1,6 +1,14 @@
-import { Download } from "lucide-react";
+import { Download, Share2 } from "lucide-react";
+import { toast } from "sonner";
 import { downloadBroetryCard } from "@/lib/downloadBroetryCard";
 import { trackEngagement } from "@/lib/analytics";
+
+const SHARE_FOOTER =
+  "Surviving the 4:30 PM corporate synergy matrix? 💀 Escape anonymously to local watering holes on the live tech-park radar grid over at DrinkedIn.me 🍻";
+
+function formatForSocial(text: string): string {
+  return `${text.trim()}\n\n---\n${SHARE_FOOTER}`;
+}
 
 /**
  * Visual preview of the cringe-worthy Broetry output, framed as a downloadable
@@ -9,6 +17,21 @@ import { trackEngagement } from "@/lib/analytics";
 export default function BroetryMemeCard({ text }: { text: string }) {
   const content = (text || "").trim();
   if (!content) return null;
+
+  async function copySocialText() {
+    const formatted = formatForSocial(content);
+    try {
+      await navigator.clipboard.writeText(formatted);
+      trackEngagement("broetry_social_copy", { len: formatted.length });
+      toast.success("📋 Algorithm-ready text copied to clipboard!", {
+        description: "Ready to share.",
+      });
+    } catch {
+      toast.error("Clipboard blocked", {
+        description: "Long-press inside the preview to copy manually.",
+      });
+    }
+  }
 
   return (
     <div className="pl-14 animate-fade-in">
@@ -45,17 +68,27 @@ export default function BroetryMemeCard({ text }: { text: string }) {
         </div>
       </div>
 
-      <button
-        type="button"
-        onClick={() => {
-          trackEngagement("broetry_meme_download", { len: content.length });
-          downloadBroetryCard(content);
-        }}
-        className="mt-3 inline-flex items-center gap-2 rounded-lg px-3.5 py-2 text-[12px] font-bold bg-gradient-to-r from-amber-400 via-amber-300 to-amber-400 text-amber-950 shadow-[0_0_18px_rgba(251,191,36,0.45)] hover:brightness-110 transition"
-      >
-        <Download className="size-3.5" />
-        📥 Download as Image
-      </button>
+      <div className="mt-3 flex flex-wrap gap-2">
+        <button
+          type="button"
+          onClick={() => {
+            trackEngagement("broetry_meme_download", { len: content.length });
+            downloadBroetryCard(content);
+          }}
+          className="inline-flex items-center gap-2 rounded-lg px-3.5 py-2 text-[12px] font-bold bg-gradient-to-r from-amber-400 via-amber-300 to-amber-400 text-amber-950 shadow-[0_0_18px_rgba(251,191,36,0.45)] hover:brightness-110 transition"
+        >
+          <Download className="size-3.5" />
+          📥 Download as Image
+        </button>
+        <button
+          type="button"
+          onClick={copySocialText}
+          className="inline-flex items-center gap-2 rounded-lg px-3.5 py-2 text-[12px] font-bold bg-gradient-to-r from-sky-500 via-indigo-500 to-fuchsia-500 text-white shadow-[0_0_18px_rgba(99,102,241,0.45)] hover:brightness-110 transition"
+        >
+          <Share2 className="size-3.5" />
+          📱 Copy Text for LinkedIn / X
+        </button>
+      </div>
     </div>
   );
 }
