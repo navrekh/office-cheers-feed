@@ -13,14 +13,17 @@ const CLOSE = "«/di-meta»";
 export type PostMeta = {
   vibe?: string;
   gif?: string;
+  /** Tribal office-rivalry tag — author's self-declared company mask. */
+  company?: string;
 };
 
 export function encodePostMeta(meta: PostMeta, body: string): string {
   const clean: PostMeta = {};
   if (meta.vibe) clean.vibe = meta.vibe;
   if (meta.gif) clean.gif = meta.gif;
-  if (!clean.vibe && !clean.gif) return body;
-  const packed = JSON.stringify({ v: clean.vibe, g: clean.gif });
+  if (meta.company) clean.company = meta.company;
+  if (!clean.vibe && !clean.gif && !clean.company) return body;
+  const packed = JSON.stringify({ v: clean.vibe, g: clean.gif, c: clean.company });
   return `${OPEN}${packed}${CLOSE}\n${body}`;
 }
 
@@ -40,6 +43,9 @@ export function decodePostMeta(raw: string): { meta: PostMeta; body: string } {
   if (typeof parsed?.v === "string") meta.vibe = parsed.v;
   if (typeof parsed?.g === "string" && /^https:\/\//i.test(parsed.g)) {
     meta.gif = parsed.g;
+  }
+  if (typeof parsed?.c === "string" && parsed.c.length < 80) {
+    meta.company = parsed.c;
   }
   return { meta, body: rest };
 }

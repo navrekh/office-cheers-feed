@@ -145,6 +145,8 @@ import CorporateBingo from "@/components/CorporateBingo";
 import VerifiedWateringHole from "@/components/VerifiedWateringHole";
 import LiveVibeBoard from "@/components/LiveVibeBoard";
 import HappyHourTicker from "@/components/HappyHourTicker";
+import HubSelector from "@/components/HubSelector";
+import BurnoutLeaderboard from "@/components/BurnoutLeaderboard";
 import ClaimTicketModal from "@/components/ClaimTicketModal";
 import AuthModal from "@/components/AuthModal";
 import CommentsDrawer from "@/components/CommentsDrawer";
@@ -418,8 +420,9 @@ function Index() {
         try { localStorage.removeItem(PENDING_DRAFT_KEY); } catch {}
         return;
       }
+      const draftCo = profile?.declared_company?.trim() || undefined;
       const composed = encodePostMeta(
-        { vibe: draft!.vibeId || undefined, gif: draft!.gifUrl || undefined },
+        { vibe: draft!.vibeId || undefined, gif: draft!.gifUrl || undefined, company: draft!.anonymous ? undefined : draftCo },
         sanitized.clean
       );
       const { data, error } = await (supabase as any)
@@ -940,8 +943,9 @@ function Index() {
       return;
     }
     setSubmitting(true);
+    const declaredCo = profile?.declared_company?.trim() || undefined;
     const composed = encodePostMeta(
-      { vibe: vibeId || undefined, gif: gifUrl || undefined },
+      { vibe: vibeId || undefined, gif: gifUrl || undefined, company: anonymous ? undefined : declaredCo },
       sanitized.clean
     );
     const { data, error } = await (supabase as any)
@@ -1491,6 +1495,10 @@ function Index() {
             </span>
           </div>
 
+          <div className="ml-2 hidden sm:block">
+            <HubSelector />
+          </div>
+
           <div className="flex-1 max-w-md ml-2">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
@@ -2034,6 +2042,7 @@ function Index() {
 
         {/* Right sidebar */}
         <aside className="hidden lg:block col-span-3 space-y-6">
+          <BurnoutLeaderboard />
           <Card className="p-4 border-border">
             <div className="flex items-center justify-between mb-3">
               <h4 className="text-sm font-semibold flex items-center gap-1.5">
@@ -2259,6 +2268,7 @@ const PostCard = memo(function PostCard({
 }) {
   const [popKey, setPopKey] = useState(0);
   const [bumpKey, setBumpKey] = useState(0);
+  const decoded = useMemo(() => decodePostMeta(post.body_text), [post.body_text]);
 
   function handleCheers() {
     if (!cheered) {
@@ -2270,6 +2280,8 @@ const PostCard = memo(function PostCard({
 
   const isSim = isSimulatedPost(post);
   const isMerchant = post.post_type === "merchant";
+  const companyTag = !isMerchant ? decoded.meta.company : undefined;
+
 
   return (
     <Card
@@ -2319,6 +2331,14 @@ const PostCard = memo(function PostCard({
             {!isMerchant && (
               <span className="text-xs font-normal text-muted-foreground shrink-0">· 1st</span>
             )}
+            {companyTag && (
+              <span
+                className="inline-flex items-center gap-1 rounded-md border border-fuchsia-400/40 bg-fuchsia-500/10 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-fuchsia-200 shrink-0"
+                title={`Self-declared mask: ${companyTag}`}
+              >
+                🏢 {companyTag}
+              </span>
+            )}
             {isSim && !isMerchant && (
               <span
                 className="group/sim relative inline-flex items-center gap-1 rounded-md border border-amber-400/50 bg-amber-500/10 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-amber-300 shrink-0"
@@ -2348,7 +2368,7 @@ const PostCard = memo(function PostCard({
       </div>
 
       {(() => {
-        const { meta, body } = decodePostMeta(post.body_text);
+        const { meta, body } = decoded;
         const vibe = getVibe(meta.vibe);
         return (
           <>

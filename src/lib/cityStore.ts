@@ -6,7 +6,10 @@ export type CityKey =
   | "Hyderabad"
   | "Pune"
   | "Mumbai"
-  | "Delhi";
+  | "Delhi"
+  | "Austin"
+  | "San Francisco"
+  | "London";
 
 export const CITIES: CityKey[] = [
   "Bangalore",
@@ -15,6 +18,9 @@ export const CITIES: CityKey[] = [
   "Pune",
   "Mumbai",
   "Delhi",
+  "Austin",
+  "San Francisco",
+  "London",
 ];
 
 export type Merchant = {
@@ -211,6 +217,10 @@ export const MERCHANTS: Record<CityKey, Merchant[]> = {
       base_heading: 23,
     },
   ],
+  // International hubs — venue partnerships ship later; empty for now.
+  Austin: [],
+  "San Francisco": [],
+  London: [],
 };
 
 export const FLASH_DEALS: Record<CityKey, string> = {
@@ -226,6 +236,12 @@ export const FLASH_DEALS: Record<CityKey, string> = {
     "⚡ BKC FLASH: PRs piling up? The Bar Stock Exchange just crashed lager prices — live ticker pricing until your sprint ends.",
   Delhi:
     "⚡ AEROCITY: Deployment failed at 6 PM? Social Offline is comping the first round for anyone with a red CI build on screen.",
+  Austin:
+    "⚡ SILICON HILLS: Build red on main? Roll into Domain for $4 craft pints — sprint guilt absolved by 6 PM.",
+  "San Francisco":
+    "⚡ SOMA FLASH: PagerDuty buzzing again? Mission Bay taprooms are pouring half-off IPAs until your incident clears.",
+  London:
+    "⚡ SHOREDITCH: Sprint review went sideways? Silicon Roundabout pubs are dropping £4 pints for the post-standup crowd.",
 };
 
 const KEY = "drinkedin.selectedCity";
