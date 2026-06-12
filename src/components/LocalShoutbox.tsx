@@ -30,9 +30,10 @@ function relTime(iso: string, nowMs: number): string {
   return `${Math.floor(h / 24)}d ago`;
 }
 
-type Props = { requireAuth: (reason?: string) => boolean };
+type Props = { requireAuth: (reason?: string) => boolean; variant?: "compact" | "hero" };
 
-export default function LocalShoutbox({ requireAuth }: Props) {
+export default function LocalShoutbox({ requireAuth, variant = "compact" }: Props) {
+  const isHero = variant === "hero";
   const { user } = useAuth();
   const hub = useCurrentCity();
   const vern = useHubVernacular();
