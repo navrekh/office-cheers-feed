@@ -1647,7 +1647,7 @@ function Index() {
                       <Textarea
                         value={body}
                         onChange={(e) => setBody(e.target.value)}
-                        placeholder={anonymous ? composerHints[composerHintIdx] : composerHints[composerHintIdx]}
+                        placeholder={composerHints[composerHintIdx]}
                         className="resize-none min-h-24 bg-muted/40 border-border rounded-xl text-[15px] focus-visible:bg-background"
                       />
                     </div>
