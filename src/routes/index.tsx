@@ -2079,6 +2079,24 @@ function Index() {
 
       <RecentEscapesTicker />
 
+      <footer className="w-full border-t border-border/40 bg-background/80 px-4 py-3 text-center">
+        <p className="text-[11px] text-muted-foreground/80 tracking-wide">
+          Crafted with spite by <span className="text-foreground/80 font-medium">Navin Mishra</span>.{" "}
+          <button
+            type="button"
+            onClick={() => {
+              setProfileOpen(true);
+              setTimeout(() => {
+                document.getElementById("about-drinkedin")?.scrollIntoView({ behavior: "smooth", block: "start" });
+              }, 150);
+            }}
+            className="underline underline-offset-2 text-primary/90 hover:text-primary transition-colors cursor-pointer"
+          >
+            [View Founder Profile]
+          </button>
+        </p>
+      </footer>
+
       <PanicButton />
 
 
