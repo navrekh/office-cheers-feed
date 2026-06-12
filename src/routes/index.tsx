@@ -86,6 +86,8 @@ import { LiveWorkspaceRadar, type ProximityFilter } from "@/components/LiveWorks
 import { WorkplaceSelectorCard } from "@/components/WorkplaceSelectorCard";
 import { ProximityAdDispatcher, dealCoord } from "@/components/ProximityAdDispatcher";
 import { useMerchantDeals, type MerchantDeal } from "@/lib/useMerchantDeals";
+import DesperationPoll from "@/components/DesperationPoll";
+import BroetryMemeCard from "@/components/BroetryMemeCard";
 
 // ---------- Client-side spam guard ----------
 const RATE_KEY = "drinkedin.rate.posts";
@@ -292,6 +294,7 @@ function Index() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [commentsByPost, setCommentsByPost] = useState<Record<string, Comment[]>>({});
   const [body, setBody] = useState("");
+  const [broetryPreview, setBroetryPreview] = useState<string | null>(null);
   // Identity is resolved from the live Supabase session below. `authorName`
   // is ONLY populated when the user explicitly types a custom pseudonym
   // (Priority 1). Otherwise the cascade falls through to email prefix →
@@ -1574,6 +1577,11 @@ function Index() {
               </div>
 
 
+              {/* Friday Desperation Index — 1-click anonymous poll */}
+              <DesperationPoll
+                onSignUp={() => requireAuth("Drop an anonymous confession — sign in once and you're masked.")}
+              />
+
               {/* Composer */}
               <Card className="p-4 border-border">
                 <form onSubmit={submitPost} className="space-y-3">
@@ -1628,6 +1636,7 @@ function Index() {
                       onClick={() => {
                         const next = broetrify(body);
                         setBody(next);
+                        setBroetryPreview(next);
                         bumpAchievement("broetry", 1);
                         import("@/lib/analytics").then((m) =>
                           m.trackEngagement("composer_broetrify_click", { len: next.length })
@@ -1680,6 +1689,9 @@ function Index() {
                     </button>
 
                   </div>
+
+                  {/* Broetry meme preview + download card */}
+                  {broetryPreview && <BroetryMemeCard text={broetryPreview} />}
 
                   {/* Current Vibe matrix */}
                   <div className="pl-14">
