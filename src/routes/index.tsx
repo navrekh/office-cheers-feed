@@ -300,6 +300,17 @@ function Index() {
   const [commentsByPost, setCommentsByPost] = useState<Record<string, Comment[]>>({});
   const [body, setBody] = useState("");
   const [broetryPreview, setBroetryPreview] = useState<string | null>(null);
+  // Cycling burnout-flavoured placeholders for the composer textarea.
+  const [composerHintIdx, setComposerHintIdx] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => setComposerHintIdx((i) => (i + 1) % 3), 4500);
+    return () => clearInterval(id);
+  }, []);
+  const composerHints = [
+    "Paste that passive-aggressive email from HR here…",
+    "What did your manager actually mean when they said 'let's take this offline'?",
+    "Drop that soul-crushing 4:45 PM calendar invite title here…",
+  ];
   // Identity is resolved from the live Supabase session below. `authorName`
   // is ONLY populated when the user explicitly types a custom pseudonym
   // (Priority 1). Otherwise the cascade falls through to email prefix →
