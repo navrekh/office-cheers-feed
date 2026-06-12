@@ -1617,7 +1617,41 @@ function Index() {
                   </div>
                 </div>
 
-                {/* 3. Desperation Poll */}
+                {/* 3. Quick Post teaser — Anonymous Guest entry above the Desperation Index */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    const el = document.getElementById("composer");
+                    el?.scrollIntoView({ behavior: "smooth", block: "start" });
+                    setTimeout(() => {
+                      const ta = el?.querySelector("textarea") as HTMLTextAreaElement | null;
+                      ta?.focus();
+                    }, 350);
+                    import("@/lib/analytics").then((m) =>
+                      m.trackEngagement("quick_post_teaser_click")
+                    );
+                  }}
+                  className="group w-full text-left rounded-2xl border border-amber-400/30 bg-zinc-950/70 hover:bg-zinc-900/80 hover:border-amber-400/60 transition p-3 flex items-center gap-3 shadow-[0_0_28px_-12px_rgba(251,191,36,0.45)]"
+                  aria-label="Open the anonymous post composer"
+                >
+                  <span className="size-11 shrink-0 rounded-full grid place-items-center text-lg font-bold bg-amber-400/15 text-amber-300 ring-2 ring-amber-400/40">
+                    {user ? "🍻" : "🕵️"}
+                  </span>
+                  <span className="flex-1 min-w-0">
+                    <span className="block text-[10px] uppercase tracking-[0.22em] text-amber-300/80 font-semibold">
+                      {user ? (userAlias ?? "You") + " 🎭" : "Anonymous Guest 🕵️‍♂️"}
+                    </span>
+                    <span className="block text-sm text-zinc-400 truncate group-hover:text-zinc-200 transition">
+                      Drop a confession, vent, or hot take…
+                    </span>
+                  </span>
+                  <span className="hidden sm:inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-[12px] font-extrabold text-black bg-amber-400 shadow-[0_0_24px_rgba(251,191,36,0.55)] group-hover:shadow-[0_0_36px_rgba(251,191,36,0.85)] transition">
+                    <Send className="size-3.5" />
+                    Quick Post
+                  </span>
+                </button>
+
+                {/* 4. Desperation Poll */}
                 <ErrorBoundary label="Poll" message="Poll engine is rebooting…">
                   <div id="poll-rail" className="rounded-3xl border border-fuchsia-400/20 bg-gradient-to-br from-zinc-950/70 via-zinc-900/40 to-zinc-950/70 p-2 shadow-[0_20px_60px_-25px_rgba(217,70,239,0.4)]">
                     <DesperationPoll
@@ -1628,6 +1662,7 @@ function Index() {
                     onSignUp={(reason) => requireAuth(reason ?? "Drop an anonymous confession — sign in once and you're masked.")}
                   />
                 </ErrorBoundary>
+
 
                 {!dayCtx.isFridayLive && !dayCtx.isWeekend && (
                   <MidWeekSurvivalTracker />
