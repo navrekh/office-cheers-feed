@@ -234,12 +234,12 @@ export default function LocalShoutbox({ requireAuth, variant = "compact" }: Prop
             onFocus={onFocus}
             maxLength={280}
             placeholder={vern.shoutboxPlaceholder}
-            className="flex-1 px-3 h-12 text-sm rounded-lg bg-white/[0.04] border border-white/10 text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:border-amber-400/40 focus:bg-white/[0.06] transition"
+            className="flex-1 px-4 h-12 text-sm rounded-xl bg-[#090909] border border-[#222] text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:border-amber-400/60 focus:bg-[#0c0c0c] shadow-[inset_0_1px_0_rgba(255,255,255,0.02),inset_0_0_20px_rgba(0,0,0,0.6)] transition"
           />
           <button
             type="submit"
             disabled={!text.trim() || sending}
-            className="inline-flex items-center gap-2 h-12 px-5 rounded-lg bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-amber-950 font-bold text-sm tracking-tight transition shadow-[0_0_30px_rgba(251,191,36,0.55)] hover:shadow-[0_0_45px_rgba(251,191,36,0.8)] disabled:opacity-50 disabled:shadow-none animate-pulse"
+            className="inline-flex items-center gap-2 h-12 px-5 rounded-xl bg-amber-400 hover:bg-amber-300 text-black font-extrabold text-sm tracking-tight uppercase transition shadow-[0_0_30px_rgba(251,191,36,0.7)] hover:shadow-[0_0_50px_rgba(251,191,36,0.95)] disabled:opacity-50 disabled:shadow-none animate-pulse"
           >
             <Send className="size-4" />
             Whisper Anonymously
@@ -247,7 +247,42 @@ export default function LocalShoutbox({ requireAuth, variant = "compact" }: Prop
         </form>
       )}
 
-      <div ref={scrollRef} className={`overflow-y-auto px-4 py-3 space-y-2 scroll-smooth ${isHero ? "max-h-[260px] min-h-[160px]" : "max-h-40 min-h-[6rem] px-3 py-2"}`}>
+      <div ref={scrollRef} className={`overflow-y-auto px-4 scroll-smooth ${isHero ? "max-h-[260px] min-h-[160px]" : "max-h-40 min-h-[6rem] px-3 py-2"}`}>
+        {msgs.length === 0 ? (
+          <p className={`text-center text-muted-foreground/70 ${isHero ? "py-12 text-sm" : "py-6 text-[11.5px]"}`}>
+            Quiet for a minute in {hub}. Be the first to whisper.
+          </p>
+        ) : (
+          msgs.map((m) => {
+            const persona = AI_PERSONAS.find((p) => p.handle === m.handle);
+            const nameColor = persona?.color ?? handleColor(m.handle);
+            return (
+              <div
+                key={m.id}
+                className="group animate-fade-in flex gap-3 py-3 border-b border-[#1a1a1a] last:border-b-0"
+              >
+                <div className={`shrink-0 grid place-items-center size-9 rounded-full bg-zinc-950 border ${nameColor.replace("text-", "border-")}/40 shadow-[0_0_12px_rgba(251,191,36,0.15)] text-base`}>
+                  <span>{m.emoji}</span>
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className={`flex items-baseline gap-2 ${isHero ? "text-xs" : "text-[11px]"}`}>
+                    <span className={`font-semibold tracking-tight ${nameColor}`}>
+                      {m.handle}
+                    </span>
+                    <span className="text-muted-foreground/50">
+                      · {nowMs === 0 ? "" : relTime(m.created_at, nowMs)}
+                    </span>
+                  </div>
+                  <p className={`mt-1 leading-snug text-foreground/90 ${isHero ? "text-[14px]" : "text-[12.5px]"}`}>
+                    {m.body}
+                  </p>
+                </div>
+              </div>
+            );
+          })
+        )}
+      </div>
+
         {msgs.length === 0 ? (
           <p className={`text-center text-muted-foreground/70 ${isHero ? "py-12 text-sm" : "py-6 text-[11.5px]"}`}>
             Quiet for a minute in {hub}. Be the first to whisper.
