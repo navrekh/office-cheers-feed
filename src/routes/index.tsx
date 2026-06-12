@@ -1532,13 +1532,10 @@ function Index() {
         <h1 className="sr-only">
           DrinkedIn — the corporate sanctuary for anonymous coping, viral Broetry, and verified local happy hours
         </h1>
-        {/* Left sidebar */}
-        <aside className="hidden lg:block col-span-2" aria-hidden="true">
-          {/* Intentional negative space — profile lives in the top-right avatar */}
-        </aside>
+        {/* Left column intentionally collapsed on widescreen — profile lives in the top-right avatar */}
 
         {/* Feed */}
-        <section className="col-span-12 lg:col-span-7 space-y-8 lg:space-y-10 lg:py-2">
+        <section className="col-span-12 lg:col-span-9 space-y-8 lg:space-y-10 lg:py-2">
           {view === "home" && (
             <>
               {/* First-time employees: pick a corporate mask before the feed */}
@@ -1550,7 +1547,7 @@ function Index() {
               )}
 
               {/* Live Workspace Radar — proximity-aware ambient ticker */}
-              <div className="rounded-2xl border border-border/60 bg-gradient-to-br from-card via-card to-muted/20 p-8 sm:p-10 lg:p-12 shadow-[0_10px_40px_-15px_rgba(0,0,0,0.4)]">
+              <div className="rounded-2xl bg-card p-8 sm:p-10 lg:p-14 shadow-[0_10px_40px_-15px_rgba(0,0,0,0.4)]" style={{ border: "1px solid rgba(255,255,255,0.05)" }}>
                 <LiveWorkspaceRadar
                   origin={geoCoords}
                   geoStatus={geoStatus}
