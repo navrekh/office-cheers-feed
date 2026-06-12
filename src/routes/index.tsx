@@ -1583,6 +1583,11 @@ function Index() {
                 />
               )}
 
+              {/* Trending Escape Clusters — live tribal leaderboard above the map */}
+              <ErrorBoundary label="Clusters" message="Leaderboard offline — refresh to retry.">
+                <TrendingEscapeClusters />
+              </ErrorBoundary>
+
               {/* Live Workspace Radar — proximity-aware ambient ticker */}
               <ErrorBoundary
                 label="Radar"
