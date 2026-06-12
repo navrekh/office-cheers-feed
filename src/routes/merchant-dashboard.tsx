@@ -10,6 +10,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import MerchantFlashControl from "@/components/MerchantFlashControl";
 import MerchantOnboardingWizard from "@/components/MerchantOnboardingWizard";
 import BillingTab from "@/components/BillingTab";
+import TelemetryControlPanel from "@/components/TelemetryControlPanel";
 import LiveAmbientEqualizer from "@/components/LiveAmbientEqualizer";
 import { useT, useI18n } from "@/lib/i18n";
 import {
@@ -140,6 +141,7 @@ function DashboardTabs({
       {tab === "analytics" ? (
         <div className="grid gap-5 lg:grid-cols-3 animate-fade-in">
           <section className="lg:col-span-2 space-y-5">
+            <TelemetryControlPanel />
             <LiveAnalyticsPanel pubName={profile.pub_name} />
             <GuestSentimentPanel pubName={profile.pub_name} />
             <MerchantFlashControl profile={profile} />
