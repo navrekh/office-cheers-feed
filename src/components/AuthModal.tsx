@@ -18,6 +18,8 @@ type Props = {
   defaultIntent?: Intent;
 };
 
+const LIVE_SIGNUPS = 42 + Math.floor(((Date.now() / 3_600_000) % 23));
+
 export default function AuthModal({ open, onOpenChange, reason, defaultIntent }: Props) {
   const navigate = useNavigate();
   const [intent, setIntent] = useState<Intent | null>(defaultIntent ?? null);
