@@ -6,6 +6,7 @@ import { trackEngagement } from "@/lib/analytics";
 import { useCurrentCity } from "@/lib/useCurrentCity";
 import { useHubVernacular } from "@/lib/hubVernacular";
 import { useRealtimeHub } from "@/lib/useRealtimeHub";
+import { useWeekdayVibe } from "@/lib/weekdayVibe";
 
 type Msg = {
   id: string;
