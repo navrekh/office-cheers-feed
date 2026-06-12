@@ -2641,29 +2641,8 @@ const PostCard = memo(function PostCard({
         );
       })()}
 
-      <div className="px-4 pb-2 flex items-center justify-between text-xs text-muted-foreground">
-        <div className="flex items-center gap-1.5">
-          <span className="size-4 rounded-full bg-primary grid place-items-center text-[9px]">
-            🍻
-          </span>
-          <span
-            key={bumpKey}
-            className={bumpKey > 0 ? "animate-count-bump inline-block" : "inline-block"}
-          >
-            {post.cheers_count.toLocaleString()} cheers
-          </span>
-        </div>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => onOpenComments(post)}
-            className="hover:text-foreground hover:underline"
-          >
-            {comments.length} comments
-          </button>
-          <span>·</span>
-          <span>{Math.floor(post.cheers_count / 12)} reposts</span>
-        </div>
-      </div>
+      {/* Quick emoji reaction strip — taps fire floating emoji */}
+      <ReactionStrip postId={post.id} onCheers={() => !cheered && onCheers(post)} />
 
       {isMerchant && (post.merchant_website || post.map_query_address) && (
         <div className="px-4 pb-3 grid grid-cols-2 gap-2">
@@ -2690,35 +2669,49 @@ const PostCard = memo(function PostCard({
         </div>
       )}
 
-      <div className="border-t border-border grid grid-cols-4 px-2 py-1">
-        <ActionBtn
+      {/* Twitter-style action bar — icon + count, color-themed hovers */}
+      <div className="border-t border-border px-2 py-1 flex items-center justify-between">
+        <SocialAction
+          onClick={() => onOpenComments(post)}
+          label="Reply"
+          count={comments.length}
+          icon={<MessageCircle className="size-[18px]" />}
+          theme="sky"
+        />
+        <SocialAction
+          onClick={() => onShare(post.id)}
+          label="Repost"
+          count={Math.floor(post.cheers_count / 12)}
+          icon={<Share2 className="size-[18px]" />}
+          theme="emerald"
+        />
+        <SocialAction
           onClick={handleCheers}
           active={cheered}
-          label="Cheers 🍻"
+          label="Cheers"
+          count={post.cheers_count}
+          countKey={bumpKey}
           icon={
             <span
               key={popKey}
               className={`inline-flex ${popKey > 0 ? "animate-cheers-pop" : ""}`}
             >
-              <Beer className="size-5" />
+              <Beer className="size-[18px]" />
             </span>
           }
+          theme="amber"
         />
-        <ActionBtn
-          label="Comment"
-          icon={<MessageCircle className="size-5" />}
-          onClick={() => onOpenComments(post)}
-        />
-        <ActionBtn onClick={() => onShare(post.id)} label="Share" icon={<Share2 className="size-5" />} />
-        <ActionBtn
+        <SocialAction
           onClick={() => {
             void triggerDownloadPostCard(post);
             toast.success("Post card downloading 🍻");
           }}
-          label="Download"
-          icon={<Download className="size-5" />}
+          label="Save"
+          icon={<Download className="size-[18px]" />}
+          theme="fuchsia"
         />
       </div>
+
 
       {!isMerchant && (
         <div className="border-t border-border px-4 py-2 flex items-center justify-between gap-3 text-[11px] text-muted-foreground">
