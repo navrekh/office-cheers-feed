@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Megaphone, Flame } from "lucide-react";
-import { useCityStore } from "@/lib/cityStore";
+import { getSelectedCity, subscribeCity } from "@/lib/cityStore";
 import type { CityKey } from "@/lib/cityStore";
 import { toast } from "sonner";
 
