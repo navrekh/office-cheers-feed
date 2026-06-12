@@ -556,19 +556,31 @@ function RazorpayLoadingOverlay() {
   );
 }
 
+const EU_REGIONS = new Set([
+  "DE", "NL", "IT", "FR", "ES", "IE", "BE", "AT", "PT", "FI", "SE", "DK",
+  "PL", "CZ", "SK", "HU", "RO", "BG", "GR", "LT", "LV", "EE", "LU", "HR",
+  "SI", "CY", "MT",
+]);
+
 function SubscribeCta({ expired }: { expired: boolean }) {
   const { lang } = useI18n();
   const { user } = useAuth();
   const region = detectRegion(lang);
   const isIndia = region === "IN";
+  const isUK = region === "GB" || region === "UK";
+  const isEU = EU_REGIONS.has(region);
   const [processing, setProcessing] = useState(false);
   const [scriptLoading, setScriptLoading] = useState(false);
   const [venueName, setVenueName] = useState("");
   const [contactNumber, setContactNumber] = useState("");
 
   const config = isIndia
-    ? { amount: 59900, currency: "INR", display: "₹599 / Week" }
-    : { amount: 999, currency: "USD", display: "$9.99 / Week" };
+    ? { amount: 59900, currency: "INR", display: "₹599 / Week per District Slot" }
+    : isUK
+      ? { amount: 799, currency: "GBP", display: "£7.99 / Week per District Slot" }
+      : isEU
+        ? { amount: 899, currency: "EUR", display: "€8.99 / Week per District Slot" }
+        : { amount: 999, currency: "USD", display: "$9.99 / Week per District Slot" };
 
   async function openCheckout() {
     if (!venueName.trim() || !contactNumber.trim()) {

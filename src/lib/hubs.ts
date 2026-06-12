@@ -120,8 +120,48 @@ export const HUBS: Hub[] = [
     region: "Europe",
     currency: "GBP",
     coords: { lat: 51.5074, lng: -0.1278 },
-    zones: ["Silicon Roundabout / Shoreditch", "Canary Wharf"],
+    zones: ["Silicon Roundabout / Shoreditch", "Canary Wharf", "Soho"],
     timezones: ["Europe/London"],
+  },
+  {
+    city: "Berlin",
+    country: "Germany",
+    flag: "🇩🇪",
+    region: "Europe",
+    currency: "EUR",
+    coords: { lat: 52.52, lng: 13.405 },
+    zones: ["Mitte", "Kreuzberg", "Friedrichshain"],
+    timezones: ["Europe/Berlin"],
+  },
+  {
+    city: "Amsterdam",
+    country: "Netherlands",
+    flag: "🇳🇱",
+    region: "Europe",
+    currency: "EUR",
+    coords: { lat: 52.3676, lng: 4.9041 },
+    zones: ["Zuidas Financial District", "Keizersgracht Tech Corridor"],
+    timezones: ["Europe/Amsterdam"],
+  },
+  {
+    city: "Dublin",
+    country: "Ireland",
+    flag: "🇮🇪",
+    region: "Europe",
+    currency: "EUR",
+    coords: { lat: 53.3498, lng: -6.2603 },
+    zones: ["Silicon Docks / Grand Canal Dock"],
+    timezones: ["Europe/Dublin"],
+  },
+  {
+    city: "Paris",
+    country: "France",
+    flag: "🇫🇷",
+    region: "Europe",
+    currency: "EUR",
+    coords: { lat: 48.8566, lng: 2.3522 },
+    zones: ["Station F / 13th Arrondissement", "La Défense"],
+    timezones: ["Europe/Paris"],
   },
 ];
 
@@ -146,6 +186,10 @@ export function detectDefaultHub(): CityKey {
   try {
     const lang = (navigator.language || "").toLowerCase();
     if (lang.startsWith("en-gb")) return "London";
+    if (lang.startsWith("en-ie")) return "Dublin";
+    if (lang.startsWith("de")) return "Berlin";
+    if (lang.startsWith("nl")) return "Amsterdam";
+    if (lang.startsWith("fr")) return "Paris";
     if (lang.startsWith("en-us")) return "San Francisco";
   } catch { /* ignore */ }
   return "Bangalore";

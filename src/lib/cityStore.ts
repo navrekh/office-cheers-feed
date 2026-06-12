@@ -9,7 +9,11 @@ export type CityKey =
   | "Delhi"
   | "Austin"
   | "San Francisco"
-  | "London";
+  | "London"
+  | "Berlin"
+  | "Amsterdam"
+  | "Dublin"
+  | "Paris";
 
 export const CITIES: CityKey[] = [
   "Bangalore",
@@ -21,6 +25,10 @@ export const CITIES: CityKey[] = [
   "Austin",
   "San Francisco",
   "London",
+  "Berlin",
+  "Amsterdam",
+  "Dublin",
+  "Paris",
 ];
 
 export type Merchant = {
@@ -239,6 +247,10 @@ export const MERCHANTS: Record<CityKey, Merchant[]> = {
   Austin: [],
   "San Francisco": [],
   London: [],
+  Berlin: [],
+  Amsterdam: [],
+  Dublin: [],
+  Paris: [],
 };
 
 export const FLASH_DEALS: Record<CityKey, string> = {
@@ -260,6 +272,14 @@ export const FLASH_DEALS: Record<CityKey, string> = {
     "⚡ SOMA FLASH: PagerDuty buzzing again? Mission Bay taprooms are pouring half-off IPAs until your incident clears.",
   London:
     "⚡ SHOREDITCH: Sprint review went sideways? Silicon Roundabout pubs are dropping £4 pints for the post-standup crowd.",
+  Berlin:
+    "⚡ MITTE: Sprint planning ran into Feierabend? Kreuzberg späti is comping the first Pils for anyone with a red CI build.",
+  Amsterdam:
+    "⚡ ZUIDAS: Standup overflowed past 17:00? Keizersgracht brown cafés are pouring 2-for-1 Heinekens for the laptop-shut crowd.",
+  Dublin:
+    "⚡ SILICON DOCKS: Deployment blocked? Grand Canal pubs are offering €5 pints for engineers who escaped the Friday all-hands.",
+  Paris:
+    "⚡ STATION F: Retro went sideways? 13e arrondissement bistros are dropping €4 demi-pressions until 19:00 sharp.",
 };
 
 const KEY = "drinkedin.selectedCity";
