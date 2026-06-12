@@ -99,7 +99,11 @@ function MerchantDashboardPage() {
         </div>
       </header>
 
+      <B2BClaimHero pubName={profile.pub_name} />
+
       <DashboardTabs userId={user!.id} profile={profile} onRefresh={refresh} />
+
+
 
 
       {needsOnboarding && (
