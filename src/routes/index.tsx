@@ -1384,6 +1384,21 @@ function Index() {
     if (notifOpen) setNotifUnread(0);
   }, [notifOpen]);
 
+  // AI Chat Persona Engine → bell badge bridge.
+  // LocalShoutbox dispatches "drinkedin:ai-chat-message" whenever an automated
+  // persona vent or reply is appended; bump the badge and trigger a 1s bounce.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const onAi = () => {
+      setNotifUnread((n) => n + 1);
+      setNotifPulseKey((k) => k + 1);
+      setNotifBounce(true);
+      window.setTimeout(() => setNotifBounce(false), 1000);
+    };
+    window.addEventListener("drinkedin:ai-chat-message", onAi);
+    return () => window.removeEventListener("drinkedin:ai-chat-message", onAi);
+  }, []);
+
   // Live personal stats derived from the user's real posts
   useEffect(() => {
     if (!user) {
