@@ -2120,7 +2120,7 @@ function Index() {
       />
 
       <Dialog open={profileOpen} onOpenChange={setProfileOpen}>
-        <DialogContent className="max-w-md p-0 overflow-hidden border-border">
+        <DialogContent className="max-w-md p-0 overflow-hidden border-border max-h-[90vh] overflow-y-auto">
           <div className="h-16 bg-gradient-to-br from-primary/40 via-accent/50 to-primary/30" />
           <div className="px-5 -mt-8 pb-5">
             <div className="size-16 rounded-full bg-card border-4 border-card grid place-items-center text-2xl shadow ring-2 ring-primary/40">
