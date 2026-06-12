@@ -20,7 +20,10 @@ import {
   ImagePlus,
   Loader2,
   MousePointerClick,
+  Phone,
+  Radio,
   ShieldCheck,
+  Store,
   Trash2,
 } from "lucide-react";
 
