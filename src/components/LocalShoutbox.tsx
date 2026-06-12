@@ -84,6 +84,7 @@ export default function LocalShoutbox({ requireAuth, variant = "compact" }: Prop
   const isHero = variant === "hero";
   const { user } = useAuth();
   const hub = useCurrentCity();
+  const weekdayVibe = useWeekdayVibe();
   const vern = useHubVernacular();
   const [msgs, setMsgs] = useState<Msg[]>([]);
   const [text, setText] = useState("");
