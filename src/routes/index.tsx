@@ -1586,71 +1586,108 @@ function Index() {
                 />
               )}
 
-              {/* Trending Escape Clusters — live tribal leaderboard above the map */}
-              <ErrorBoundary label="Clusters" message="Leaderboard offline — refresh to retry.">
-                <TrendingEscapeClusters />
-              </ErrorBoundary>
+              {/* Above-the-fold hero grid: visual feeds left, interactive poll rail right */}
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6">
+                <div className="lg:col-span-8 space-y-4 lg:space-y-5 min-w-0">
+                  {/* Trending Escape Clusters — live tribal leaderboard above the map */}
+                  <ErrorBoundary label="Clusters" message="Leaderboard offline — refresh to retry.">
+                    <TrendingEscapeClusters />
+                  </ErrorBoundary>
 
-              {/* Live Workspace Radar — proximity-aware ambient ticker */}
-              <ErrorBoundary
-                label="Radar"
-                message="The radar hit a temporary cloud of corporate synergy. Refreshing the sonar scan…"
-              >
-                <div className="rounded-2xl bg-card p-8 sm:p-10 lg:p-14 shadow-[0_10px_40px_-15px_rgba(0,0,0,0.4)]" style={{ border: "1px solid rgba(255,255,255,0.05)" }}>
-                  <LiveWorkspaceRadar
-                    origin={geoCoords}
-                    geoStatus={geoStatus}
-                    posts={posts.map((p) => ({
-                      id: p.id,
-                      latitude: (p as any).latitude ?? null,
-                      longitude: (p as any).longitude ?? null,
-                      created_at: p.created_at,
-                      author_name: p.author_name,
-                    }))}
-                    merchants={(MERCHANTS[selectedCity] ?? []).map((m) => ({
-                      id: m.id,
-                      name: m.name,
-                      area: m.area,
-                    }))}
-                    proximity={proximity}
-                    onProximityChange={(p) => {
-                      setProximity(p);
-                      import("@/lib/analytics").then((m) =>
-                        m.trackEngagement("radar_proximity_change", { proximity: p })
-                      );
-                    }}
+                  {/* Live Workspace Radar — proximity-aware ambient ticker */}
+                  <ErrorBoundary
+                    label="Radar"
+                    message="The radar hit a temporary cloud of corporate synergy. Refreshing the sonar scan…"
+                  >
+                    <div className="rounded-2xl bg-card p-4 sm:p-5 lg:p-6 shadow-[0_10px_40px_-15px_rgba(0,0,0,0.4)]" style={{ border: "1px solid rgba(255,255,255,0.05)" }}>
+                      <LiveWorkspaceRadar
+                        origin={geoCoords}
+                        geoStatus={geoStatus}
+                        posts={posts.map((p) => ({
+                          id: p.id,
+                          latitude: (p as any).latitude ?? null,
+                          longitude: (p as any).longitude ?? null,
+                          created_at: p.created_at,
+                          author_name: p.author_name,
+                        }))}
+                        merchants={(MERCHANTS[selectedCity] ?? []).map((m) => ({
+                          id: m.id,
+                          name: m.name,
+                          area: m.area,
+                        }))}
+                        proximity={proximity}
+                        onProximityChange={(p) => {
+                          setProximity(p);
+                          import("@/lib/analytics").then((m) =>
+                            m.trackEngagement("radar_proximity_change", { proximity: p })
+                          );
+                        }}
+                      />
+                    </div>
+                  </ErrorBoundary>
+
+                  {/* Mid-Week Survival Tracker — visible Mon–Thu and Fri before
+                      local noon. After Friday noon local, hide so the live radar
+                      + leaderboard take center stage. */}
+                  {!dayCtx.isFridayLive && !dayCtx.isWeekend && (
+                    <MidWeekSurvivalTracker />
+                  )}
+
+                  {/* Daily Standup Escape Valve — live during the 09:30–11:00
+                      weekday window, otherwise collapses to a teaser. */}
+                  <StandupEscapeValve
+                    isAuthenticated={!!user}
+                    onSignUp={(reason) => requireAuth(reason)}
                   />
                 </div>
-              </ErrorBoundary>
+
+                <aside
+                  id="poll-rail"
+                  className="lg:col-span-4 lg:sticky lg:top-20 lg:self-start space-y-4 min-w-0"
+                >
+                  {/* Friday Desperation Index — 1-click anonymous poll */}
+                  <DesperationPoll
+                    onSignUp={(reason) => requireAuth(reason ?? "Drop an anonymous confession — sign in once and you're masked.")}
+                  />
+                  <DesperationPollModal
+                    onSignUp={(reason) => requireAuth(reason ?? "Drop an anonymous confession — sign in once and you're masked.")}
+                  />
+                </aside>
+              </div>
+
+              {/* Mobile sticky quick-action drawer */}
+              <div className="lg:hidden fixed bottom-0 inset-x-0 z-40 px-3 pb-3 pt-2 pointer-events-none">
+                <div className="pointer-events-auto mx-auto max-w-md rounded-2xl border border-fuchsia-400/30 bg-zinc-950/95 backdrop-blur p-2 shadow-[0_-8px_30px_-10px_rgba(217,70,239,0.4)] grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      document.getElementById("poll-rail")?.scrollIntoView({ behavior: "smooth", block: "start" });
+                    }}
+                    className="inline-flex items-center justify-center gap-1.5 rounded-xl px-3 py-2.5 text-[12px] font-bold text-white"
+                    style={{ background: "linear-gradient(135deg,#a855f7,#ec4899)" }}
+                  >
+                    🎲 Quick Vote
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      document.getElementById("composer")?.scrollIntoView({ behavior: "smooth", block: "start" });
+                    }}
+                    className="inline-flex items-center justify-center gap-1.5 rounded-xl px-3 py-2.5 text-[12px] font-bold text-white"
+                    style={{ background: "linear-gradient(135deg,#06b6d4,#8b5cf6)" }}
+                  >
+                    💬 Drop Status
+                  </button>
+                </div>
+              </div>
 
 
 
-              {/* Mid-Week Survival Tracker — visible Mon–Thu and Fri before
-                  local noon. After Friday noon local, hide so the live radar
-                  + leaderboard take center stage. */}
-              {!dayCtx.isFridayLive && !dayCtx.isWeekend && (
-                <MidWeekSurvivalTracker />
-              )}
-
-              {/* Daily Standup Escape Valve — live during the 09:30–11:00
-                  weekday window, otherwise collapses to a teaser. */}
-              <StandupEscapeValve
-                isAuthenticated={!!user}
-                onSignUp={(reason) => requireAuth(reason)}
-              />
-
-              {/* Friday Desperation Index — 1-click anonymous poll */}
-              <DesperationPoll
-                onSignUp={(reason) => requireAuth(reason ?? "Drop an anonymous confession — sign in once and you're masked.")}
-              />
-              <DesperationPollModal
-                onSignUp={(reason) => requireAuth(reason ?? "Drop an anonymous confession — sign in once and you're masked.")}
-              />
 
 
 
               {/* Composer */}
-              <Card className="p-4 border-border">
+              <Card id="composer" className="p-4 border-border scroll-mt-24">
                 <form onSubmit={submitPost} className="space-y-3">
                   <div className="flex items-start gap-3">
                     <div className={`size-11 shrink-0 rounded-full grid place-items-center text-lg font-bold transition-colors ${anonymous ? "bg-muted text-muted-foreground" : "bg-primary/20 text-primary"}`}>
