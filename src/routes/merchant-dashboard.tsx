@@ -517,12 +517,43 @@ function loadRazorpayScript(): Promise<boolean> {
   });
 }
 
+function RazorpayLoadingOverlay() {
+  return (
+    <div
+      role="status"
+      aria-live="polite"
+      className="fixed inset-0 z-[80] grid place-items-center bg-black/70 backdrop-blur-sm animate-fade-in"
+    >
+      <div
+        className="flex flex-col items-center gap-4 px-8 py-7 rounded-2xl border text-center max-w-xs"
+        style={{
+          background: "rgba(24, 20, 20, 0.85)",
+          border: "1px solid rgba(255, 255, 255, 0.08)",
+          boxShadow: "0 20px 60px -20px rgba(0,0,0,0.7)",
+        }}
+      >
+        <div className="relative">
+          <Loader2 className="size-10 text-amber-300 animate-spin" />
+          <span className="absolute inset-0 rounded-full ring-2 ring-amber-400/30 animate-ping" />
+        </div>
+        <div>
+          <p className="text-sm font-bold text-amber-100">Securing connection to Razorpay…</p>
+          <p className="text-[11px] text-amber-50/60 mt-1 leading-snug">
+            Loading the encrypted checkout vault. Hang tight, this only takes a heartbeat.
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function SubscribeCta({ expired }: { expired: boolean }) {
   const { lang } = useI18n();
   const { user } = useAuth();
   const region = detectRegion(lang);
   const isIndia = region === "IN";
   const [processing, setProcessing] = useState(false);
+  const [scriptLoading, setScriptLoading] = useState(false);
 
   const config = isIndia
     ? { amount: 59900, currency: "INR", display: "₹599 / Week" }
@@ -537,7 +568,13 @@ function SubscribeCta({ expired }: { expired: boolean }) {
       }),
     );
 
+    // Surface the styled spinner immediately if the SDK isn't on window yet.
+    const sdkReady = typeof window !== "undefined" && !!(window as any).Razorpay;
+    if (!sdkReady) setScriptLoading(true);
+
     const ok = await loadRazorpayScript();
+    setScriptLoading(false);
+
     if (!ok || !(window as any).Razorpay) {
       setProcessing(false);
       toast.error("Couldn't load the Razorpay checkout.", {
@@ -579,7 +616,9 @@ function SubscribeCta({ expired }: { expired: boolean }) {
     };
 
     try {
-      const rzp = new (window as any).Razorpay(options);
+      const Rzp = (window as any).Razorpay;
+      if (!Rzp) throw new Error("Razorpay SDK unavailable after load.");
+      const rzp = new Rzp(options);
       rzp.on?.("payment.failed", (resp: any) => {
         setProcessing(false);
         toast.error("Razorpay payment failed", {
@@ -597,36 +636,31 @@ function SubscribeCta({ expired }: { expired: boolean }) {
     }
   }
 
-  if (isIndia) {
-    return (
-      <Button
-        onClick={openCheckout}
-        disabled={processing}
-        className="w-full bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 hover:brightness-110 text-amber-950 font-bold text-[12px] h-10 shadow-[0_0_22px_rgba(251,191,36,0.45)]"
-      >
-        <Beer className="size-4 mr-1.5" />
-        {processing
-          ? "Opening Razorpay…"
-          : expired
-            ? `Renew Slot — ${config.display}`
-            : `Extend Slot — ${config.display}`}
-      </Button>
-    );
-  }
+  const label = isIndia
+    ? processing
+      ? "Opening Razorpay…"
+      : expired
+        ? `Renew Slot — ${config.display}`
+        : `Extend Slot — ${config.display}`
+    : processing
+      ? "Opening Razorpay…"
+      : `⚡ Sponsor District via International Cards (Razorpay) — ${config.display}`;
+
+  const buttonClass = isIndia
+    ? "w-full bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 hover:brightness-110 text-amber-950 font-bold text-[12px] h-10 shadow-[0_0_22px_rgba(251,191,36,0.45)]"
+    : "w-full bg-gradient-to-r from-indigo-500 via-violet-500 to-fuchsia-500 hover:brightness-110 text-white font-bold text-[12px] h-10 shadow-[0_0_22px_rgba(139,92,246,0.45)]";
 
   return (
-    <Button
-      onClick={openCheckout}
-      disabled={processing}
-      className="w-full bg-gradient-to-r from-indigo-500 via-violet-500 to-fuchsia-500 hover:brightness-110 text-white font-bold text-[12px] h-10 shadow-[0_0_22px_rgba(139,92,246,0.45)]"
-    >
-      <Beer className="size-4 mr-1.5" />
-      {processing
-        ? "Opening Razorpay…"
-        : `⚡ Sponsor District via International Cards (Razorpay) — ${config.display}`}
-    </Button>
+    <>
+      <Button onClick={openCheckout} disabled={processing} className={buttonClass}>
+        <Beer className="size-4 mr-1.5" />
+        {label}
+      </Button>
+      {scriptLoading && <RazorpayLoadingOverlay />}
+    </>
   );
 }
+
 
 /* ------- E. Live Guest Sentiment & Environmental Audit ------- */
 function GuestSentimentPanel({ pubName }: { pubName: string | null }) {
