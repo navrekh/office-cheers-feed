@@ -1547,7 +1547,7 @@ function Index() {
               )}
 
               {/* Live Workspace Radar — proximity-aware ambient ticker */}
-              <div className="rounded-2xl border border-border/60 bg-gradient-to-br from-card via-card to-muted/20 p-8 sm:p-10 lg:p-12 shadow-[0_10px_40px_-15px_rgba(0,0,0,0.4)]">
+              <div className="rounded-2xl bg-card p-8 sm:p-10 lg:p-14 shadow-[0_10px_40px_-15px_rgba(0,0,0,0.4)]" style={{ border: "1px solid rgba(255,255,255,0.05)" }}>
                 <LiveWorkspaceRadar
                   origin={geoCoords}
                   geoStatus={geoStatus}
