@@ -145,6 +145,9 @@ export default function LocalShoutbox({ requireAuth, variant = "compact" }: Prop
       created_at: new Date().toISOString(),
     };
     setMsgs((prev) => [...prev.slice(-49), fake]);
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new CustomEvent("drinkedin:ai-chat-message"));
+    }
   }
 
   // Ambient bot vents every 45-90s while feed is quiet (< 3 real msgs).
