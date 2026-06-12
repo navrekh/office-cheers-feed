@@ -940,8 +940,9 @@ function Index() {
       return;
     }
     setSubmitting(true);
+    const declaredCo = profile?.declared_company?.trim() || undefined;
     const composed = encodePostMeta(
-      { vibe: vibeId || undefined, gif: gifUrl || undefined },
+      { vibe: vibeId || undefined, gif: gifUrl || undefined, company: anonymous ? undefined : declaredCo },
       sanitized.clean
     );
     const { data, error } = await (supabase as any)
