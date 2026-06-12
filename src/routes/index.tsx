@@ -86,6 +86,8 @@ import { LiveWorkspaceRadar, type ProximityFilter } from "@/components/LiveWorks
 import { WorkplaceSelectorCard } from "@/components/WorkplaceSelectorCard";
 import { ProximityAdDispatcher, dealCoord } from "@/components/ProximityAdDispatcher";
 import { useMerchantDeals, type MerchantDeal } from "@/lib/useMerchantDeals";
+import DesperationPoll from "@/components/DesperationPoll";
+import BroetryMemeCard from "@/components/BroetryMemeCard";
 
 // ---------- Client-side spam guard ----------
 const RATE_KEY = "drinkedin.rate.posts";
