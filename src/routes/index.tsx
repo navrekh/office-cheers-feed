@@ -2361,7 +2361,7 @@ const PostCard = memo(function PostCard({
       </div>
 
       {(() => {
-        const { meta, body } = decodePostMeta(post.body_text);
+        const { meta, body } = decoded;
         const vibe = getVibe(meta.vibe);
         return (
           <>
