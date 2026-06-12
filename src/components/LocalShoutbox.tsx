@@ -185,6 +185,50 @@ export default function LocalShoutbox({ requireAuth, variant = "compact" }: Prop
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hub]);
 
+  // --- Midnight Chat Purge Layer ---
+  // When the local calendar day rolls over, flush transient anonymous messages
+  // and re-seed 2 fresh, day-appropriate AI vents so the canvas is never empty.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    let dayKey = new Date().toDateString();
+
+    function seedFreshDay() {
+      const vents = weekdayVibe.aiVents.length ? weekdayVibe.aiVents : AI_VENTS;
+      const shuffled = [...vents].sort(() => Math.random() - 0.5).slice(0, 2);
+      const seeded: Msg[] = shuffled.map((body, i) => {
+        const persona = pick(AI_PERSONAS);
+        return {
+          id: `ai-seed-${Date.now()}-${i}-${Math.random().toString(36).slice(2, 6)}`,
+          hub,
+          user_id: "ai-bot",
+          handle: persona.handle,
+          emoji: persona.emoji,
+          body,
+          created_at: new Date(Date.now() - (1 - i) * 60_000).toISOString(),
+        };
+      });
+      setMsgs(seeded);
+    }
+
+    function checkRollover() {
+      const nextKey = new Date().toDateString();
+      if (nextKey !== dayKey) {
+        dayKey = nextKey;
+        seedFreshDay();
+      }
+    }
+
+    // Poll once a minute — cheap and covers laptop wake-from-sleep.
+    const interval = setInterval(checkRollover, 60_000);
+    const onVisible = () => { if (document.visibilityState === "visible") checkRollover(); };
+    document.addEventListener("visibilitychange", onVisible);
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hub, weekdayVibe.id]);
+
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
