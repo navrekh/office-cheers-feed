@@ -683,6 +683,10 @@ export default function DesperationPoll({ onSignUp }: { onSignUp: (reason?: stri
             );
           })}
 
+          <SlackStatusAutomator choice={choice} />
+
+
+
           <button
             type="button"
             onClick={rollNextPoll}
