@@ -3,6 +3,7 @@ import { Card } from "@/components/ui/card";
 import { trackEngagement } from "@/lib/analytics";
 import { useAuth } from "@/lib/useAuth";
 import { useCurrentCity } from "@/lib/useCurrentCity";
+import SlackStatusAutomator from "@/components/SlackStatusAutomator";
 
 type Tone = "danger" | "thread" | "chill";
 
