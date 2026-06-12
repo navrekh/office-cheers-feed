@@ -1558,6 +1558,7 @@ function Index() {
             </button>
           </nav>
         </div>
+        <HappyHourCountdown />
         <HappyHourTicker />
       </header>
 
