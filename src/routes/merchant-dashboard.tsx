@@ -18,6 +18,7 @@ import {
   Clock,
   Eye,
   ImagePlus,
+  Loader2,
   MousePointerClick,
   ShieldCheck,
   Trash2,
