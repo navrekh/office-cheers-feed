@@ -1631,6 +1631,7 @@ function Index() {
                       onClick={() => {
                         const next = broetrify(body);
                         setBody(next);
+                        setBroetryPreview(next);
                         bumpAchievement("broetry", 1);
                         import("@/lib/analytics").then((m) =>
                           m.trackEngagement("composer_broetrify_click", { len: next.length })
