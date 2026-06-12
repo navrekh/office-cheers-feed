@@ -1591,41 +1591,33 @@ function Index() {
                 />
               )}
 
-              {/* Spacious social timeline stream */}
-              <div className="space-y-6">
-                {/* Welcome hero card */}
-                <div
-                  className="relative overflow-hidden rounded-3xl border border-amber-400/30 p-8 sm:p-10"
-                  style={{
-                    background:
-                      "radial-gradient(120% 140% at 0% 0%, rgba(251,191,36,0.18), transparent 55%), radial-gradient(120% 140% at 100% 100%, rgba(168,85,247,0.18), transparent 55%), linear-gradient(135deg, #0a0a0f, #16121f)",
-                    boxShadow: "0 20px 60px -20px rgba(251,191,36,0.35)",
-                  }}
-                >
-                  <p className="text-[11px] uppercase tracking-[0.25em] text-amber-300/80 font-semibold">
-                    The Breakroom · Live Now
-                  </p>
-                  <h2
-                    className="mt-3 font-display text-3xl sm:text-5xl font-black leading-[1.05] tracking-tight text-white"
-                    style={{ textShadow: "0 0 24px rgba(251,191,36,0.35)" }}
-                  >
-                    🍻 Welcome to the Breakroom.
-                    <br />
-                    <span className="bg-gradient-to-r from-amber-300 via-amber-400 to-fuchsia-400 bg-clip-text text-transparent">
-                      The Corporate Matrix is offline.
-                    </span>
-                  </h2>
-                  <p className="mt-3 max-w-xl text-sm sm:text-base text-zinc-300/85 leading-relaxed">
-                    Whisper anonymously. Vote in today&apos;s desperation poll. Find your local taproom. No HR. No metrics. Just the pod.
-                  </p>
-                </div>
-
-                {/* Live Breakroom Chat — full-size messaging app feel */}
+              {/* Spacious social timeline stream — POST-FIRST UX */}
+              <div className="space-y-5">
+                {/* 1. Live Breakroom Chat with composer pinned UP TOP — first thing above the fold */}
                 <ErrorBoundary label="Shoutbox" message="Chat is reconnecting…">
                   <LocalShoutbox requireAuth={requireAuth} variant="hero" />
                 </ErrorBoundary>
 
-                {/* Desperation Poll — large card */}
+                {/* 2. Compact welcome strip — collapsed so it doesn't push the composer down */}
+                <div
+                  className="relative overflow-hidden rounded-2xl border border-amber-400/25 px-5 py-3 flex items-center gap-3"
+                  style={{
+                    background:
+                      "linear-gradient(90deg, rgba(251,191,36,0.10), rgba(168,85,247,0.10))",
+                  }}
+                >
+                  <span className="text-2xl">🍻</span>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[10px] uppercase tracking-[0.22em] text-amber-300/80 font-semibold">
+                      The Breakroom · Live
+                    </p>
+                    <p className="text-sm text-zinc-300/90 truncate">
+                      Whisper anonymously. Vote the poll. No HR. No metrics. Just the pod.
+                    </p>
+                  </div>
+                </div>
+
+                {/* 3. Desperation Poll */}
                 <ErrorBoundary label="Poll" message="Poll engine is rebooting…">
                   <div id="poll-rail" className="rounded-3xl border border-fuchsia-400/20 bg-gradient-to-br from-zinc-950/70 via-zinc-900/40 to-zinc-950/70 p-2 shadow-[0_20px_60px_-25px_rgba(217,70,239,0.4)]">
                     <DesperationPoll
