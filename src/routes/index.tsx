@@ -1604,7 +1604,7 @@ function Index() {
         </h1>
 
         {/* Feed — Social Core */}
-        <section className="col-span-1 xl:col-span-8 space-y-6">
+        <section className="col-span-1 lg:col-span-7 space-y-6">
           {view === "home" && (
             <>
               {/* First-time employees: pick a corporate mask before the feed */}
@@ -1615,87 +1615,30 @@ function Index() {
                 />
               )}
 
-              {/* Spacious social timeline stream — POST-FIRST UX */}
-              <div className="space-y-5">
-                {/* 1. Live Breakroom Chat with composer pinned UP TOP — first thing above the fold */}
-                <ErrorBoundary label="Shoutbox" message="Chat is reconnecting…">
-                  <LocalShoutbox requireAuth={requireAuth} variant="hero" />
-                </ErrorBoundary>
-
-                {/* 2. Daily Vibe strip — header/subtext/accent driven by Weekday Vibe Engine */}
-                <div
-                  className={`relative overflow-hidden rounded-2xl border ${weekdayVibe.accentBorder} px-5 py-3 flex items-start gap-3`}
-                  style={{ background: weekdayVibe.accentGradient }}
-                >
-                  <span className="text-2xl shrink-0">{weekdayVibe.emoji}</span>
-                  <div className="min-w-0 flex-1">
-                    <p className={`text-[10px] uppercase tracking-[0.22em] ${weekdayVibe.accentText} font-semibold`}>
-                      {weekdayVibe.eyebrow}
-                    </p>
-                    <p className="text-sm font-bold text-zinc-100 leading-snug">
-                      {weekdayVibe.header}
-                    </p>
-                    <p className="text-xs text-zinc-300/85 leading-snug mt-0.5">
-                      {weekdayVibe.subtext}
-                    </p>
-                  </div>
-                </div>
-
-                {/* 3. Quick Post teaser — Anonymous Guest entry above the Desperation Index */}
-                <button
-                  type="button"
-                  onClick={() => {
-                    const el = document.getElementById("composer");
-                    el?.scrollIntoView({ behavior: "smooth", block: "start" });
-                    setTimeout(() => {
-                      const ta = el?.querySelector("textarea") as HTMLTextAreaElement | null;
-                      ta?.focus();
-                    }, 350);
-                    import("@/lib/analytics").then((m) =>
-                      m.trackEngagement("quick_post_teaser_click")
-                    );
-                  }}
-                  className="group w-full text-left rounded-2xl border border-amber-400/30 bg-zinc-950/70 hover:bg-zinc-900/80 hover:border-amber-400/60 transition p-3 flex items-center gap-3 shadow-[0_0_28px_-12px_rgba(251,191,36,0.45)]"
-                  aria-label="Open the anonymous post composer"
-                >
-                  <span className="size-11 shrink-0 rounded-full grid place-items-center text-lg font-bold bg-amber-400/15 text-amber-300 ring-2 ring-amber-400/40">
-                    {user ? "🍻" : "🕵️"}
-                  </span>
-                  <span className="flex-1 min-w-0">
-                    <span className="block text-[10px] uppercase tracking-[0.22em] text-amber-300/80 font-semibold">
-                      {user ? (userAlias ?? "You") + " 🎭" : "Anonymous Guest 🕵️‍♂️"}
-                    </span>
-                    <span className="block text-sm text-zinc-400 truncate group-hover:text-zinc-200 transition">
-                      Drop a confession, vent, or hot take…
-                    </span>
-                  </span>
-                  <span className="hidden sm:inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-[12px] font-extrabold text-black bg-amber-400 shadow-[0_0_24px_rgba(251,191,36,0.55)] group-hover:shadow-[0_0_36px_rgba(251,191,36,0.85)] transition">
-                    <Send className="size-3.5" />
-                    Quick Post
-                  </span>
-                </button>
-
-                {/* 4. Desperation Poll */}
-                <ErrorBoundary label="Poll" message="Poll engine is rebooting…">
-                  <div id="poll-rail" className="rounded-3xl border border-fuchsia-400/20 bg-gradient-to-br from-zinc-950/70 via-zinc-900/40 to-zinc-950/70 p-2 shadow-[0_20px_60px_-25px_rgba(217,70,239,0.4)]">
-                    <DesperationPoll
-                      onSignUp={(reason) => requireAuth(reason ?? "Drop an anonymous confession — sign in once and you're masked.")}
-                    />
-                  </div>
-                  <DesperationPollModal
+              {/* Card 1 — TODAY'S DESPERATION INDEX (large, first interactive asset) */}
+              <ErrorBoundary label="Poll" message="Poll engine is rebooting…">
+                <div id="poll-rail" className="rounded-3xl border border-fuchsia-400/30 bg-gradient-to-br from-zinc-950/80 via-zinc-900/50 to-zinc-950/80 p-3 shadow-[0_20px_60px_-25px_rgba(217,70,239,0.45)]">
+                  <p className="px-2 pt-1 pb-2 text-[10px] uppercase tracking-[0.24em] font-bold text-fuchsia-300/90">
+                    Today's Desperation Index · 50-Poll Roulette
+                  </p>
+                  <DesperationPoll
                     onSignUp={(reason) => requireAuth(reason ?? "Drop an anonymous confession — sign in once and you're masked.")}
                   />
-                </ErrorBoundary>
-
-
-                {!dayCtx.isFridayLive && !dayCtx.isWeekend && (
-                  <MidWeekSurvivalTracker />
-                )}
-                <StandupEscapeValve
-                  isAuthenticated={!!user}
-                  onSignUp={(reason) => requireAuth(reason)}
+                </div>
+                <DesperationPollModal
+                  onSignUp={(reason) => requireAuth(reason ?? "Drop an anonymous confession — sign in once and you're masked.")}
                 />
-              </div>
+              </ErrorBoundary>
+
+              {/* Card 2 — Live Breakroom Chat with capped log height so composer stays above the fold */}
+              <ErrorBoundary label="Shoutbox" message="Chat is reconnecting…">
+                <div className="[&_[data-shoutbox-log]]:max-h-[340px] [&_[data-shoutbox-log]]:overflow-y-auto">
+                  <LocalShoutbox requireAuth={requireAuth} variant="hero" />
+                </div>
+              </ErrorBoundary>
+            </>
+          )}
+
 
               {/* Mobile sticky quick-action drawer */}
               <div className="xl:hidden fixed bottom-0 inset-x-0 z-40 px-3 pb-3 pt-2 pointer-events-none">
