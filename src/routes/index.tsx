@@ -1538,7 +1538,7 @@ function Index() {
         </aside>
 
         {/* Feed */}
-        <section className="col-span-12 lg:col-span-7 space-y-6">
+        <section className="col-span-12 lg:col-span-7 space-y-8 lg:space-y-10 lg:py-2">
           {view === "home" && (
             <>
               {/* First-time employees: pick a corporate mask before the feed */}
