@@ -158,6 +158,24 @@ export const MERCHANTS: Record<CityKey, Merchant[]> = {
       map_query_address: "Doolally Taproom, Kalyani Nagar, Pune",
       base_heading: 19,
     },
+    {
+      id: "pnq-toit",
+      name: "Toit Pune",
+      area: "Mundhwa · Amanora Mall",
+      deal: "Sprint demo survived? 2-for-1 Tintin Toits till 7:30 PM.",
+      website: "https://toit.in/",
+      map_query_address: "Toit Brewpub, Mundhwa, Pune",
+      base_heading: 34,
+    },
+    {
+      id: "pnq-babylon",
+      name: "Babylon Craft Brewery",
+      area: "Hinjawadi · Phase 1",
+      deal: "Free hop-platter for any squad of 4 Hinjawadi engineers before 8 PM.",
+      website: "https://babylontoranto.com/",
+      map_query_address: "Babylon Craft Brewery, Hinjawadi Phase 1, Pune",
+      base_heading: 41,
+    },
   ],
   Mumbai: [
     {

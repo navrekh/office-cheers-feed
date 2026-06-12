@@ -145,6 +145,7 @@ import CorporateBingo from "@/components/CorporateBingo";
 import VerifiedWateringHole from "@/components/VerifiedWateringHole";
 import LiveVibeBoard from "@/components/LiveVibeBoard";
 import HappyHourTicker from "@/components/HappyHourTicker";
+import TrendingHappyHoursList from "@/components/TrendingHappyHoursList";
 import HubSelector from "@/components/HubSelector";
 import BurnoutLeaderboard from "@/components/BurnoutLeaderboard";
 import ClaimTicketModal from "@/components/ClaimTicketModal";
@@ -2043,20 +2044,8 @@ function Index() {
         {/* Right sidebar */}
         <aside className="hidden lg:block col-span-3 space-y-6">
           <BurnoutLeaderboard />
-          <Card className="p-4 border-border">
-            <div className="flex items-center justify-between mb-3">
-              <h4 className="text-sm font-semibold flex items-center gap-1.5">
-                <TrendingUp className="size-4 text-primary" /> Trending Happy Hours
-              </h4>
-              <MoreHorizontal className="size-4 text-muted-foreground" />
-            </div>
-            <ul className="space-y-3 text-xs">
-              <TrendItem title="O'Malley's $3 Lager Thursday" meta="Midtown · 1.2k professionals attending" />
-              <TrendItem title="The Rooftop @ FinTech HQ" meta="Today 4pm · 'Mandatory team bonding'" />
-              <TrendItem title="Whiskey & Wireframes" meta="Designers only · pretzel bar included" />
-              <TrendItem title="Margarita Standup" meta="Daily 11:30am · attendance optional" />
-            </ul>
-          </Card>
+          <TrendingHappyHoursList />
+
 
           <LiveVibeBoard />
 
@@ -2715,6 +2704,7 @@ function PubsView({
   const today = new Date().toISOString().slice(0, 10);
 
   function checkIn(m: Merchant) {
+    if (!requireAuth("1-click Google Sign-In locks your spot on tonight's group reward list.")) return;
     const state = heading[m.id];
     const alreadyChecked = state && state.date === today && state.mine === true;
     if (alreadyChecked) {
@@ -2723,18 +2713,27 @@ function PubsView({
       });
       return;
     }
+    const nextExtra = (state?.date === today ? state.extra : 0) + 1;
     const next = {
       ...heading,
       [m.id]: {
         date: today,
-        extra: (state?.date === today ? state.extra : 0) + 1,
+        extra: nextExtra,
         mine: true,
       },
     };
     setHeading(next);
     try { localStorage.setItem("drinkedin.headingThere.v1", JSON.stringify(next)); } catch {}
-    toast.success(`You're heading to ${m.name} 🏃‍♂️🍻`);
+    if (nextExtra >= 10) {
+      toast.success(`🎯 Target Hit! 10 techies are heading to ${m.name}`, {
+        description: "Live heat-map data is being routed to their management right now to unlock an exclusive DrinkedIn corporate discount code for tonight!",
+        duration: 7000,
+      });
+    } else {
+      toast.success(`You're heading to ${m.name} 🍻 — ${10 - nextExtra} more to unlock the group reward!`);
+    }
   }
+
 
   return (
     <div className="space-y-3 animate-in fade-in duration-300">
@@ -2807,13 +2806,31 @@ function PubsView({
                 </div>
               </div>
 
-              <div className="rounded-md border border-amber-400/30 bg-amber-500/5 p-2.5 mb-3">
-                <div className="text-[10px] uppercase tracking-wider font-bold text-amber-300 mb-1">
-                  🔥 Flash Happy Hour
+              <div className="rounded-md border border-fuchsia-400/40 bg-gradient-to-br from-fuchsia-500/10 via-amber-500/5 to-fuchsia-500/10 p-2.5 mb-3">
+                <div className="text-[10px] uppercase tracking-wider font-bold text-fuchsia-200 mb-1">
+                  👥 Community Push Deal: Unlock 10% Off Group Reward
                 </div>
                 <p className="text-[12px] leading-snug text-foreground/90">
                   {m.deal}
                 </p>
+                {extra >= 10 ? (
+                  <div className="mt-2 rounded border border-emerald-400/50 bg-emerald-500/15 px-2 py-1.5 text-[11px] text-emerald-100 leading-snug animate-pulse">
+                    🎯 <span className="font-bold">Target Hit!</span> 10 techies are heading here. Routing live heat-map data to management to unlock tonight's exclusive DrinkedIn corporate discount code.
+                  </div>
+                ) : (
+                  <div className="mt-2">
+                    <div className="flex items-center justify-between text-[10px] text-fuchsia-100/80 mb-1">
+                      <span><span className="font-bold text-fuchsia-100">{extra}</span> / 10 heading here tonight</span>
+                      <span>{Math.max(0, 10 - extra)} more to unlock</span>
+                    </div>
+                    <div className="h-1.5 rounded-full bg-fuchsia-950/60 overflow-hidden">
+                      <div
+                        className="h-full bg-gradient-to-r from-fuchsia-400 to-amber-300 transition-all duration-500"
+                        style={{ width: `${Math.min(100, (extra / 10) * 100)}%` }}
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div className="flex items-center gap-1.5 text-[11px] text-amber-200/90 mb-3">
@@ -2832,11 +2849,13 @@ function PubsView({
                   className={`h-9 text-[12px] font-bold ${
                     checked
                       ? "bg-emerald-500/20 hover:bg-emerald-500/20 text-emerald-200 border border-emerald-400/40 cursor-default"
-                      : "bg-amber-500 hover:bg-amber-400 text-amber-950"
+                      : "bg-gradient-to-r from-fuchsia-500 to-amber-500 hover:brightness-110 text-amber-950"
                   }`}
+                  title={checked ? "You're on tonight's list" : "1-click Google Sign-In required"}
                 >
-                  {checked ? "On the list ✓" : "I'm heading 🏃‍♂️"}
+                  {checked ? "On the list ✓" : "I'm heading here 🍻"}
                 </Button>
+
                 <a
                   href={mapsDirectionsUrl(m.map_query_address)}
                   target="_blank"

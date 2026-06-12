@@ -20,7 +20,10 @@ import {
   ImagePlus,
   Loader2,
   MousePointerClick,
+  Phone,
+  Radio,
   ShieldCheck,
+  Store,
   Trash2,
 } from "lucide-react";
 
@@ -99,7 +102,11 @@ function MerchantDashboardPage() {
         </div>
       </header>
 
+      <B2BClaimHero pubName={profile.pub_name} />
+
       <DashboardTabs userId={user!.id} profile={profile} onRefresh={refresh} />
+
+
 
 
       {needsOnboarding && (
@@ -554,21 +561,29 @@ function SubscribeCta({ expired }: { expired: boolean }) {
   const isIndia = region === "IN";
   const [processing, setProcessing] = useState(false);
   const [scriptLoading, setScriptLoading] = useState(false);
+  const [venueName, setVenueName] = useState("");
+  const [contactNumber, setContactNumber] = useState("");
 
   const config = isIndia
     ? { amount: 59900, currency: "INR", display: "₹599 / Week" }
     : { amount: 999, currency: "USD", display: "$9.99 / Week" };
 
   async function openCheckout() {
+    if (!venueName.trim() || !contactNumber.trim()) {
+      toast.error("Venue name and contact number are required.", {
+        description: "Our growth team needs both so we can wire your live map pin tonight.",
+      });
+      return;
+    }
     setProcessing(true);
     import("@/lib/analytics").then((m) =>
       m.trackEngagement("merchant_sponsor_slot_click", {
         region,
         currency: config.currency,
+        venue: venueName.trim(),
       }),
     );
 
-    // Surface the styled spinner immediately if the SDK isn't on window yet.
     const sdkReady = typeof window !== "undefined" && !!(window as any).Razorpay;
     if (!sdkReady) setScriptLoading(true);
 
@@ -587,11 +602,12 @@ function SubscribeCta({ expired }: { expired: boolean }) {
       key: RAZORPAY_KEY_ID,
       amount: config.amount,
       currency: config.currency,
-      name: "DrinkedIn.me",
-      description: "Weekly Neighborhood Sponsored Slot",
+      name: venueName.trim() || "DrinkedIn.me",
+      description: "Weekly Live Map Pin & Flash Deal Panel",
       prefill: {
         email: user?.email || "",
-        contact: "",
+        contact: contactNumber.trim(),
+        name: venueName.trim(),
       },
       theme: { color: "#181414" },
       modal: {
@@ -605,7 +621,7 @@ function SubscribeCta({ expired }: { expired: boolean }) {
       handler: (response: { razorpay_payment_id?: string }) => {
         setProcessing(false);
         toast.success(
-          "🎉 Payment verified via Razorpay! Your sponsored venue slot is now live on the local radar map.",
+          "🎉 Payment verified via Razorpay! Your live map pin is now broadcasting on the local radar.",
           {
             description: response?.razorpay_payment_id
               ? `Txn ${response.razorpay_payment_id}`
@@ -636,30 +652,154 @@ function SubscribeCta({ expired }: { expired: boolean }) {
     }
   }
 
-  const label = isIndia
-    ? processing
-      ? "Opening Razorpay…"
-      : expired
-        ? `Renew Slot — ${config.display}`
-        : `Extend Slot — ${config.display}`
-    : processing
-      ? "Opening Razorpay…"
-      : `⚡ Sponsor District via International Cards (Razorpay) — ${config.display}`;
+  const label = processing
+    ? "Opening Razorpay…"
+    : `🚀 Activate Live Map Pin & Flash Deal Panel (${config.display} via Razorpay)`;
 
   const buttonClass = isIndia
-    ? "w-full bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 hover:brightness-110 text-amber-950 font-bold text-[12px] h-10 shadow-[0_0_22px_rgba(251,191,36,0.45)]"
-    : "w-full bg-gradient-to-r from-indigo-500 via-violet-500 to-fuchsia-500 hover:brightness-110 text-white font-bold text-[12px] h-10 shadow-[0_0_22px_rgba(139,92,246,0.45)]";
+    ? "w-full bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 hover:brightness-110 text-amber-950 font-bold text-[12px] h-11 shadow-[0_0_22px_rgba(251,191,36,0.45)] whitespace-normal leading-tight"
+    : "w-full bg-gradient-to-r from-indigo-500 via-violet-500 to-fuchsia-500 hover:brightness-110 text-white font-bold text-[12px] h-11 shadow-[0_0_22px_rgba(139,92,246,0.45)] whitespace-normal leading-tight";
 
   return (
     <>
+      <div className="space-y-2 mb-3">
+        <label className="block">
+          <span className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider font-bold text-amber-200/90 mb-1">
+            <Store className="size-3" /> 🏢 Enter Venue Name
+          </span>
+          <input
+            type="text"
+            value={venueName}
+            onChange={(e) => setVenueName(e.target.value)}
+            placeholder="e.g. Effingut Brewerkz, Viman Nagar"
+            className="w-full h-9 rounded-md bg-black/40 border border-amber-400/30 px-2.5 text-[12px] text-amber-50 placeholder:text-amber-100/30 focus:outline-none focus:border-amber-400/70 focus:ring-1 focus:ring-amber-400/40"
+          />
+        </label>
+        <label className="block">
+          <span className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider font-bold text-amber-200/90 mb-1">
+            <Phone className="size-3" /> 📞 Contact Number
+          </span>
+          <input
+            type="tel"
+            inputMode="tel"
+            value={contactNumber}
+            onChange={(e) => setContactNumber(e.target.value)}
+            placeholder={isIndia ? "+91 98xxx xxxxx" : "+1 (415) xxx-xxxx"}
+            className="w-full h-9 rounded-md bg-black/40 border border-amber-400/30 px-2.5 text-[12px] text-amber-50 placeholder:text-amber-100/30 focus:outline-none focus:border-amber-400/70 focus:ring-1 focus:ring-amber-400/40"
+          />
+        </label>
+      </div>
       <Button onClick={openCheckout} disabled={processing} className={buttonClass}>
-        <Beer className="size-4 mr-1.5" />
-        {label}
+        <Beer className="size-4 mr-1.5 shrink-0" />
+        <span className="text-[11.5px]">{label}</span>
       </Button>
       {scriptLoading && <RazorpayLoadingOverlay />}
     </>
   );
 }
+
+/* ------- B2B Claim Venue Lead Hero ------- */
+function B2BClaimHero({ pubName }: { pubName: string | null }) {
+  // Mock live foot-traffic count so the hero feels alive.
+  const [liveCount, setLiveCount] = useState(412);
+  useEffect(() => {
+    const id = setInterval(() => {
+      setLiveCount((c) => Math.max(380, Math.min(540, c + Math.round((Math.random() - 0.4) * 8))));
+    }, 2200);
+    return () => clearInterval(id);
+  }, []);
+
+  return (
+    <section className="max-w-6xl mx-auto px-4 pt-6">
+      <Card className="relative overflow-hidden p-6 sm:p-8 border-amber-400/40 bg-gradient-to-br from-amber-500/15 via-fuchsia-500/10 to-zinc-950 shadow-[0_0_60px_-20px_rgba(251,191,36,0.45)]">
+        <div className="absolute -top-24 -right-24 size-72 rounded-full bg-amber-400/10 blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-24 -left-24 size-72 rounded-full bg-fuchsia-500/10 blur-3xl pointer-events-none" />
+
+        <div className="relative grid lg:grid-cols-[1.2fr_1fr] gap-6 items-center">
+          <div>
+            <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full border border-amber-400/40 bg-amber-500/10 text-[10px] font-bold uppercase tracking-wider text-amber-200 mb-3">
+              <Radio className="size-3 animate-pulse" /> Live Pulse — Hinjawadi / Koregaon Park
+            </div>
+            <h2 className="text-2xl sm:text-3xl font-black leading-[1.1] text-amber-50">
+              Over <span className="text-amber-300 tabular-nums">{liveCount}+</span> Tech Workers in Hinjawadi/Koregaon Park are looking at your taproom right now. 🛰️
+            </h2>
+            <p className="text-[13.5px] text-amber-50/75 mt-3 leading-relaxed max-w-xl">
+              DrinkedIn routes exhausted developers straight to local breweries every Friday afternoon. Don't let them walk into your competitor's taproom.
+            </p>
+            <div className="flex flex-wrap gap-2 mt-4 text-[11px]">
+              <span className="px-2.5 py-1 rounded-md bg-emerald-500/15 border border-emerald-400/40 text-emerald-100 font-semibold">✅ No setup fee</span>
+              <span className="px-2.5 py-1 rounded-md bg-sky-500/15 border border-sky-400/40 text-sky-100 font-semibold">📡 Live geofenced pin</span>
+              <span className="px-2.5 py-1 rounded-md bg-fuchsia-500/15 border border-fuchsia-400/40 text-fuchsia-100 font-semibold">⚡ Flash deal panel</span>
+              {pubName && (
+                <span className="px-2.5 py-1 rounded-md bg-amber-500/15 border border-amber-400/40 text-amber-100 font-semibold">🏢 {pubName}</span>
+              )}
+            </div>
+          </div>
+
+          <MockTrafficChart />
+        </div>
+      </Card>
+    </section>
+  );
+}
+
+function MockTrafficChart() {
+  // Friday afternoon ramp curve (hours roughly 12 → 22). Pre-computed so the
+  // line is stable across renders but feels editorial.
+  const points = useMemo(() => {
+    const base = [8, 10, 14, 18, 22, 30, 46, 68, 88, 95, 80, 62];
+    return base.map((y, i) => ({ x: i, y }));
+  }, []);
+  const W = 320;
+  const H = 140;
+  const maxY = 100;
+  const stepX = W / (points.length - 1);
+  const path = points
+    .map((p, i) => {
+      const x = i * stepX;
+      const y = H - (p.y / maxY) * (H - 20) - 10;
+      return `${i === 0 ? "M" : "L"} ${x.toFixed(1)} ${y.toFixed(1)}`;
+    })
+    .join(" ");
+  const area = `${path} L ${W} ${H} L 0 ${H} Z`;
+
+  return (
+    <div className="relative rounded-xl border border-amber-400/30 bg-black/40 p-4 backdrop-blur">
+      <div className="flex items-center justify-between mb-2">
+        <div className="text-[10px] uppercase tracking-wider font-bold text-amber-200">
+          📈 Active Friday Tech-Park Foot Traffic Route
+        </div>
+        <span className="text-[9px] font-mono text-emerald-300">● LIVE</span>
+      </div>
+      <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-32" preserveAspectRatio="none" aria-hidden>
+        <defs>
+          <linearGradient id="b2b-area" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#fbbf24" stopOpacity="0.55" />
+            <stop offset="100%" stopColor="#fbbf24" stopOpacity="0" />
+          </linearGradient>
+        </defs>
+        {[0.25, 0.5, 0.75].map((g) => (
+          <line key={g} x1="0" x2={W} y1={H * g} y2={H * g} stroke="rgba(251,191,36,0.08)" strokeDasharray="2 4" />
+        ))}
+        <path d={area} fill="url(#b2b-area)" />
+        <path d={path} fill="none" stroke="#fbbf24" strokeWidth="2.2" strokeLinejoin="round" strokeLinecap="round" />
+        {points.map((p, i) => {
+          const x = i * stepX;
+          const y = H - (p.y / maxY) * (H - 20) - 10;
+          return <circle key={i} cx={x} cy={y} r={i === points.length - 4 ? 4 : 2} fill={i === points.length - 4 ? "#fff" : "#fbbf24"} stroke="#0a0a0a" strokeWidth="1" />;
+        })}
+      </svg>
+      <div className="flex justify-between text-[9px] text-amber-100/50 mt-1 font-mono">
+        <span>12p</span><span>3p</span><span>5p</span><span>7p</span><span>9p</span><span>11p</span>
+      </div>
+      <div className="text-[10px] text-amber-100/70 mt-2 leading-snug">
+        Peak walk-in window opens at <span className="font-bold text-amber-200">5:30 PM</span>. 68% of Friday taps land within 2 km of Hinjawadi Phase 1.
+      </div>
+    </div>
+  );
+}
+
+
 
 
 /* ------- E. Live Guest Sentiment & Environmental Audit ------- */
