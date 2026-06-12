@@ -1698,7 +1698,14 @@ function Index() {
                   </div>
 
                   {/* Broetry meme preview + download card */}
-                  {broetryPreview && <BroetryMemeCard text={broetryPreview} />}
+                  {broetryPreview && (
+                    <ErrorBoundary
+                      label="Broetry Engine"
+                      message="The Broetry engine spilled its kombucha. Tweak your draft and try again — the rest of the dashboard is safe."
+                    >
+                      <BroetryMemeCard text={broetryPreview} />
+                    </ErrorBoundary>
+                  )}
 
                   {/* Current Vibe matrix */}
                   <div className="pl-14">
