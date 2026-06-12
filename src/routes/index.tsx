@@ -2533,22 +2533,26 @@ const PostCard = memo(function PostCard({
       )}
       <div className="p-4 pb-2 flex items-start gap-3">
         <div
-          className={`size-12 rounded-full grid place-items-center font-bold text-base shrink-0 ${
+          className={`size-12 rounded-full grid place-items-center font-bold text-base shrink-0 ring-2 ${
             isMerchant
-              ? "bg-gradient-to-br from-amber-500/50 to-amber-300/30 text-amber-100 text-xl"
-              : "bg-gradient-to-br from-primary/40 to-accent/40"
+              ? "bg-gradient-to-br from-amber-500/50 to-amber-300/30 text-amber-100 text-xl ring-amber-400/40"
+              : "bg-gradient-to-br from-primary/40 to-accent/40 ring-primary/30"
           }`}
         >
           {isMerchant ? "🍺" : initials(post.author_name)}
         </div>
         <div className="flex-1 min-w-0">
-          <div className="font-semibold text-[15px] leading-tight truncate flex items-center gap-1.5">
-            <span className={`truncate ${isMerchant ? "text-amber-100" : ""}`}>
+          <div className="text-[15px] leading-tight flex items-center gap-1.5 flex-wrap">
+            <span className={`font-bold truncate ${isMerchant ? "text-amber-100" : "text-foreground"}`}>
               {isMerchant ? post.author_name : (post.author_name || "Anonymous Colleague 🎭")}
             </span>
             {!isMerchant && (
-              <span className="text-xs font-normal text-muted-foreground shrink-0">· 1st</span>
+              <span className="text-[13px] font-normal text-muted-foreground truncate">
+                @{(post.author_name || "anon").toLowerCase().replace(/[^a-z0-9]+/g, "_").slice(0, 18)}
+              </span>
             )}
+            <span className="text-muted-foreground/70 text-[13px]">·</span>
+            <span className="text-[13px] text-muted-foreground/90">{timeAgo(post.created_at)}</span>
             {companyTag && (
               <span
                 className="inline-flex items-center gap-1 rounded-md border border-fuchsia-400/40 bg-fuchsia-500/10 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-fuchsia-200 shrink-0"
@@ -2573,11 +2577,8 @@ const PostCard = memo(function PostCard({
               </span>
             )}
           </div>
-          <div className={`text-xs line-clamp-1 ${isMerchant ? "text-amber-200/80" : "text-muted-foreground"}`}>
+          <div className={`text-[12px] line-clamp-1 ${isMerchant ? "text-amber-200/80" : "text-muted-foreground/80"}`}>
             {post.author_headline}
-          </div>
-          <div className="text-[11px] text-muted-foreground/80 mt-0.5 flex items-center gap-1">
-            {timeAgo(post.created_at)} · <span>{isMerchant ? "📣" : "🌍"}</span>
           </div>
         </div>
         <button className="text-muted-foreground hover:text-foreground p-1">
