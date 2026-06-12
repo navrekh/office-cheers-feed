@@ -113,6 +113,60 @@ export default function LocalShoutbox({ requireAuth, variant = "compact" }: Prop
     if (el) el.scrollTop = el.scrollHeight;
   }, [msgs.length]);
 
+  // --- AI Persona Engine ---
+  function injectAiMessage(body?: string) {
+    const persona = pick(AI_PERSONAS);
+    const fake: Msg = {
+      id: `ai-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+      hub,
+      user_id: "ai-bot",
+      handle: persona.handle,
+      emoji: persona.emoji,
+      body: body ?? pick(AI_VENTS),
+      created_at: new Date().toISOString(),
+    };
+    setMsgs((prev) => [...prev.slice(-49), fake]);
+  }
+
+  // Ambient bot vents every 45-90s while feed is quiet (< 3 real msgs).
+  useEffect(() => {
+    let cancelled = false;
+    function schedule() {
+      const delay = 45000 + Math.random() * 45000;
+      const t = setTimeout(() => {
+        if (cancelled) return;
+        setMsgs((prev) => {
+          const realCount = prev.filter((m) => !m.id.startsWith("ai-")).length;
+          if (realCount < 3) {
+            const persona = pick(AI_PERSONAS);
+            const fake: Msg = {
+              id: `ai-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+              hub,
+              user_id: "ai-bot",
+              handle: persona.handle,
+              emoji: persona.emoji,
+              body: pick(AI_VENTS),
+              created_at: new Date().toISOString(),
+            };
+            return [...prev.slice(-49), fake];
+          }
+          return prev;
+        });
+        schedule();
+      }, delay);
+      return t;
+    }
+    const initial = setTimeout(() => injectAiMessage(), 3000);
+    const handle = schedule();
+    return () => {
+      cancelled = true;
+      clearTimeout(initial);
+      clearTimeout(handle);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hub]);
+
+
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
     const v = text.trim();
