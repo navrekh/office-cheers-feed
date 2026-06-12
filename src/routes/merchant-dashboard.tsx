@@ -140,6 +140,7 @@ function DashboardTabs({
       {tab === "analytics" ? (
         <div className="grid gap-5 lg:grid-cols-3 animate-fade-in">
           <section className="lg:col-span-2 space-y-5">
+            <TelemetryControlPanel />
             <LiveAnalyticsPanel pubName={profile.pub_name} />
             <GuestSentimentPanel pubName={profile.pub_name} />
             <MerchantFlashControl profile={profile} />
