@@ -207,7 +207,30 @@ export default function LocalShoutbox({ requireAuth, variant = "compact" }: Prop
         </span>
       </header>
 
-      <div ref={scrollRef} className={`overflow-y-auto px-4 py-3 space-y-2 scroll-smooth ${isHero ? "max-h-[220px] min-h-[160px]" : "max-h-40 min-h-[6rem] px-3 py-2"}`}>
+      {/* Composer — pinned ABOVE the message list in hero mode for instant posting */}
+      {isHero && (
+        <form onSubmit={onSubmit} className="flex items-center gap-2 border-b border-white/5 bg-gradient-to-r from-amber-500/[0.06] via-transparent to-fuchsia-500/[0.06] p-3">
+          <input
+            type="text"
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            onFocus={onFocus}
+            maxLength={280}
+            placeholder={vern.shoutboxPlaceholder}
+            className="flex-1 px-3 h-12 text-sm rounded-lg bg-white/[0.04] border border-white/10 text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:border-amber-400/40 focus:bg-white/[0.06] transition"
+          />
+          <button
+            type="submit"
+            disabled={!text.trim() || sending}
+            className="inline-flex items-center gap-2 h-12 px-5 rounded-lg bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-amber-950 font-bold text-sm tracking-tight transition shadow-[0_0_30px_rgba(251,191,36,0.55)] hover:shadow-[0_0_45px_rgba(251,191,36,0.8)] disabled:opacity-50 disabled:shadow-none animate-pulse"
+          >
+            <Send className="size-4" />
+            Whisper Anonymously
+          </button>
+        </form>
+      )}
+
+      <div ref={scrollRef} className={`overflow-y-auto px-4 py-3 space-y-2 scroll-smooth ${isHero ? "max-h-[260px] min-h-[160px]" : "max-h-40 min-h-[6rem] px-3 py-2"}`}>
         {msgs.length === 0 ? (
           <p className={`text-center text-muted-foreground/70 ${isHero ? "py-12 text-sm" : "py-6 text-[11.5px]"}`}>
             Quiet for a minute in {hub}. Be the first to whisper.
@@ -231,26 +254,18 @@ export default function LocalShoutbox({ requireAuth, variant = "compact" }: Prop
         )}
       </div>
 
-      <form onSubmit={onSubmit} className={`flex items-center gap-2 border-t border-white/5 bg-black/30 ${isHero ? "p-3" : "p-2"}`}>
-        <input
-          type="text"
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          onFocus={onFocus}
-          maxLength={280}
-          placeholder={vern.shoutboxPlaceholder}
-          className={`flex-1 px-3 rounded-lg bg-white/[0.04] border border-white/10 text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:border-amber-400/40 focus:bg-white/[0.06] transition ${isHero ? "h-12 text-sm" : "h-9 text-[12.5px]"}`}
-        />
-        {isHero ? (
-          <button
-            type="submit"
-            disabled={!text.trim() || sending}
-            className="inline-flex items-center gap-2 h-12 px-5 rounded-lg bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-amber-950 font-bold text-sm tracking-tight transition shadow-[0_0_30px_rgba(251,191,36,0.55)] hover:shadow-[0_0_45px_rgba(251,191,36,0.8)] disabled:opacity-50 disabled:shadow-none animate-pulse"
-          >
-            <Send className="size-4" />
-            Whisper Anonymously
-          </button>
-        ) : (
+      {/* Compact-mode composer stays at the bottom (used in sidebars). */}
+      {!isHero && (
+        <form onSubmit={onSubmit} className="flex items-center gap-2 border-t border-white/5 bg-black/30 p-2">
+          <input
+            type="text"
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            onFocus={onFocus}
+            maxLength={280}
+            placeholder={vern.shoutboxPlaceholder}
+            className="flex-1 px-3 rounded-lg bg-white/[0.04] border border-white/10 text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:border-amber-400/40 focus:bg-white/[0.06] transition h-9 text-[12.5px]"
+          />
           <button
             type="submit"
             aria-label="Send message"
@@ -259,8 +274,8 @@ export default function LocalShoutbox({ requireAuth, variant = "compact" }: Prop
           >
             <Send className="size-4" />
           </button>
-        )}
-      </form>
+        </form>
+      )}
     </section>
   );
 }
