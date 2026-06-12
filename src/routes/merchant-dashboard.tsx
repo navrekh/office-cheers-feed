@@ -482,7 +482,10 @@ function SubscriptionClock({ pubName, onRefresh }: { pubName: string | null; onR
   );
 }
 
-/* ------- D.1 Geo-aware Subscribe CTA (Razorpay for IN, Stripe elsewhere) ------- */
+/* ------- D.1 Geo-aware Subscribe CTA (Razorpay — INR for IN, USD elsewhere) ------- */
+const RAZORPAY_KEY_ID = "YOUR_RAZORPAY_KEY_ID";
+const RAZORPAY_SCRIPT_SRC = "https://checkout.razorpay.com/v1/checkout.js";
+
 function detectRegion(lang: string): string {
   try {
     const nav = (navigator.language || "").toUpperCase();
@@ -492,44 +495,134 @@ function detectRegion(lang: string): string {
   return lang === "ja" ? "JP" : lang === "de" ? "DE" : "US";
 }
 
+function loadRazorpayScript(): Promise<boolean> {
+  return new Promise((resolve) => {
+    if (typeof window === "undefined") return resolve(false);
+    if ((window as any).Razorpay) return resolve(true);
+    const existing = document.querySelector(
+      `script[src="${RAZORPAY_SCRIPT_SRC}"]`,
+    ) as HTMLScriptElement | null;
+    if (existing) {
+      existing.addEventListener("load", () => resolve(true));
+      existing.addEventListener("error", () => resolve(false));
+      return;
+    }
+    const script = document.createElement("script");
+    script.src = RAZORPAY_SCRIPT_SRC;
+    script.async = true;
+    script.onload = () => resolve(true);
+    script.onerror = () => resolve(false);
+    document.body.appendChild(script);
+  });
+}
+
 function SubscribeCta({ expired }: { expired: boolean }) {
   const { lang } = useI18n();
+  const { user } = useAuth();
   const region = detectRegion(lang);
   const isIndia = region === "IN";
+  const [processing, setProcessing] = useState(false);
 
+  const config = isIndia
+    ? { amount: 59900, currency: "INR", display: "₹599 / Week" }
+    : { amount: 999, currency: "USD", display: "$9.99 / Week" };
+
+  async function openCheckout() {
+    setProcessing(true);
+    import("@/lib/analytics").then((m) =>
+      m.trackEngagement("merchant_sponsor_slot_click", {
+        region,
+        currency: config.currency,
+      }),
+    );
+
+    const ok = await loadRazorpayScript();
+    if (!ok || !(window as any).Razorpay) {
+      setProcessing(false);
+      toast.error("Couldn't load the Razorpay checkout.", {
+        description: "Check your connection and try again in a moment.",
+      });
+      return;
+    }
+
+    const options = {
+      key: RAZORPAY_KEY_ID,
+      amount: config.amount,
+      currency: config.currency,
+      name: "DrinkedIn.me",
+      description: "Weekly Neighborhood Sponsored Slot",
+      prefill: {
+        email: user?.email || "",
+        contact: "",
+      },
+      theme: { color: "#181414" },
+      modal: {
+        ondismiss: () => {
+          setProcessing(false);
+          toast("Checkout closed", {
+            description: "Your sponsored slot is still available whenever you're ready.",
+          });
+        },
+      },
+      handler: (response: { razorpay_payment_id?: string }) => {
+        setProcessing(false);
+        toast.success(
+          "🎉 Payment verified via Razorpay! Your sponsored venue slot is now live on the local radar map.",
+          {
+            description: response?.razorpay_payment_id
+              ? `Txn ${response.razorpay_payment_id}`
+              : undefined,
+          },
+        );
+      },
+    };
+
+    try {
+      const rzp = new (window as any).Razorpay(options);
+      rzp.on?.("payment.failed", (resp: any) => {
+        setProcessing(false);
+        toast.error("Razorpay payment failed", {
+          description:
+            resp?.error?.description ||
+            "Slot is still available — give it another shot.",
+        });
+      });
+      rzp.open();
+    } catch (err: any) {
+      setProcessing(false);
+      toast.error("Razorpay checkout error", {
+        description: err?.message || "Please retry in a moment.",
+      });
+    }
+  }
 
   if (isIndia) {
     return (
       <Button
-        asChild
+        onClick={openCheckout}
+        disabled={processing}
         className="w-full bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 hover:brightness-110 text-amber-950 font-bold text-[12px] h-10 shadow-[0_0_22px_rgba(251,191,36,0.45)]"
       >
-        <a href="https://rzp.io/rzp/qFoLyja" target="_blank" rel="noopener noreferrer">
-          <Beer className="size-4 mr-1.5" />
-          {expired ? "Renew Slot — ₹599 / Week" : "Extend Slot — ₹599 / Week"}
-        </a>
+        <Beer className="size-4 mr-1.5" />
+        {processing
+          ? "Opening Razorpay…"
+          : expired
+            ? `Renew Slot — ${config.display}`
+            : `Extend Slot — ${config.display}`}
       </Button>
     );
   }
 
   return (
     <Button
-      asChild
+      onClick={openCheckout}
+      disabled={processing}
       className="w-full bg-gradient-to-r from-indigo-500 via-violet-500 to-fuchsia-500 hover:brightness-110 text-white font-bold text-[12px] h-10 shadow-[0_0_22px_rgba(139,92,246,0.45)]"
     >
-      <a
-        href="https://buy.stripe.com/test_drinkedin-corporate-weekly"
-        target="_blank"
-        rel="noopener noreferrer"
-        onClick={() => {
-          import("@/lib/analytics").then((m) =>
-            m.trackEngagement("merchant_sponsor_slot_click", { region, currency: "USD" })
-          );
-        }}
-      >
-        <Beer className="size-4 mr-1.5" />
-        Sponsor Local Slot: $9.99 / Week
-      </a>
+      <Beer className="size-4 mr-1.5" />
+      {processing
+        ? "Opening Razorpay…"
+        : `⚡ Sponsor District via International Cards (Razorpay) — ${config.display}`}
     </Button>
   );
 }
