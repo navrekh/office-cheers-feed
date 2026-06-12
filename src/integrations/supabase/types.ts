@@ -44,6 +44,33 @@ export type Database = {
         }
         Relationships: []
       }
+      anonymous_confessions: {
+        Row: {
+          body: string
+          created_at: string
+          handle: string
+          hub: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          handle: string
+          hub: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          handle?: string
+          hub?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       billing_requests: {
         Row: {
           amount_inr: number
@@ -312,6 +339,33 @@ export type Database = {
         }
         Relationships: []
       }
+      poll_votes: {
+        Row: {
+          choice: string
+          created_at: string
+          hub: string
+          id: string
+          user_id: string
+          vote_day: string
+        }
+        Insert: {
+          choice: string
+          created_at?: string
+          hub: string
+          id?: string
+          user_id: string
+          vote_day?: string
+        }
+        Update: {
+          choice?: string
+          created_at?: string
+          hub?: string
+          id?: string
+          user_id?: string
+          vote_day?: string
+        }
+        Relationships: []
+      }
       post_reports: {
         Row: {
           created_at: string
@@ -458,6 +512,36 @@ export type Database = {
         }
         Relationships: []
       }
+      shoutbox_messages: {
+        Row: {
+          body: string
+          created_at: string
+          emoji: string
+          handle: string
+          hub: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          emoji?: string
+          handle: string
+          hub: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          emoji?: string
+          handle?: string
+          hub?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -478,6 +562,15 @@ export type Database = {
         }
         Returns: boolean
       }
+      cast_poll_vote: {
+        Args: { p_choice: string; p_hub: string }
+        Returns: {
+          chill: number
+          danger: number
+          thread: number
+          total: number
+        }[]
+      }
       check_in_at_deal: {
         Args: { p_deal_id: string; p_lat: number; p_lng: number }
         Returns: {
@@ -497,6 +590,15 @@ export type Database = {
           launched: boolean
           target: number
           vote_count: number
+        }[]
+      }
+      get_poll_counts: {
+        Args: { p_hub: string }
+        Returns: {
+          chill: number
+          danger: number
+          thread: number
+          total: number
         }[]
       }
       has_role: {

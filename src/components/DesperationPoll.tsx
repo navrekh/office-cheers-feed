@@ -1,110 +1,115 @@
 import { useEffect, useMemo, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { trackEngagement } from "@/lib/analytics";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/lib/useAuth";
+import { useCurrentCity } from "@/lib/useCurrentCity";
+import { useRealtimeHub } from "@/lib/useRealtimeHub";
 
 type Choice = "danger" | "thread" | "chill";
+type Counts = Record<Choice, number>;
 
 const OPTIONS: Array<{
-  key: Choice;
-  emoji: string;
-  label: string;
-  sub: string;
-  accent: string; // tailwind color classes for ring/fill
-  bar: string;
+  key: Choice; emoji: string; label: string; sub: string; accent: string; bar: string;
 }> = [
-  {
-    key: "danger",
-    emoji: "🔴",
-    label: "Danger Zone",
-    sub: "Ready to bolt",
-    accent:
-      "border-red-400/40 bg-red-500/10 text-red-100 hover:bg-red-500/20 hover:border-red-300/70 shadow-[0_0_18px_rgba(248,113,113,0.25)]",
-    bar: "from-red-500 to-rose-400",
-  },
-  {
-    key: "thread",
-    emoji: "🟡",
-    label: "Hanging by a thread",
-    sub: "One more meeting and I'm gone",
-    accent:
-      "border-amber-400/40 bg-amber-500/10 text-amber-100 hover:bg-amber-500/20 hover:border-amber-300/70 shadow-[0_0_18px_rgba(251,191,36,0.25)]",
-    bar: "from-amber-400 to-yellow-300",
-  },
-  {
-    key: "chill",
-    emoji: "🟢",
-    label: "Chilling",
-    sub: "Manager is away",
-    accent:
-      "border-emerald-400/40 bg-emerald-500/10 text-emerald-100 hover:bg-emerald-500/20 hover:border-emerald-300/70 shadow-[0_0_18px_rgba(16,185,129,0.25)]",
-    bar: "from-emerald-400 to-teal-300",
-  },
+  { key: "danger", emoji: "🔴", label: "Danger Zone", sub: "Ready to bolt",
+    accent: "border-red-400/40 bg-red-500/10 text-red-100 hover:bg-red-500/20 hover:border-red-300/70 shadow-[0_0_18px_rgba(248,113,113,0.25)]",
+    bar: "from-red-500 to-rose-400" },
+  { key: "thread", emoji: "🟡", label: "Hanging by a thread", sub: "One more meeting and I'm gone",
+    accent: "border-amber-400/40 bg-amber-500/10 text-amber-100 hover:bg-amber-500/20 hover:border-amber-300/70 shadow-[0_0_18px_rgba(251,191,36,0.25)]",
+    bar: "from-amber-400 to-yellow-300" },
+  { key: "chill", emoji: "🟢", label: "Chilling", sub: "Manager is away",
+    accent: "border-emerald-400/40 bg-emerald-500/10 text-emerald-100 hover:bg-emerald-500/20 hover:border-emerald-300/70 shadow-[0_0_18px_rgba(16,185,129,0.25)]",
+    bar: "from-emerald-400 to-teal-300" },
 ];
 
-const STORE_KEY = "drinkedin.desperationPoll.v1";
+// LocalStorage fallback so unauthed guests get a "you already saw the result" shape.
+const VOTED_KEY = "drinkedin_has_voted_today";
 
-type Stored = { choice: Choice; ts: number };
+type VotedStash = { hub: string; choice: Choice; day: string };
 
-function loadStored(): Stored | null {
+function todayUTC(): string {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function loadVoted(hub: string): Choice | null {
+  if (typeof window === "undefined") return null;
   try {
-    const raw = localStorage.getItem(STORE_KEY);
+    const raw = localStorage.getItem(VOTED_KEY);
     if (!raw) return null;
-    const parsed = JSON.parse(raw) as Stored;
-    if (Date.now() - parsed.ts > 12 * 3600 * 1000) return null;
-    return parsed;
-  } catch {
-    return null;
-  }
+    const parsed = JSON.parse(raw) as VotedStash;
+    if (parsed.hub !== hub || parsed.day !== todayUTC()) return null;
+    return parsed.choice;
+  } catch { return null; }
+}
+
+function saveVoted(hub: string, choice: Choice) {
+  if (typeof window === "undefined") return;
+  try { localStorage.setItem(VOTED_KEY, JSON.stringify({ hub, choice, day: todayUTC() } as VotedStash)); }
+  catch { /* ignore */ }
 }
 
 export default function DesperationPoll({ onSignUp }: { onSignUp: () => void }) {
+  const { user } = useAuth();
+  const hub = useCurrentCity();
   const [choice, setChoice] = useState<Choice | null>(null);
+  const [counts, setCounts] = useState<Counts>({ danger: 0, thread: 0, chill: 0 });
+  const [busy, setBusy] = useState(false);
 
-  // Seed deterministic-but-fresh baseline counts so the bars look alive.
-  const [counts, setCounts] = useState<Record<Choice, number>>(() => ({
-    danger: 188,
-    thread: 142,
-    chill: 71,
-  }));
-
-  // Hydrate prior vote from localStorage on mount.
+  // Hydrate localStorage stash → instantly render the breakout chart for guests.
   useEffect(() => {
-    const stored = loadStored();
-    if (stored) {
-      setChoice(stored.choice);
-      setCounts((prev) => ({ ...prev, [stored.choice]: prev[stored.choice] + 1 }));
-    }
-  }, []);
+    setChoice(loadVoted(hub));
+  }, [hub]);
 
-  // Simulated live drip while the user is watching the results.
+  // Initial fetch of aggregate counts for this hub.
   useEffect(() => {
-    if (!choice) return;
-    const id = setInterval(() => {
-      setCounts((prev) => {
-        const next = { ...prev };
-        const keys: Choice[] = ["danger", "thread", "chill"];
-        // Bias toward "danger" + "thread" — it's Friday after all.
-        const weights = [0.55, 0.3, 0.15];
-        const r = Math.random();
-        const k = r < weights[0] ? keys[0] : r < weights[0] + weights[1] ? keys[1] : keys[2];
-        next[k] = next[k] + 1;
-        return next;
-      });
-    }, 2200);
-    return () => clearInterval(id);
-  }, [choice]);
+    let cancelled = false;
+    (async () => {
+      const { data, error } = await (supabase as any).rpc("get_poll_counts", { p_hub: hub });
+      if (cancelled) return;
+      if (!error && Array.isArray(data) && data[0]) {
+        const r = data[0] as { danger: number; thread: number; chill: number };
+        setCounts({ danger: r.danger ?? 0, thread: r.thread ?? 0, chill: r.chill ?? 0 });
+      } else {
+        setCounts({ danger: 0, thread: 0, chill: 0 });
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [hub]);
+
+  // Realtime: any INSERT on poll_votes for this hub → +1 the matching bar.
+  useRealtimeHub<{ choice: Choice; hub: string }>("poll_votes", hub, (row) => {
+    if (row.choice !== "danger" && row.choice !== "thread" && row.choice !== "chill") return;
+    setCounts((prev) => ({ ...prev, [row.choice]: prev[row.choice] + 1 }));
+  });
 
   const total = useMemo(() => counts.danger + counts.thread + counts.chill, [counts]);
 
-  function vote(opt: Choice) {
+  async function vote(opt: Choice) {
+    if (busy) return;
+    // Optimistic UI for guests: lock the view + stash locally.
+    saveVoted(hub, opt);
     setChoice(opt);
     setCounts((prev) => ({ ...prev, [opt]: prev[opt] + 1 }));
-    try { localStorage.setItem(STORE_KEY, JSON.stringify({ choice: opt, ts: Date.now() } as Stored)); } catch { /* ignore */ }
-    trackEngagement("desperation_poll_vote", { choice: opt });
+    trackEngagement("desperation_poll_vote", { choice: opt, hub });
+
+    if (!user) return; // guest — wait for them to sign in via the CTA before persisting.
+
+    setBusy(true);
+    const { data, error } = await (supabase as any).rpc("cast_poll_vote", {
+      p_hub: hub,
+      p_choice: opt,
+    });
+    setBusy(false);
+    if (!error && Array.isArray(data) && data[0]) {
+      const r = data[0] as { danger: number; thread: number; chill: number };
+      // Reconcile to authoritative numbers from the DB.
+      setCounts({ danger: r.danger ?? 0, thread: r.thread ?? 0, chill: r.chill ?? 0 });
+    }
   }
 
   function handleSignUp() {
-    trackEngagement("desperation_poll_signup_click", { choice: choice ?? "none" });
+    trackEngagement("desperation_poll_signup_click", { choice: choice ?? "none", hub });
     onSignUp();
   }
 
@@ -113,7 +118,7 @@ export default function DesperationPoll({ onSignUp }: { onSignUp: () => void }) 
       <div className="flex items-start justify-between gap-3 mb-3">
         <div className="min-w-0">
           <h3 className="text-sm font-bold uppercase tracking-wider text-amber-200/90">
-            📊 Today's Desperation Index
+            📊 Today's Desperation Index <span className="text-[10px] text-muted-foreground normal-case tracking-normal">· {hub}</span>
           </h3>
           <p className="mt-1 text-[13px] text-foreground/85 leading-snug">
             How close are you to slamming your laptop and heading out?
@@ -169,15 +174,17 @@ export default function DesperationPoll({ onSignUp }: { onSignUp: () => void }) 
             );
           })}
 
-          <button
-            type="button"
-            onClick={handleSignUp}
-            className="mt-3 w-full text-left rounded-lg border border-amber-400/30 bg-amber-500/10 hover:bg-amber-500/15 hover:border-amber-300/60 transition px-3 py-2.5 text-[12px] leading-snug text-amber-100/95"
-          >
-            🔗 <span className="font-bold">402 techies in your sector</span> are actively escaping right now.{" "}
-            <span className="underline decoration-amber-300/60 underline-offset-2">Tap here to drop an anonymous confession</span>{" "}
-            <span className="text-amber-200/75">(1-Click Google Sign-In)</span>
-          </button>
+          {!user && (
+            <button
+              type="button"
+              onClick={handleSignUp}
+              className="mt-3 w-full text-left rounded-lg border border-amber-400/30 bg-amber-500/10 hover:bg-amber-500/15 hover:border-amber-300/60 transition px-3 py-2.5 text-[12px] leading-snug text-amber-100/95"
+            >
+              🔗 <span className="font-bold">Lock your vote on the live leaderboard</span> and drop an anonymous confession.{" "}
+              <span className="underline decoration-amber-300/60 underline-offset-2">Tap to sign in</span>{" "}
+              <span className="text-amber-200/75">(1-Click Google)</span>
+            </button>
+          )}
         </div>
       )}
     </Card>
