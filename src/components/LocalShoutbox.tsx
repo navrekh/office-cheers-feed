@@ -120,7 +120,7 @@ export default function LocalShoutbox({ requireAuth }: Props) {
         </span>
       </header>
 
-      <div ref={scrollRef} className="max-h-72 min-h-[10rem] overflow-y-auto px-3 py-3 space-y-2.5 scroll-smooth">
+      <div ref={scrollRef} className="max-h-40 min-h-[6rem] overflow-y-auto px-3 py-2 space-y-2 scroll-smooth">
         {msgs.length === 0 ? (
           <p className="text-center text-[11.5px] text-muted-foreground/70 py-6">
             Quiet for a minute in {hub}. Be the first to whisper.
