@@ -1610,10 +1610,10 @@ function Index() {
 
               {/* Friday Desperation Index — 1-click anonymous poll */}
               <DesperationPoll
-                onSignUp={() => requireAuth("Drop an anonymous confession — sign in once and you're masked.")}
+                onSignUp={(reason) => requireAuth(reason ?? "Drop an anonymous confession — sign in once and you're masked.")}
               />
               <DesperationPollModal
-                onSignUp={() => requireAuth("Drop an anonymous confession — sign in once and you're masked.")}
+                onSignUp={(reason) => requireAuth(reason ?? "Drop an anonymous confession — sign in once and you're masked.")}
               />
 
 
