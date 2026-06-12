@@ -1577,6 +1577,11 @@ function Index() {
               </div>
 
 
+              {/* Friday Desperation Index — 1-click anonymous poll */}
+              <DesperationPoll
+                onSignUp={() => requireAuth("Drop an anonymous confession — sign in once and you're masked.")}
+              />
+
               {/* Composer */}
               <Card className="p-4 border-border">
                 <form onSubmit={submitPost} className="space-y-3">
