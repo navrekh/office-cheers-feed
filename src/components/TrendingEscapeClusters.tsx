@@ -38,18 +38,20 @@ function seedPct(name: string) {
 }
 
 export default function TrendingEscapeClusters() {
-  const selectedCity = useCityStore((s) => s.selectedCity);
+  const [selectedCity, setSelectedCity] = useState<CityKey>(() => getSelectedCity());
+  useEffect(() => subscribeCity((c) => setSelectedCity(c)), []);
+
   const companies = useMemo(
     () => COMPANY_MAP[selectedCity] ?? ["Google", "Meta", "Apple", "Netflix"],
     [selectedCity]
   );
 
   const [clusters, setClusters] = useState<Cluster[]>(() =>
-    companies.map((c, i) => ({ name: c, pct: seedPct(c), tag: TAGS[i % TAGS.length] }))
+    companies.map((c: string, i: number) => ({ name: c, pct: seedPct(c), tag: TAGS[i % TAGS.length] }))
   );
 
   useEffect(() => {
-    setClusters(companies.map((c, i) => ({ name: c, pct: seedPct(c), tag: TAGS[i % TAGS.length] })));
+    setClusters(companies.map((c: string, i: number) => ({ name: c, pct: seedPct(c), tag: TAGS[i % TAGS.length] })));
   }, [companies]);
 
   useEffect(() => {
