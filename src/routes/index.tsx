@@ -2170,6 +2170,45 @@ function Index() {
               <AchievementBadges />
             </div>
 
+            <div id="about-drinkedin" className="mt-6 pt-5 border-t border-border/60">
+              <h3 className="text-[13px] font-bold tracking-wide text-foreground flex items-center gap-1.5">
+                <span aria-hidden>ℹ️</span> About the Platform
+              </h3>
+              <p className="mt-2 text-[12px] leading-relaxed text-muted-foreground">
+                DrinkedIn.me was built as a satirical, data-driven sanctuary for global tech
+                professionals surviving the corporate matrix. Our mission is to inject
+                transparency, dark humor, and community routing into the standard Friday
+                afternoon checkout rush.
+              </p>
+
+              <div className="mt-4 rounded-xl border border-amber-400/30 bg-gradient-to-br from-amber-950/40 via-zinc-900/60 to-zinc-950/80 p-4 shadow-inner">
+                <div className="flex items-start gap-3">
+                  <div className="size-12 shrink-0 rounded-full bg-gradient-to-br from-amber-400/30 to-primary/30 border border-amber-300/40 grid place-items-center text-2xl shadow ring-1 ring-amber-300/30">
+                    🧔🏽
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="text-[10px] font-black uppercase tracking-widest text-amber-300/90">
+                      🚀 Founder &amp; Chief Architect
+                    </div>
+                    <div className="mt-0.5 text-[15px] font-bold text-foreground leading-tight">
+                      Navin Mishra
+                    </div>
+                    <div className="mt-1 text-[11px] leading-snug text-amber-100/80 italic">
+                      Enterprise Delivery Executive &amp; SaaS Builder
+                      <br />
+                      <span className="text-amber-200/70">(20+ Years Global Portfolio Leadership)</span>
+                    </div>
+                    <a
+                      href="tel:+919225566589"
+                      className="mt-3 inline-flex items-center gap-1.5 text-[12px] font-semibold text-primary hover:text-primary/80 underline underline-offset-2 transition-colors"
+                    >
+                      📞 Connect directly: +91 9225566589
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             {user && (
               <button
                 type="button"
