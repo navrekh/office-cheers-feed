@@ -42,9 +42,9 @@ export default function DesperationPollModal({ onSignUp }: { onSignUp: (reason?:
         </DialogDescription>
         <div className="rounded-lg overflow-hidden">
           <DesperationPoll
-            onSignUp={() => {
+            onSignUp={(reason) => {
               setOpen(false);
-              onSignUp();
+              onSignUp(reason);
             }}
           />
         </div>
