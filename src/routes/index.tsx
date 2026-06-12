@@ -2468,7 +2468,7 @@ function NavItem({
         {badge ? (
           <span
             key={pulseKey ?? 0}
-            className="absolute -top-1.5 -right-2 bg-amber-500 text-amber-950 text-[9px] font-bold rounded-full min-w-4 h-4 px-1 grid place-items-center shadow-[0_0_10px_rgba(251,191,36,0.8)] animate-notif-glow"
+            className={`absolute -top-1.5 -right-2 bg-amber-500 text-amber-950 text-[9px] font-bold rounded-full min-w-4 h-4 px-1 grid place-items-center shadow-[0_0_10px_rgba(251,191,36,0.8)] animate-notif-glow ${bounce ? "animate-bounce" : ""}`}
           >
             {badge > 99 ? "99+" : badge}
           </span>
