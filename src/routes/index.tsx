@@ -1514,11 +1514,17 @@ function Index() {
               if (logoPressTimer.current) { clearTimeout(logoPressTimer.current); logoPressTimer.current = null; }
             }}
           >
-            <div className="size-9 rounded-md bg-primary text-primary-foreground grid place-items-center font-black text-lg">
+            <div
+              className="size-11 rounded-xl bg-primary text-primary-foreground grid place-items-center font-black text-2xl"
+              style={{ boxShadow: "0 0 24px rgba(251,191,36,0.7), 0 0 48px rgba(251,191,36,0.35)" }}
+            >
               🍻
             </div>
-            <span className="hidden sm:block font-display text-xl font-bold tracking-tight">
-              Drinked<span className="text-primary">In</span>
+            <span
+              className="hidden sm:block font-display text-3xl font-black tracking-tight"
+              style={{ textShadow: "0 0 12px rgba(251,191,36,0.75), 0 0 28px rgba(251,191,36,0.4)" }}
+            >
+              Drinked<span className="text-amber-400">In</span>
             </span>
           </div>
 
