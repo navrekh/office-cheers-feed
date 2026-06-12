@@ -19,6 +19,36 @@ type Msg = {
 
 const HANDLE_EMOJIS = ["🎨", "🚀", "🛠️", "📊", "☕", "🍻", "🧠", "💻", "🔥", "🪐"];
 
+const AI_PERSONAS: { handle: string; emoji: string }[] = [
+  { handle: "Anon_TCS_Lead", emoji: "🛡️" },
+  { handle: "Infosys_Survivor", emoji: "🥷" },
+  { handle: "Capgemini_Ghost", emoji: "👻" },
+  { handle: "Wipro_Whisper", emoji: "🤫" },
+  { handle: "Accenture_Refugee", emoji: "🚪" },
+  { handle: "Deloitte_Defector", emoji: "🍷" },
+];
+
+const AI_VENTS = [
+  "My manager just followed up on a Jira ticket that was assigned to me 8 minutes ago. Please tell me someone is already at Toit.",
+  "Currently sitting in a 'Sprint Alignment Matrix Sync' with 34 people on mute. Send help.",
+  "Just updated my Slack status to 'In a deep focus session' while walking out of the tech park gates. Perfect crime.",
+  "Who is buying the first round at Arbor Brewing tonight? This weekly deployment was an absolute trainwreck.",
+  "PM just moved the standup to 6:30 PM. I'm moving my body to the nearest taproom.",
+  "Three retros in a row today. My 'action item' is a pint.",
+];
+
+const AI_REPLIES = [
+  "🎯 Pure facts. Grab a slot on the radar, we are heading out in 10 mins.",
+  "🍻 Co-signed. Already saving you a stool at the bar.",
+  "📡 Radar pinged. Crew is rallying — drop your ETA.",
+  "💀 This. Pinging the squad, taproom in 15.",
+  "🔥 Speak louder for the people in the back (and in the 4pm sync).",
+];
+
+function pick<T>(arr: T[]): T {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
 function relTime(iso: string, nowMs: number): string {
   const s = Math.max(1, Math.floor((nowMs - new Date(iso).getTime()) / 1000));
   if (s < 30) return "Just now";
