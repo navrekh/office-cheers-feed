@@ -466,6 +466,46 @@ const POLLS: Poll[] = [
       makeChoice("chill", "'I built a secret spatial radar to find local breweries'"),
     ],
   },
+  {
+    id: "eu_friday_sync",
+    question:
+      "Your manager suggests an 'urgent sync' on Friday afternoon, completely violating the sacred weekend boundary. Your move?",
+    choices: [
+      makeChoice("danger", "Close laptop immediately and cite European labor laws"),
+      makeChoice("thread", "Log off silently and pretend my home internet router exploded"),
+      makeChoice("chill", "Run directly to the nearest pub/bistro for an early pint"),
+    ],
+  },
+  {
+    id: "eu_friday_330",
+    question:
+      "It is 3:30 PM on a Friday in Amsterdam/Berlin. What percentage of your engineering team is actually still online?",
+    choices: [
+      makeChoice("danger", "10% (Just the interns who forgot it's Friday)"),
+      makeChoice("thread", "0% (Everyone has already transitioned to the Fredagsbar/Aperitivo)"),
+      makeChoice("chill", "-5% (The Slack statuses are active but everyone is out)"),
+    ],
+  },
+  {
+    id: "eu_cross_border_matrix",
+    question:
+      "Your company sets up a 'Cross-Border Synergy Alignment Matrix' across 4 European time zones. What is the outcome?",
+    choices: [
+      makeChoice("danger", "4 hours of completely missing calendar invites"),
+      makeChoice("thread", "Endlessly debating who has to take the late huddle"),
+      makeChoice("chill", "An immediate reason to close the lid and grab a cold drink"),
+    ],
+  },
+  {
+    id: "eu_with_all_due_respect",
+    question:
+      "What does an email from a London-based director saying 'With all due respect' actually mean?",
+    choices: [
+      makeChoice("danger", "'You are completely wrong and I am highly annoyed'"),
+      makeChoice("thread", "'I didn't read your documentation updates'"),
+      makeChoice("chill", "'Meet me at the Shoreditch pub in 5 minutes'"),
+    ],
+  },
 ];
 
 const VOTED_KEY = (pollId: string) => `drinkedin_voted_poll_${pollId}`;
