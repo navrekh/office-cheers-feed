@@ -87,6 +87,7 @@ import { WorkplaceSelectorCard } from "@/components/WorkplaceSelectorCard";
 import { ProximityAdDispatcher, dealCoord } from "@/components/ProximityAdDispatcher";
 import { useMerchantDeals, type MerchantDeal } from "@/lib/useMerchantDeals";
 import DesperationPoll from "@/components/DesperationPoll";
+import DesperationPollModal from "@/components/DesperationPollModal";
 import BroetryMemeCard from "@/components/BroetryMemeCard";
 import ErrorBoundary from "@/components/ErrorBoundary";
 
@@ -1611,6 +1612,10 @@ function Index() {
               <DesperationPoll
                 onSignUp={() => requireAuth("Drop an anonymous confession — sign in once and you're masked.")}
               />
+              <DesperationPollModal
+                onSignUp={() => requireAuth("Drop an anonymous confession — sign in once and you're masked.")}
+              />
+
 
               {/* Composer */}
               <Card className="p-4 border-border">
