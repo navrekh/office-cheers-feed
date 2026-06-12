@@ -2704,6 +2704,7 @@ function PubsView({
   const today = new Date().toISOString().slice(0, 10);
 
   function checkIn(m: Merchant) {
+    if (!requireAuth("1-click Google Sign-In locks your spot on tonight's group reward list.")) return;
     const state = heading[m.id];
     const alreadyChecked = state && state.date === today && state.mine === true;
     if (alreadyChecked) {
@@ -2712,18 +2713,27 @@ function PubsView({
       });
       return;
     }
+    const nextExtra = (state?.date === today ? state.extra : 0) + 1;
     const next = {
       ...heading,
       [m.id]: {
         date: today,
-        extra: (state?.date === today ? state.extra : 0) + 1,
+        extra: nextExtra,
         mine: true,
       },
     };
     setHeading(next);
     try { localStorage.setItem("drinkedin.headingThere.v1", JSON.stringify(next)); } catch {}
-    toast.success(`You're heading to ${m.name} 🏃‍♂️🍻`);
+    if (nextExtra >= 10) {
+      toast.success(`🎯 Target Hit! 10 techies are heading to ${m.name}`, {
+        description: "Live heat-map data is being routed to their management right now to unlock an exclusive DrinkedIn corporate discount code for tonight!",
+        duration: 7000,
+      });
+    } else {
+      toast.success(`You're heading to ${m.name} 🍻 — ${10 - nextExtra} more to unlock the group reward!`);
+    }
   }
+
 
   return (
     <div className="space-y-3 animate-in fade-in duration-300">
