@@ -283,29 +283,6 @@ export default function LocalShoutbox({ requireAuth, variant = "compact" }: Prop
         )}
       </div>
 
-        {msgs.length === 0 ? (
-          <p className={`text-center text-muted-foreground/70 ${isHero ? "py-12 text-sm" : "py-6 text-[11.5px]"}`}>
-            Quiet for a minute in {hub}. Be the first to whisper.
-          </p>
-        ) : (
-          msgs.map((m) => (
-            <div key={m.id} className="group animate-fade-in">
-              <div className={`flex items-baseline gap-2 ${isHero ? "text-xs" : "text-[11px]"}`}>
-                <span className="font-semibold text-amber-200/90">
-                  <span className="mr-1">{m.emoji}</span>{m.handle}
-                </span>
-                <span className="text-muted-foreground/60">
-                  · {nowMs === 0 ? "" : relTime(m.created_at, nowMs)}
-                </span>
-              </div>
-              <p className={`mt-1 leading-snug text-foreground/90 rounded-lg bg-white/[0.03] border border-white/5 ${isHero ? "text-[14px] px-3 py-2" : "text-[12.5px] px-2.5 py-1.5"}`}>
-                {m.body}
-              </p>
-            </div>
-          ))
-        )}
-      </div>
-
       {/* Compact-mode composer stays at the bottom (used in sidebars). */}
       {!isHero && (
         <form onSubmit={onSubmit} className="flex items-center gap-2 border-t border-white/5 bg-black/30 p-2">
