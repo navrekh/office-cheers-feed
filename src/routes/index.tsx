@@ -1597,14 +1597,14 @@ function Index() {
 
 
       {/* Spacious 2-column social breakroom layout */}
-      <main className="grid grid-cols-1 xl:grid-cols-12 gap-6 p-6 max-w-7xl mx-auto">
+      <main className="grid grid-cols-1 lg:grid-cols-12 gap-6 max-w-6xl mx-auto p-4">
 
         <h1 className="sr-only">
           DrinkedIn — the corporate sanctuary for anonymous coping, viral Broetry, and verified local happy hours
         </h1>
 
         {/* Feed — Social Core */}
-        <section className="col-span-1 xl:col-span-8 space-y-6">
+        <section className="col-span-1 lg:col-span-7 space-y-6">
           {view === "home" && (
             <>
               {/* First-time employees: pick a corporate mask before the feed */}
@@ -1615,556 +1615,27 @@ function Index() {
                 />
               )}
 
-              {/* Spacious social timeline stream — POST-FIRST UX */}
-              <div className="space-y-5">
-                {/* 1. Live Breakroom Chat with composer pinned UP TOP — first thing above the fold */}
-                <ErrorBoundary label="Shoutbox" message="Chat is reconnecting…">
-                  <LocalShoutbox requireAuth={requireAuth} variant="hero" />
-                </ErrorBoundary>
-
-                {/* 2. Daily Vibe strip — header/subtext/accent driven by Weekday Vibe Engine */}
-                <div
-                  className={`relative overflow-hidden rounded-2xl border ${weekdayVibe.accentBorder} px-5 py-3 flex items-start gap-3`}
-                  style={{ background: weekdayVibe.accentGradient }}
-                >
-                  <span className="text-2xl shrink-0">{weekdayVibe.emoji}</span>
-                  <div className="min-w-0 flex-1">
-                    <p className={`text-[10px] uppercase tracking-[0.22em] ${weekdayVibe.accentText} font-semibold`}>
-                      {weekdayVibe.eyebrow}
-                    </p>
-                    <p className="text-sm font-bold text-zinc-100 leading-snug">
-                      {weekdayVibe.header}
-                    </p>
-                    <p className="text-xs text-zinc-300/85 leading-snug mt-0.5">
-                      {weekdayVibe.subtext}
-                    </p>
-                  </div>
-                </div>
-
-                {/* 3. Quick Post teaser — Anonymous Guest entry above the Desperation Index */}
-                <button
-                  type="button"
-                  onClick={() => {
-                    const el = document.getElementById("composer");
-                    el?.scrollIntoView({ behavior: "smooth", block: "start" });
-                    setTimeout(() => {
-                      const ta = el?.querySelector("textarea") as HTMLTextAreaElement | null;
-                      ta?.focus();
-                    }, 350);
-                    import("@/lib/analytics").then((m) =>
-                      m.trackEngagement("quick_post_teaser_click")
-                    );
-                  }}
-                  className="group w-full text-left rounded-2xl border border-amber-400/30 bg-zinc-950/70 hover:bg-zinc-900/80 hover:border-amber-400/60 transition p-3 flex items-center gap-3 shadow-[0_0_28px_-12px_rgba(251,191,36,0.45)]"
-                  aria-label="Open the anonymous post composer"
-                >
-                  <span className="size-11 shrink-0 rounded-full grid place-items-center text-lg font-bold bg-amber-400/15 text-amber-300 ring-2 ring-amber-400/40">
-                    {user ? "🍻" : "🕵️"}
-                  </span>
-                  <span className="flex-1 min-w-0">
-                    <span className="block text-[10px] uppercase tracking-[0.22em] text-amber-300/80 font-semibold">
-                      {user ? (userAlias ?? "You") + " 🎭" : "Anonymous Guest 🕵️‍♂️"}
-                    </span>
-                    <span className="block text-sm text-zinc-400 truncate group-hover:text-zinc-200 transition">
-                      Drop a confession, vent, or hot take…
-                    </span>
-                  </span>
-                  <span className="hidden sm:inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-[12px] font-extrabold text-black bg-amber-400 shadow-[0_0_24px_rgba(251,191,36,0.55)] group-hover:shadow-[0_0_36px_rgba(251,191,36,0.85)] transition">
-                    <Send className="size-3.5" />
-                    Quick Post
-                  </span>
-                </button>
-
-                {/* 4. Desperation Poll */}
-                <ErrorBoundary label="Poll" message="Poll engine is rebooting…">
-                  <div id="poll-rail" className="rounded-3xl border border-fuchsia-400/20 bg-gradient-to-br from-zinc-950/70 via-zinc-900/40 to-zinc-950/70 p-2 shadow-[0_20px_60px_-25px_rgba(217,70,239,0.4)]">
-                    <DesperationPoll
-                      onSignUp={(reason) => requireAuth(reason ?? "Drop an anonymous confession — sign in once and you're masked.")}
-                    />
-                  </div>
-                  <DesperationPollModal
+              {/* Card 1 — TODAY'S DESPERATION INDEX (large, first interactive asset) */}
+              <ErrorBoundary label="Poll" message="Poll engine is rebooting…">
+                <div id="poll-rail" className="rounded-3xl border border-fuchsia-400/30 bg-gradient-to-br from-zinc-950/80 via-zinc-900/50 to-zinc-950/80 p-3 shadow-[0_20px_60px_-25px_rgba(217,70,239,0.45)]">
+                  <p className="px-2 pt-1 pb-2 text-[10px] uppercase tracking-[0.24em] font-bold text-fuchsia-300/90">
+                    Today's Desperation Index · 50-Poll Roulette
+                  </p>
+                  <DesperationPoll
                     onSignUp={(reason) => requireAuth(reason ?? "Drop an anonymous confession — sign in once and you're masked.")}
                   />
-                </ErrorBoundary>
-
-
-                {!dayCtx.isFridayLive && !dayCtx.isWeekend && (
-                  <MidWeekSurvivalTracker />
-                )}
-                <StandupEscapeValve
-                  isAuthenticated={!!user}
-                  onSignUp={(reason) => requireAuth(reason)}
+                </div>
+                <DesperationPollModal
+                  onSignUp={(reason) => requireAuth(reason ?? "Drop an anonymous confession — sign in once and you're masked.")}
                 />
-              </div>
+              </ErrorBoundary>
 
-              {/* Mobile sticky quick-action drawer */}
-              <div className="xl:hidden fixed bottom-0 inset-x-0 z-40 px-3 pb-3 pt-2 pointer-events-none">
-                <div className="pointer-events-auto mx-auto max-w-md rounded-2xl border border-fuchsia-400/30 bg-zinc-950/95 backdrop-blur p-2 shadow-[0_-8px_30px_-10px_rgba(217,70,239,0.4)] grid grid-cols-2 gap-2">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      document.getElementById("poll-rail")?.scrollIntoView({ behavior: "smooth", block: "start" });
-                    }}
-                    className="inline-flex items-center justify-center gap-1.5 rounded-xl px-3 py-2.5 text-[12px] font-bold text-white"
-                    style={{ background: "linear-gradient(135deg,#a855f7,#ec4899)" }}
-                  >
-                    🎲 Quick Vote
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      document.getElementById("composer")?.scrollIntoView({ behavior: "smooth", block: "start" });
-                    }}
-                    className="inline-flex items-center justify-center gap-1.5 rounded-xl px-3 py-2.5 text-[12px] font-bold text-white"
-                    style={{ background: "linear-gradient(135deg,#06b6d4,#8b5cf6)" }}
-                  >
-                    💬 Drop Status
-                  </button>
+              {/* Card 2 — Live Breakroom Chat with capped log height so composer stays above the fold */}
+              <ErrorBoundary label="Shoutbox" message="Chat is reconnecting…">
+                <div className="[&_[data-shoutbox-log]]:max-h-[340px] [&_[data-shoutbox-log]]:overflow-y-auto">
+                  <LocalShoutbox requireAuth={requireAuth} variant="hero" />
                 </div>
-              </div>
-
-
-
-
-
-
-              {/* Composer */}
-              <Card id="composer" className="p-4 border-border scroll-mt-24">
-                <form onSubmit={submitPost} className="space-y-3">
-                  <div className="flex items-start gap-3">
-                    <div className={`size-11 shrink-0 rounded-full grid place-items-center text-lg font-bold transition-colors ${anonymous ? "bg-muted text-muted-foreground" : "bg-primary/20 text-primary"}`}>
-                      {anonymous ? "🎭" : initials(resolvedName.replace(/[^\p{L}\p{N}\s]/gu, "").trim() || "AG")}
-                    </div>
-                    <div className="flex-1 space-y-2 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <Input
-                          value={displayName}
-                          onChange={(e) => setAuthorName(e.target.value)}
-                          placeholder={user ? `${emailPrefix(user.email)} 🎭` : GUEST_NAME}
-                          disabled={anonymous}
-                          className="h-8 text-xs bg-transparent border-dashed flex-1 disabled:opacity-70"
-                        />
-                        <button
-                          type="button"
-                          onClick={randomize}
-                          disabled={anonymous}
-                          title="Randomize a corporate identity"
-                          className="shrink-0 inline-flex items-center gap-1 h-8 px-2.5 rounded-md text-[11px] font-semibold border border-primary/40 text-primary hover:bg-primary/15 hover:border-primary transition disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent"
-                        >
-                          <Shuffle className="size-3.5" />
-                          Randomize
-                        </button>
-                      </div>
-                      <Input
-                        value={displayHeadline}
-                        onChange={(e) => setAuthorHeadline(e.target.value)}
-                        placeholder="Your parody headline"
-                        disabled={anonymous}
-                        className="h-8 text-xs bg-transparent border-dashed italic text-muted-foreground disabled:opacity-70"
-                      />
-                      <Textarea
-                        value={body}
-                        onChange={(e) => setBody(e.target.value)}
-                        placeholder={composerHints[composerHintIdx]}
-                        className="resize-none min-h-24 bg-muted/40 border-border rounded-xl text-[15px] focus-visible:bg-background"
-                      />
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2 flex-wrap pl-14">
-                    <label className={`flex items-center gap-2 cursor-pointer rounded-md px-2.5 py-1.5 border transition ${anonymous ? "border-primary/50 bg-primary/10" : "border-border hover:bg-muted/40"}`}>
-                      <Switch checked={anonymous} onCheckedChange={setAnonymous} aria-label="Post anonymously" />
-                      <span className="text-[11px] font-semibold">
-                        Post Anonymously <span className="text-muted-foreground font-normal">(Confession Mode 🎭)</span>
-                      </span>
-                    </label>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const next = broetrify(body);
-                        setBody(next);
-                        setBroetryPreview(next);
-                        bumpAchievement("broetry", 1);
-                        import("@/lib/analytics").then((m) =>
-                          m.trackEngagement("composer_broetrify_click", { len: next.length })
-                        );
-                        toast.success("Broetry engaged 🚀", { description: "Your hot take is now LinkedIn-grade." });
-                      }}
-                      className="inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 border border-primary/40 bg-primary/10 text-primary text-[11px] font-semibold hover:bg-primary/20 hover:border-primary/60 transition"
-                    >
-                      <Rocket className="size-3.5" />
-                      Make it Broetry 🚀
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const ideas = [
-                          "My pull request got rejected so I am opening a stout at 11 AM.",
-                          "The CEO just announced a pivot to an AI-first strategy that makes no sense.",
-                          "I am currently hiding in the bathroom booth at our corporate office.",
-                          "Our scrum master just called a mandatory 4:45 PM standup on a Friday.",
-                          "I spent the last 3 hours formatting a single PowerPoint slide for a VP.",
-                        ];
-                        const pick = ideas[Math.floor(Math.random() * ideas.length)];
-                        setBody(pick);
-                        toast("Fresh idea poured 💡", { description: "Edit it, or run it through the Broetry engine." });
-                      }}
-                      className="inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 border border-accent/40 bg-accent/10 text-accent-foreground text-[11px] font-semibold hover:bg-accent/20 hover:border-accent/60 transition"
-                    >
-                      <Lightbulb className="size-3.5 text-accent" />
-                      Need an Idea? 💡
-                    </button>
-                    <button
-                      type="button"
-                      onClick={async () => {
-                        try { await navigator.clipboard.writeText(body); toast.success("Copied to clipboard 📋"); } catch { toast.error("Copy failed"); }
-                      }}
-                      disabled={!body.trim()}
-                      className="inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 border border-border bg-muted/30 text-foreground/80 text-[11px] font-semibold hover:bg-muted/60 transition disabled:opacity-40 disabled:cursor-not-allowed"
-                    >
-                      <Copy className="size-3.5" />
-                      Copy Text
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => downloadBroetryCard(body)}
-                      disabled={!body.trim()}
-                      className="inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 border border-border bg-muted/30 text-foreground/80 text-[11px] font-semibold hover:bg-muted/60 hover:text-primary transition disabled:opacity-40 disabled:cursor-not-allowed"
-                    >
-                      <Download className="size-3.5" />
-                      Save to Phone 📷
-                    </button>
-
-                  </div>
-
-                  {/* Broetry meme preview + download card */}
-                  {broetryPreview && (
-                    <ErrorBoundary
-                      label="Broetry Engine"
-                      message="The Broetry engine spilled its kombucha. Tweak your draft and try again — the rest of the dashboard is safe."
-                    >
-                      <BroetryMemeCard text={broetryPreview} />
-                    </ErrorBoundary>
-                  )}
-
-                  {/* Current Vibe matrix */}
-                  <div className="pl-14">
-                    <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold mb-1.5">
-                      Current Vibe
-                    </div>
-                    <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
-                      {VIBES.map((v) => {
-                        const active = vibeId === v.id;
-                        return (
-                          <button
-                            key={v.id}
-                            type="button"
-                            onClick={() => setVibeId(active ? null : v.id)}
-                            title={v.caption}
-                            className={`flex flex-col items-center justify-center gap-0.5 py-2 px-1 rounded-md border text-[10px] font-semibold transition ${
-                              active
-                                ? `bg-gradient-to-br ${v.gradient} ${v.text} border-transparent shadow-[0_0_14px_rgba(251,191,36,0.25)]`
-                                : "border-border text-muted-foreground hover:bg-muted/40 hover:text-foreground"
-                            }`}
-                          >
-                            <span className="text-lg leading-none">{v.emoji}</span>
-                            <span className="leading-tight text-center">{v.label}</span>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-
-                  {/* GIF preview */}
-                  {gifUrl && (
-                    <div className="pl-14">
-                      <div className="relative rounded-xl overflow-hidden border border-border bg-black/40 max-w-md mx-auto">
-                        <img
-                          src={gifUrl}
-                          alt="Selected reaction GIF for your post"
-                          className="w-full h-auto object-contain max-h-72"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setGifUrl(null)}
-                          className="absolute top-2 right-2 size-7 rounded-full bg-black/70 text-white grid place-items-center text-sm hover:bg-black"
-                          aria-label="Remove GIF"
-                        >
-                          ✕
-                        </button>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Uploaded bar pic preview */}
-                  {attachedUrl && (
-                    <div className="pl-14">
-                      <div className="relative inline-block rounded-xl overflow-hidden border border-amber-500/30 bg-black/40">
-                        <img
-                          src={attachedUrl}
-                          alt="Attached photo from your local bar"
-                          loading="lazy"
-                          className="max-h-48 w-auto object-cover"
-                        />
-                        <button
-                          type="button"
-                          onClick={clearAttachedPic}
-                          className="absolute top-1.5 right-1.5 size-6 rounded-full bg-black/70 text-white grid place-items-center text-xs hover:bg-black"
-                          aria-label="Remove attached image"
-                        >
-                          ✕
-                        </button>
-                      </div>
-                    </div>
-                  )}
-
-                  <input
-                    ref={picInputRef}
-                    type="file"
-                    accept="image/jpeg,image/jpg,image/png"
-                    className="hidden"
-                    onChange={(e) => {
-                      const f = e.target.files?.[0];
-                      e.target.value = "";
-                      if (f) void handlePicSelected(f);
-                    }}
-                  />
-
-                  <div className="flex items-center gap-2 flex-wrap pl-14">
-                    <button
-                      type="button"
-                      onClick={() => setGifPickerOpen(true)}
-                      className="inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 border border-primary/40 bg-primary/10 text-primary text-[12px] font-bold hover:bg-primary/20 hover:border-primary/60 transition"
-                    >
-                      🎬 Add GIF
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => triggerPicUpload("bar")}
-                      disabled={uploadingPic !== null || !!attachedUrl}
-                      className="inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 border border-amber-500/40 bg-amber-500/10 text-amber-200 text-[12px] font-bold hover:bg-amber-500/20 hover:border-amber-500/60 transition disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {uploadingPic === "bar" ? "Uploading…" : "📷 Bar pic"}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => triggerPicUpload("tasting")}
-                      disabled={uploadingPic !== null || !!attachedUrl}
-                      className="inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 border border-amber-500/40 bg-amber-500/10 text-amber-200 text-[12px] font-bold hover:bg-amber-500/20 hover:border-amber-500/60 transition disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {uploadingPic === "tasting" ? "Uploading…" : "📷 Tasting"}
-                    </button>
-                    {vibeId && (
-                      <span className="inline-flex items-center gap-1 rounded-full px-2 py-1 text-[10px] font-bold border border-border bg-muted/40">
-                        {getVibe(vibeId)!.emoji} {getVibe(vibeId)!.label}
-                        <button
-                          type="button"
-                          onClick={() => setVibeId(null)}
-                          className="ml-1 text-muted-foreground hover:text-foreground"
-                          aria-label="Clear vibe"
-                        >
-                          ✕
-                        </button>
-                      </span>
-                    )}
-                    <div className="ml-auto">
-                      <Button
-                        type="submit"
-                        disabled={(!body.trim() && !gifUrl && !vibeId && !attachedUrl) || submitting || uploadingPic !== null}
-                        className="group rounded-full px-5 font-semibold text-white border-0 bg-[linear-gradient(135deg,#f59e0b_0%,#f97316_50%,#d97706_100%)] shadow-[0_6px_20px_-4px_rgba(249,115,22,0.55)] transition-all duration-200 hover:scale-[1.03] hover:shadow-[0_0_24px_4px_rgba(249,115,22,0.65),0_0_48px_8px_rgba(234,88,12,0.35)] hover:animate-pulse active:scale-100 disabled:opacity-60 disabled:hover:scale-100 disabled:hover:shadow-[0_6px_20px_-4px_rgba(249,115,22,0.55)] disabled:hover:animate-none"
-                      >
-                        {submitting ? (
-                          <>
-                            <Loader2 className="size-4 animate-spin" />
-                            {t("compose.deploying")}
-                          </>
-                        ) : (
-                          <>
-                            <Send className="size-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-                            {t("compose.eject")}
-                          </>
-                        )}
-                      </Button>
-                    </div>
-                  </div>
-                </form>
-              </Card>
-
-              <TaproomVisualizer />
-
-
-
-              <GifPicker
-                open={gifPickerOpen}
-                onOpenChange={setGifPickerOpen}
-                onSelect={(url) => setGifUrl(url)}
-              />
-
-              {highlightedId && orderedPosts.some((p) => p.id === highlightedId) && (
-                <div className="flex items-center justify-between gap-2 px-3 py-2 rounded-md bg-primary/10 border border-primary/30 text-xs">
-                  <span className="text-foreground/90">
-                    🍻 Showing a shared post at the top.
-                  </span>
-                  <button
-                    onClick={() => {
-                      setHighlightedId(null);
-                      if (typeof window !== "undefined") {
-                        window.history.replaceState({}, "", window.location.pathname);
-                      }
-                    }}
-                    className="font-semibold text-primary hover:underline"
-                  >
-                    Show full feed
-                  </button>
-                </div>
-              )}
-
-              <div className="flex items-center gap-3 text-xs px-1">
-                <div className="inline-flex items-center rounded-full border border-border bg-card p-0.5">
-                  <button
-                    type="button"
-                    onClick={() => setSortMode("recent")}
-                    className={`px-3 py-1 rounded-full text-[11px] font-semibold transition ${
-                      sortMode === "recent"
-                        ? "bg-primary text-primary-foreground shadow"
-                        : "text-muted-foreground hover:text-foreground"
-                    }`}
-                  >
-                    Recent
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setSortMode("top")}
-                    className={`px-3 py-1 rounded-full text-[11px] font-semibold transition inline-flex items-center gap-1 ${
-                      sortMode === "top"
-                        ? "bg-primary text-primary-foreground shadow"
-                        : "text-muted-foreground hover:text-foreground"
-                    }`}
-                  >
-                    🏆 Top Brews
-                  </button>
-                  {user && (
-                    <button
-                      type="button"
-                      onClick={() => setSortMode("mine")}
-                      className={`px-3 py-1 rounded-full text-[11px] font-semibold transition inline-flex items-center gap-1 ${
-                        sortMode === "mine"
-                          ? "bg-amber-400 text-zinc-950 shadow-[0_0_14px_rgba(251,191,36,0.5)]"
-                          : "text-muted-foreground hover:text-foreground"
-                      }`}
-                    >
-                      <Briefcase className="size-3" /> My Desk 💼
-                    </button>
-                  )}
-                  <button
-                    type="button"
-                    onClick={() => setSortMode("tribunal")}
-                    className={`px-3 py-1 rounded-full text-[11px] font-semibold transition inline-flex items-center gap-1 ${
-                      sortMode === "tribunal"
-                        ? "bg-red-500 text-white shadow-[0_0_14px_rgba(239,68,68,0.55)]"
-                        : "text-muted-foreground hover:text-foreground"
-                    }`}
-                  >
-                    ⚖️ HR Tribunal
-                    {posts.filter((p) => p.is_in_tribunal && !p.is_hidden).length > 0 && (
-                      <span className="ml-1 rounded-full bg-red-500/20 px-1.5 text-[10px] font-bold text-red-200">
-                        {posts.filter((p) => p.is_in_tribunal && !p.is_hidden).length}
-                      </span>
-                    )}
-                  </button>
-                </div>
-                <div className="h-px flex-1 bg-border" />
-                <button
-                  type="button"
-                  onClick={() => {
-                    const sims = generateHistoricalSimulatedFeed(30) as unknown as Post[];
-                    setPosts((prev) => [...prev.filter((p) => !isSimulatedPost(p)), ...sims]);
-                  }}
-                  className="inline-flex items-center gap-1 rounded-full border border-emerald-400/40 bg-emerald-500/10 hover:bg-emerald-500/20 hover:border-emerald-300/70 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-emerald-200 transition"
-                  title="Reshuffle the simulated feed with fresh timestamps"
-                >
-                  🔄 Refresh Feed
-                </button>
-                <span className="text-muted-foreground">
-                  {sortMode === "top"
-                    ? "Most Cheered 🍻"
-                    : sortMode === "mine"
-                      ? "Your timeline 💼"
-                      : sortMode === "tribunal"
-                        ? "Community-flagged ⚖️"
-                        : "Freshly poured"}
-                </span>
-              </div>
-
-
-
-
-              {feedError && orderedPosts.length === 0 && (
-                <Card className="p-4 text-center text-xs text-primary/90 border-primary/30 bg-primary/5 animate-pulse">
-                  {feedError}
-                </Card>
-              )}
-
-              {feedLoading && orderedPosts.length === 0 && !feedError && (
-                <div className="space-y-3" aria-label="Loading feed" role="status">
-                  {[0, 1, 2].map((i) => (
-                    <Card key={i} className="p-4 border-border animate-pulse">
-                      <div className="flex items-start gap-3">
-                        <div className="size-11 rounded-full bg-muted/60" />
-                        <div className="flex-1 space-y-2">
-                          <div className="h-3 w-1/3 rounded bg-muted/60" />
-                          <div className="h-2 w-1/2 rounded bg-muted/40" />
-                        </div>
-                      </div>
-                      <div className="mt-4 space-y-2">
-                        <div className="h-2.5 w-11/12 rounded bg-muted/50" />
-                        <div className="h-2.5 w-10/12 rounded bg-muted/50" />
-                        <div className="h-2.5 w-8/12 rounded bg-muted/40" />
-                      </div>
-                      <div className="mt-4 h-32 rounded-lg bg-muted/30" />
-                    </Card>
-                  ))}
-                </div>
-              )}
-
-              {!feedLoading && !feedError && orderedPosts.length === 0 && sortMode === "mine" && (
-                <Card className="p-8 text-center border-amber-400/40 bg-gradient-to-br from-amber-950/30 via-card to-card shadow-[0_0_30px_rgba(251,191,36,0.1)]">
-                  <div className="mx-auto size-14 rounded-2xl bg-amber-500/15 border border-amber-400/40 grid place-items-center text-2xl mb-3">
-                    📝
-                  </div>
-                  <h3 className="font-display text-lg font-bold text-foreground">Your desk is currently clear!</h3>
-                  <p className="text-sm text-muted-foreground mt-2 max-w-sm mx-auto leading-relaxed">
-                    Write your first office coping story above to see its live global telemetry and upvotes tracking here.
-                  </p>
-                </Card>
-              )}
-
-              {!feedLoading && !feedError && orderedPosts.length === 0 && sortMode !== "mine" && (
-                <Card className="p-8 text-center text-sm text-muted-foreground border-border">
-                  Pouring the first round…
-                </Card>
-              )}
-
-
-              <div key={sortMode} className="space-y-3 animate-fade-in">
-                {orderedPosts.map((p) => (
-                  <PostCard
-                    key={p.id}
-                    post={p}
-                    comments={commentsByPost[p.id] || []}
-                    onCheers={cheers}
-                    onOpenComments={(p) => setActiveCommentPostId(p.id)}
-                    onShare={sharePost}
-                    onReport={reportPost}
-                    onTribunalVote={voteTribunal}
-                    cheered={cheeredRef.current.has(p.id)}
-                    highlighted={p.id === highlightedId}
-                    tribunalMode={sortMode === "tribunal"}
-                    isEmployeeOfDay={
-                      sortMode === "recent" && employeeOfDay?.id === p.id
-                    }
-                  />
-                ))}
-              </div>
+              </ErrorBoundary>
             </>
           )}
 
@@ -2183,7 +1654,7 @@ function Index() {
 
 
         {/* Right sidebar — Visual Companions (sticky) */}
-        <aside className="col-span-1 xl:col-span-4 space-y-4 xl:sticky xl:top-20 xl:self-start xl:max-h-[calc(100vh-6rem)] xl:overflow-y-auto xl:pr-1">
+        <aside className="col-span-1 lg:col-span-5 space-y-4 lg:sticky lg:top-20 lg:self-start lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto lg:pr-1">
           <ErrorBoundary label="Radar" message="Radar recalibrating…">
             <div className="rounded-2xl bg-card p-3 shadow-[0_10px_40px_-15px_rgba(0,0,0,0.4)]" style={{ border: "1px solid rgba(255,255,255,0.05)" }}>
               <LiveWorkspaceRadar
@@ -2212,30 +1683,14 @@ function Index() {
             </div>
           </ErrorBoundary>
 
-          <ErrorBoundary label="Clusters" message="Leaderboard offline — refresh to retry.">
-            <TrendingEscapeClusters />
-          </ErrorBoundary>
+          {/* Unified leaderboard stack — Trending Escape Clusters + Desperate Tech Parks */}
+          <div className="rounded-2xl border border-white/5 bg-card/40 p-3 space-y-3">
+            <ErrorBoundary label="Clusters" message="Leaderboard offline — refresh to retry.">
+              <TrendingEscapeClusters />
+            </ErrorBoundary>
+            <BurnoutLeaderboard />
+          </div>
 
-          <BurnoutLeaderboard />
-
-          <Accordion type="single" collapsible className="rounded-2xl border border-white/5 bg-card/60 px-3">
-            <AccordionItem value="happy-hours" className="border-b-0">
-              <AccordionTrigger className="text-xs uppercase tracking-wider text-muted-foreground/80 hover:no-underline">
-                📰 Trending Happy Hours
-              </AccordionTrigger>
-              <AccordionContent>
-                <TrendingHappyHoursList />
-              </AccordionContent>
-            </AccordionItem>
-            <AccordionItem value="vibe" className="border-b-0">
-              <AccordionTrigger className="text-xs uppercase tracking-wider text-muted-foreground/80 hover:no-underline">
-                🎚️ Live Vibe Board
-              </AccordionTrigger>
-              <AccordionContent>
-                <LiveVibeBoard />
-              </AccordionContent>
-            </AccordionItem>
-          </Accordion>
 
           <p className="text-[10px] text-muted-foreground/60 px-2 leading-relaxed">
             DrinkedIn © 2026 · A parody. Please drink responsibly.
