@@ -116,17 +116,52 @@ export function generateSimulatedPost(opts?: { createdAt?: Date }): SimulatedPos
 }
 
 /**
- * Seed a historical timeline (default 30) staggered across the past few hours
- * so the feed greets users with a bustling, time-varied stream of activity.
+ * Fisher-Yates (Knuth) in-place shuffle. Returns a NEW array so callers can
+ * safely store the result in component state without mutating their source.
+ */
+export function shuffleArray<T>(input: readonly T[]): T[] {
+  const out = input.slice();
+  for (let i = out.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [out[i], out[j]] = [out[j], out[i]];
+  }
+  return out;
+}
+
+/**
+ * Rolling relative offset (in minutes ago) for the i-th post in a freshly
+ * shuffled feed of `total` items. The first three slots are pinned to ~1m,
+ * ~5m, ~14m so the top of the feed always feels seconds-fresh on page load;
+ * the remainder eases out smoothly to a maximum of 180 minutes (3h).
+ */
+function rollingMinutesAgo(i: number, total: number): number {
+  const PINNED = [1, 5, 14];
+  if (i < PINNED.length) return PINNED[i] + Math.random() * 0.8;
+  const MAX = 180;
+  const start = PINNED[PINNED.length - 1];
+  const remaining = Math.max(1, total - PINNED.length);
+  // Ease-out curve so later items spread toward 3h without crowding.
+  const t = (i - PINNED.length + 1) / remaining;
+  const eased = Math.pow(t, 0.85);
+  const base = start + eased * (MAX - start);
+  const jitter = (Math.random() - 0.5) * 3;
+  return Math.min(MAX, Math.max(start + 0.5, base + jitter));
+}
+
+/**
+ * Seed a freshly shuffled historical timeline (default 30 items) whose
+ * timestamps roll forward from "just now" up to a 3h ceiling — so every page
+ * load greets the visitor with a hyper-active, freshly-published feed.
  */
 export function generateHistoricalSimulatedFeed(count = 30): SimulatedPost[] {
   const now = Date.now();
-  // Spread roughly across the last 8 hours, slightly randomized.
-  const span = 8 * 60 * 60 * 1000;
-  return Array.from({ length: count }).map((_, i) => {
-    const baseOffset = (span / count) * (i + 1);
-    const jitter = (Math.random() - 0.5) * (span / count);
-    const createdAt = new Date(now - (baseOffset + jitter));
-    return generateSimulatedPost({ createdAt });
+  // Build raw posts first, then Fisher-Yates shuffle for true sequence randomness.
+  const raw = Array.from({ length: count }).map(() => generateSimulatedPost());
+  const shuffled = shuffleArray(raw);
+  return shuffled.map((post, i) => {
+    const minutesAgo = rollingMinutesAgo(i, count);
+    const createdAt = new Date(now - minutesAgo * 60 * 1000);
+    return { ...post, created_at: createdAt.toISOString() };
   });
 }
+

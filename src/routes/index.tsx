@@ -1962,6 +1962,17 @@ function Index() {
                   </button>
                 </div>
                 <div className="h-px flex-1 bg-border" />
+                <button
+                  type="button"
+                  onClick={() => {
+                    const sims = generateHistoricalSimulatedFeed(30) as unknown as Post[];
+                    setPosts((prev) => [...prev.filter((p) => !isSimulatedPost(p)), ...sims]);
+                  }}
+                  className="inline-flex items-center gap-1 rounded-full border border-emerald-400/40 bg-emerald-500/10 hover:bg-emerald-500/20 hover:border-emerald-300/70 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-emerald-200 transition"
+                  title="Reshuffle the simulated feed with fresh timestamps"
+                >
+                  🔄 Refresh Feed
+                </button>
                 <span className="text-muted-foreground">
                   {sortMode === "top"
                     ? "Most Cheered 🍻"
