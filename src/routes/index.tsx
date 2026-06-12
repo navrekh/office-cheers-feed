@@ -373,6 +373,7 @@ function Index() {
     return false;
   }
   const dayCtx = useDayContext();
+  const weekdayVibe = useWeekdayVibe();
   useGeoAutoRoute();
 
 
