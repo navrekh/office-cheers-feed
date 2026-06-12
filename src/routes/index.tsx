@@ -1567,7 +1567,12 @@ function Index() {
                     area: m.area,
                   }))}
                   proximity={proximity}
-                  onProximityChange={setProximity}
+                  onProximityChange={(p) => {
+                    setProximity(p);
+                    import("@/lib/analytics").then((m) =>
+                      m.trackEngagement("radar_proximity_change", { proximity: p })
+                    );
+                  }}
                 />
               </div>
 
