@@ -1586,66 +1586,75 @@ function Index() {
                 />
               )}
 
-              {/* Trending Escape Clusters — live tribal leaderboard above the map */}
-              <ErrorBoundary label="Clusters" message="Leaderboard offline — refresh to retry.">
-                <TrendingEscapeClusters />
-              </ErrorBoundary>
+              {/* Above-the-fold hero grid: visual feeds left, interactive poll rail right */}
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6">
+                <div className="lg:col-span-8 space-y-4 lg:space-y-5 min-w-0">
+                  {/* Trending Escape Clusters — live tribal leaderboard above the map */}
+                  <ErrorBoundary label="Clusters" message="Leaderboard offline — refresh to retry.">
+                    <TrendingEscapeClusters />
+                  </ErrorBoundary>
 
-              {/* Live Workspace Radar — proximity-aware ambient ticker */}
-              <ErrorBoundary
-                label="Radar"
-                message="The radar hit a temporary cloud of corporate synergy. Refreshing the sonar scan…"
-              >
-                <div className="rounded-2xl bg-card p-8 sm:p-10 lg:p-14 shadow-[0_10px_40px_-15px_rgba(0,0,0,0.4)]" style={{ border: "1px solid rgba(255,255,255,0.05)" }}>
-                  <LiveWorkspaceRadar
-                    origin={geoCoords}
-                    geoStatus={geoStatus}
-                    posts={posts.map((p) => ({
-                      id: p.id,
-                      latitude: (p as any).latitude ?? null,
-                      longitude: (p as any).longitude ?? null,
-                      created_at: p.created_at,
-                      author_name: p.author_name,
-                    }))}
-                    merchants={(MERCHANTS[selectedCity] ?? []).map((m) => ({
-                      id: m.id,
-                      name: m.name,
-                      area: m.area,
-                    }))}
-                    proximity={proximity}
-                    onProximityChange={(p) => {
-                      setProximity(p);
-                      import("@/lib/analytics").then((m) =>
-                        m.trackEngagement("radar_proximity_change", { proximity: p })
-                      );
-                    }}
+                  {/* Live Workspace Radar — proximity-aware ambient ticker */}
+                  <ErrorBoundary
+                    label="Radar"
+                    message="The radar hit a temporary cloud of corporate synergy. Refreshing the sonar scan…"
+                  >
+                    <div className="rounded-2xl bg-card p-4 sm:p-5 lg:p-6 shadow-[0_10px_40px_-15px_rgba(0,0,0,0.4)]" style={{ border: "1px solid rgba(255,255,255,0.05)" }}>
+                      <LiveWorkspaceRadar
+                        origin={geoCoords}
+                        geoStatus={geoStatus}
+                        posts={posts.map((p) => ({
+                          id: p.id,
+                          latitude: (p as any).latitude ?? null,
+                          longitude: (p as any).longitude ?? null,
+                          created_at: p.created_at,
+                          author_name: p.author_name,
+                        }))}
+                        merchants={(MERCHANTS[selectedCity] ?? []).map((m) => ({
+                          id: m.id,
+                          name: m.name,
+                          area: m.area,
+                        }))}
+                        proximity={proximity}
+                        onProximityChange={(p) => {
+                          setProximity(p);
+                          import("@/lib/analytics").then((m) =>
+                            m.trackEngagement("radar_proximity_change", { proximity: p })
+                          );
+                        }}
+                      />
+                    </div>
+                  </ErrorBoundary>
+
+                  {/* Mid-Week Survival Tracker — visible Mon–Thu and Fri before
+                      local noon. After Friday noon local, hide so the live radar
+                      + leaderboard take center stage. */}
+                  {!dayCtx.isFridayLive && !dayCtx.isWeekend && (
+                    <MidWeekSurvivalTracker />
+                  )}
+
+                  {/* Daily Standup Escape Valve — live during the 09:30–11:00
+                      weekday window, otherwise collapses to a teaser. */}
+                  <StandupEscapeValve
+                    isAuthenticated={!!user}
+                    onSignUp={(reason) => requireAuth(reason)}
                   />
                 </div>
-              </ErrorBoundary>
 
+                <aside
+                  id="poll-rail"
+                  className="lg:col-span-4 lg:sticky lg:top-20 lg:self-start space-y-4 min-w-0"
+                >
+                  {/* Friday Desperation Index — 1-click anonymous poll */}
+                  <DesperationPoll
+                    onSignUp={(reason) => requireAuth(reason ?? "Drop an anonymous confession — sign in once and you're masked.")}
+                  />
+                  <DesperationPollModal
+                    onSignUp={(reason) => requireAuth(reason ?? "Drop an anonymous confession — sign in once and you're masked.")}
+                  />
+                </aside>
+              </div>
 
-
-              {/* Mid-Week Survival Tracker — visible Mon–Thu and Fri before
-                  local noon. After Friday noon local, hide so the live radar
-                  + leaderboard take center stage. */}
-              {!dayCtx.isFridayLive && !dayCtx.isWeekend && (
-                <MidWeekSurvivalTracker />
-              )}
-
-              {/* Daily Standup Escape Valve — live during the 09:30–11:00
-                  weekday window, otherwise collapses to a teaser. */}
-              <StandupEscapeValve
-                isAuthenticated={!!user}
-                onSignUp={(reason) => requireAuth(reason)}
-              />
-
-              {/* Friday Desperation Index — 1-click anonymous poll */}
-              <DesperationPoll
-                onSignUp={(reason) => requireAuth(reason ?? "Drop an anonymous confession — sign in once and you're masked.")}
-              />
-              <DesperationPollModal
-                onSignUp={(reason) => requireAuth(reason ?? "Drop an anonymous confession — sign in once and you're masked.")}
-              />
 
 
 
