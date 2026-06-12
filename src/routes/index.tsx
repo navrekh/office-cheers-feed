@@ -1565,7 +1565,13 @@ function Index() {
             <NavItem icon={<Users className="size-5" />} label="Bar Hop" active={view === "barhop"} onClick={() => setView("barhop")} />
             <NavItem icon={<Beer className="size-5" />} label="Pubs" active={view === "pubs"} onClick={() => setView("pubs")} />
             <NavItem icon={<MessageSquare className="size-5" />} label="Messages" active={view === "messages"} onClick={() => setView("messages")} />
-            <NavItem icon={<Bell className="size-5" />} label="Notifications" badge={notifUnread} pulseKey={notifPulseKey} active={notifOpen} onClick={() => setNotifOpen((o) => !o)} />
+            <NavItem icon={<Bell className="size-5" />} label="Notifications" badge={notifUnread} pulseKey={notifPulseKey} bounce={notifBounce} active={notifOpen} onClick={() => {
+              setNotifUnread(0);
+              setNotifBounce(false);
+              setNotifOpen((o) => !o);
+              toast("🔔 Tech park alerts cleared! You are fully caught up with the pod.");
+            }} />
+
             <button
               type="button"
               onClick={() => {
