@@ -294,6 +294,7 @@ function Index() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [commentsByPost, setCommentsByPost] = useState<Record<string, Comment[]>>({});
   const [body, setBody] = useState("");
+  const [broetryPreview, setBroetryPreview] = useState<string | null>(null);
   // Identity is resolved from the live Supabase session below. `authorName`
   // is ONLY populated when the user explicitly types a custom pseudonym
   // (Priority 1). Otherwise the cascade falls through to email prefix →
