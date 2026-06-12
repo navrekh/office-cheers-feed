@@ -121,7 +121,7 @@ export default function LocalShoutbox({ requireAuth, variant = "compact" }: Prop
         </span>
       </header>
 
-      <div ref={scrollRef} className={`overflow-y-auto px-4 py-3 space-y-2 scroll-smooth ${isHero ? "max-h-[28rem] min-h-[18rem]" : "max-h-40 min-h-[6rem] px-3 py-2"}`}>
+      <div ref={scrollRef} className={`overflow-y-auto px-4 py-3 space-y-2 scroll-smooth ${isHero ? "max-h-[220px] min-h-[160px]" : "max-h-40 min-h-[6rem] px-3 py-2"}`}>
         {msgs.length === 0 ? (
           <p className={`text-center text-muted-foreground/70 ${isHero ? "py-12 text-sm" : "py-6 text-[11.5px]"}`}>
             Quiet for a minute in {hub}. Be the first to whisper.
