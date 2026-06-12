@@ -2043,20 +2043,8 @@ function Index() {
         {/* Right sidebar */}
         <aside className="hidden lg:block col-span-3 space-y-6">
           <BurnoutLeaderboard />
-          <Card className="p-4 border-border">
-            <div className="flex items-center justify-between mb-3">
-              <h4 className="text-sm font-semibold flex items-center gap-1.5">
-                <TrendingUp className="size-4 text-primary" /> Trending Happy Hours
-              </h4>
-              <MoreHorizontal className="size-4 text-muted-foreground" />
-            </div>
-            <ul className="space-y-3 text-xs">
-              <TrendItem title="O'Malley's $3 Lager Thursday" meta="Midtown · 1.2k professionals attending" />
-              <TrendItem title="The Rooftop @ FinTech HQ" meta="Today 4pm · 'Mandatory team bonding'" />
-              <TrendItem title="Whiskey & Wireframes" meta="Designers only · pretzel bar included" />
-              <TrendItem title="Margarita Standup" meta="Daily 11:30am · attendance optional" />
-            </ul>
-          </Card>
+          <TrendingHappyHoursList />
+
 
           <LiveVibeBoard />
 
