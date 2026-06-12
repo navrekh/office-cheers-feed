@@ -8,6 +8,7 @@ import {
   type CityKey,
   type Merchant,
 } from "@/lib/cityStore";
+import { useHubVernacular } from "@/lib/hubVernacular";
 
 type Vibe = {
   density: "Low" | "Medium" | "High" | "Packed";

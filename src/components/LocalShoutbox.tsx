@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth, corporateCodename } from "@/lib/useAuth";
 import { trackEngagement } from "@/lib/analytics";
 import { useCurrentCity } from "@/lib/useCurrentCity";
+import { useHubVernacular } from "@/lib/hubVernacular";
 import { useRealtimeHub } from "@/lib/useRealtimeHub";
 
 type Msg = {
@@ -34,6 +35,7 @@ type Props = { requireAuth: (reason?: string) => boolean };
 export default function LocalShoutbox({ requireAuth }: Props) {
   const { user } = useAuth();
   const hub = useCurrentCity();
+  const vern = useHubVernacular();
   const [msgs, setMsgs] = useState<Msg[]>([]);
   const [text, setText] = useState("");
   const [sending, setSending] = useState(false);
@@ -149,7 +151,7 @@ export default function LocalShoutbox({ requireAuth }: Props) {
           onChange={(e) => setText(e.target.value)}
           onFocus={onFocus}
           maxLength={280}
-          placeholder="Whisper anonymously to the breakroom..."
+          placeholder={vern.shoutboxPlaceholder}
           className="flex-1 h-9 px-3 rounded-lg bg-white/[0.04] border border-white/10 text-[12.5px] text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:border-amber-400/40 focus:bg-white/[0.06] transition"
         />
         <button
