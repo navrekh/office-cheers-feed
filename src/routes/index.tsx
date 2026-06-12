@@ -2058,6 +2058,10 @@ function Index() {
         </aside>
       </main>
 
+      <RecentEscapesTicker />
+
+
+
       {devOpen && (
         <Suspense fallback={null}>
           <DevConsole onClose={() => setDevOpen(false)} />
