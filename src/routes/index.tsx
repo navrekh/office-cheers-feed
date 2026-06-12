@@ -348,8 +348,9 @@ function Index() {
   const [sortMode, setSortMode] = useState<"recent" | "top" | "mine" | "tribunal">("recent");
   const [proximity, setProximity] = useState<ProximityFilter>("city");
   const [notifOpen, setNotifOpen] = useState(false);
-  const [notifUnread, setNotifUnread] = useState<number>(4);
+  const [notifUnread, setNotifUnread] = useState<number>(0);
   const [notifPulseKey, setNotifPulseKey] = useState<number>(0);
+  const [notifBounce, setNotifBounce] = useState<boolean>(false);
   const seenMilestonesRef = useRef<Set<string>>(new Set());
   const seenCommentIdsRef = useRef<Set<string>>(new Set());
   const [activeCommentPostId, setActiveCommentPostId] = useState<string | null>(null);
