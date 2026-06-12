@@ -2719,7 +2719,11 @@ function PubsView({
             aria-label="Filter by city"
             value={selectedCity}
             onChange={(e) => {
-              import("@/lib/cityStore").then((m) => m.setSelectedCity(e.target.value as CityKey));
+              const next = e.target.value as CityKey;
+              import("@/lib/cityStore").then((m) => m.setSelectedCity(next));
+              import("@/lib/analytics").then((m) =>
+                m.trackEngagement("city_sector_change", { city: next, surface: "trending" })
+              );
             }}
             className="hidden sm:block h-8 text-xs bg-muted/40 border border-border rounded-md px-2 cursor-pointer hover:border-amber-400/50"
           >
