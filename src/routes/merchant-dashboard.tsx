@@ -493,10 +493,10 @@ function detectRegion(lang: string): string {
 }
 
 function SubscribeCta({ expired }: { expired: boolean }) {
-  const t = useT();
   const { lang } = useI18n();
   const region = detectRegion(lang);
   const isIndia = region === "IN";
+
 
   if (isIndia) {
     return (
