@@ -33,11 +33,12 @@ function genItem(seed: number): string {
 }
 
 export default function RecentEscapesTicker() {
-  const [seed, setSeed] = useState(() => Math.floor(Math.random() * 9999));
+  // Start with a deterministic seed so SSR and first client render match,
+  // then jitter to randomized seed after mount to avoid hydration mismatch.
+  const [seed, setSeed] = useState(0);
 
-  // Rotate the seed every ~7s so the marquee silently rebuilds with fresh
-  // micro-broadcasts. The CSS handles the scroll — zero JS per frame.
   useEffect(() => {
+    setSeed(Math.floor(Math.random() * 9999));
     const id = setInterval(() => setSeed((s) => s + 1), 7000);
     return () => clearInterval(id);
   }, []);
