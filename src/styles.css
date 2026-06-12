@@ -219,6 +219,16 @@
   border-color: color-mix(in oklab, var(--color-primary) 70%, transparent) !important;
 }
 
+@keyframes reaction-float {
+  0%   { transform: translate(-50%, 0) scale(0.6); opacity: 0; }
+  20%  { opacity: 1; }
+  100% { transform: translate(-50%, -60px) scale(1.4); opacity: 0; }
+}
+@utility animate-reaction-float {
+  animation: reaction-float 0.9s ease-out forwards;
+}
+
+
 @keyframes notif-glow {
   0%, 100% {
     box-shadow: 0 0 6px color-mix(in oklab, var(--color-primary) 50%, transparent);

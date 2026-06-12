@@ -2533,22 +2533,26 @@ const PostCard = memo(function PostCard({
       )}
       <div className="p-4 pb-2 flex items-start gap-3">
         <div
-          className={`size-12 rounded-full grid place-items-center font-bold text-base shrink-0 ${
+          className={`size-12 rounded-full grid place-items-center font-bold text-base shrink-0 ring-2 ${
             isMerchant
-              ? "bg-gradient-to-br from-amber-500/50 to-amber-300/30 text-amber-100 text-xl"
-              : "bg-gradient-to-br from-primary/40 to-accent/40"
+              ? "bg-gradient-to-br from-amber-500/50 to-amber-300/30 text-amber-100 text-xl ring-amber-400/40"
+              : "bg-gradient-to-br from-primary/40 to-accent/40 ring-primary/30"
           }`}
         >
           {isMerchant ? "🍺" : initials(post.author_name)}
         </div>
         <div className="flex-1 min-w-0">
-          <div className="font-semibold text-[15px] leading-tight truncate flex items-center gap-1.5">
-            <span className={`truncate ${isMerchant ? "text-amber-100" : ""}`}>
+          <div className="text-[15px] leading-tight flex items-center gap-1.5 flex-wrap">
+            <span className={`font-bold truncate ${isMerchant ? "text-amber-100" : "text-foreground"}`}>
               {isMerchant ? post.author_name : (post.author_name || "Anonymous Colleague 🎭")}
             </span>
             {!isMerchant && (
-              <span className="text-xs font-normal text-muted-foreground shrink-0">· 1st</span>
+              <span className="text-[13px] font-normal text-muted-foreground truncate">
+                @{(post.author_name || "anon").toLowerCase().replace(/[^a-z0-9]+/g, "_").slice(0, 18)}
+              </span>
             )}
+            <span className="text-muted-foreground/70 text-[13px]">·</span>
+            <span className="text-[13px] text-muted-foreground/90">{timeAgo(post.created_at)}</span>
             {companyTag && (
               <span
                 className="inline-flex items-center gap-1 rounded-md border border-fuchsia-400/40 bg-fuchsia-500/10 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-fuchsia-200 shrink-0"
@@ -2573,11 +2577,8 @@ const PostCard = memo(function PostCard({
               </span>
             )}
           </div>
-          <div className={`text-xs line-clamp-1 ${isMerchant ? "text-amber-200/80" : "text-muted-foreground"}`}>
+          <div className={`text-[12px] line-clamp-1 ${isMerchant ? "text-amber-200/80" : "text-muted-foreground/80"}`}>
             {post.author_headline}
-          </div>
-          <div className="text-[11px] text-muted-foreground/80 mt-0.5 flex items-center gap-1">
-            {timeAgo(post.created_at)} · <span>{isMerchant ? "📣" : "🌍"}</span>
           </div>
         </div>
         <button className="text-muted-foreground hover:text-foreground p-1">
@@ -2640,29 +2641,8 @@ const PostCard = memo(function PostCard({
         );
       })()}
 
-      <div className="px-4 pb-2 flex items-center justify-between text-xs text-muted-foreground">
-        <div className="flex items-center gap-1.5">
-          <span className="size-4 rounded-full bg-primary grid place-items-center text-[9px]">
-            🍻
-          </span>
-          <span
-            key={bumpKey}
-            className={bumpKey > 0 ? "animate-count-bump inline-block" : "inline-block"}
-          >
-            {post.cheers_count.toLocaleString()} cheers
-          </span>
-        </div>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => onOpenComments(post)}
-            className="hover:text-foreground hover:underline"
-          >
-            {comments.length} comments
-          </button>
-          <span>·</span>
-          <span>{Math.floor(post.cheers_count / 12)} reposts</span>
-        </div>
-      </div>
+      {/* Quick emoji reaction strip — taps fire floating emoji */}
+      <ReactionStrip postId={post.id} onCheers={() => !cheered && onCheers(post)} />
 
       {isMerchant && (post.merchant_website || post.map_query_address) && (
         <div className="px-4 pb-3 grid grid-cols-2 gap-2">
@@ -2689,35 +2669,49 @@ const PostCard = memo(function PostCard({
         </div>
       )}
 
-      <div className="border-t border-border grid grid-cols-4 px-2 py-1">
-        <ActionBtn
+      {/* Twitter-style action bar — icon + count, color-themed hovers */}
+      <div className="border-t border-border px-2 py-1 flex items-center justify-between">
+        <SocialAction
+          onClick={() => onOpenComments(post)}
+          label="Reply"
+          count={comments.length}
+          icon={<MessageCircle className="size-[18px]" />}
+          theme="sky"
+        />
+        <SocialAction
+          onClick={() => onShare(post.id)}
+          label="Repost"
+          count={Math.floor(post.cheers_count / 12)}
+          icon={<Share2 className="size-[18px]" />}
+          theme="emerald"
+        />
+        <SocialAction
           onClick={handleCheers}
           active={cheered}
-          label="Cheers 🍻"
+          label="Cheers"
+          count={post.cheers_count}
+          countKey={bumpKey}
           icon={
             <span
               key={popKey}
               className={`inline-flex ${popKey > 0 ? "animate-cheers-pop" : ""}`}
             >
-              <Beer className="size-5" />
+              <Beer className="size-[18px]" />
             </span>
           }
+          theme="amber"
         />
-        <ActionBtn
-          label="Comment"
-          icon={<MessageCircle className="size-5" />}
-          onClick={() => onOpenComments(post)}
-        />
-        <ActionBtn onClick={() => onShare(post.id)} label="Share" icon={<Share2 className="size-5" />} />
-        <ActionBtn
+        <SocialAction
           onClick={() => {
             void triggerDownloadPostCard(post);
             toast.success("Post card downloading 🍻");
           }}
-          label="Download"
-          icon={<Download className="size-5" />}
+          label="Save"
+          icon={<Download className="size-[18px]" />}
+          theme="fuchsia"
         />
       </div>
+
 
       {!isMerchant && (
         <div className="border-t border-border px-4 py-2 flex items-center justify-between gap-3 text-[11px] text-muted-foreground">
@@ -2865,6 +2859,99 @@ function ActionBtn({
     </button>
   );
 }
+
+const SOCIAL_THEME = {
+  amber:    { text: "group-hover:text-amber-300",    bg: "group-hover:bg-amber-400/10",    active: "text-amber-300" },
+  sky:      { text: "group-hover:text-sky-300",      bg: "group-hover:bg-sky-400/10",      active: "text-sky-300" },
+  emerald:  { text: "group-hover:text-emerald-300",  bg: "group-hover:bg-emerald-400/10",  active: "text-emerald-300" },
+  fuchsia:  { text: "group-hover:text-fuchsia-300",  bg: "group-hover:bg-fuchsia-400/10",  active: "text-fuchsia-300" },
+} as const;
+
+function SocialAction({
+  icon, label, count, countKey, onClick, active, theme = "sky",
+}: {
+  icon: React.ReactNode;
+  label: string;
+  count?: number;
+  countKey?: number;
+  onClick?: () => void;
+  active?: boolean;
+  theme?: keyof typeof SOCIAL_THEME;
+}) {
+  const t = SOCIAL_THEME[theme];
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={label}
+      className={`group flex-1 flex items-center justify-center gap-2 py-2 text-[13px] font-semibold transition ${active ? t.active : "text-muted-foreground"}`}
+    >
+      <span className={`size-8 rounded-full grid place-items-center transition ${t.bg} ${active ? "" : t.text}`}>
+        {icon}
+      </span>
+      {typeof count === "number" && count > 0 && (
+        <span
+          key={countKey}
+          className={`tabular-nums ${countKey ? "animate-count-bump" : ""} ${active ? "" : t.text}`}
+        >
+          {count >= 1000 ? `${(count / 1000).toFixed(1)}k` : count}
+        </span>
+      )}
+    </button>
+  );
+}
+
+const QUICK_REACTIONS = ["🍻", "😂", "💀", "🔥", "😭"] as const;
+
+function ReactionStrip({ postId, onCheers }: { postId: string; onCheers: () => void }) {
+  const [counts, setCounts] = useState<Record<string, number>>({});
+  const [floats, setFloats] = useState<{ id: number; emoji: string; x: number }[]>([]);
+  function tap(emoji: string) {
+    setCounts((c) => ({ ...c, [emoji]: (c[emoji] ?? 0) + 1 }));
+    const id = Date.now() + Math.random();
+    setFloats((f) => [...f, { id, emoji, x: 20 + Math.random() * 60 }]);
+    setTimeout(() => setFloats((f) => f.filter((x) => x.id !== id)), 900);
+    if (emoji === "🍻") onCheers();
+    import("@/lib/analytics").then((m) =>
+      m.trackEngagement("post_reaction", { post_id: postId, emoji })
+    );
+  }
+  return (
+    <div className="relative px-4 pb-2 pt-1 flex items-center gap-1.5 flex-wrap">
+      {QUICK_REACTIONS.map((e) => {
+        const n = counts[e] ?? 0;
+        return (
+          <button
+            key={e}
+            type="button"
+            onClick={() => tap(e)}
+            aria-label={`React with ${e}`}
+            className={`inline-flex items-center gap-1 rounded-full border px-2 py-1 text-[12px] font-bold transition hover:scale-110 active:scale-95 ${
+              n > 0
+                ? "border-amber-400/60 bg-amber-400/10 text-amber-200 shadow-[0_0_14px_-4px_rgba(251,191,36,0.55)]"
+                : "border-border bg-muted/30 text-muted-foreground hover:text-foreground hover:bg-muted/60"
+            }`}
+          >
+            <span className="text-[14px] leading-none">{e}</span>
+            {n > 0 && <span className="tabular-nums">{n}</span>}
+          </button>
+        );
+      })}
+      <div className="pointer-events-none absolute inset-0 overflow-visible">
+        {floats.map((f) => (
+          <span
+            key={f.id}
+            className="absolute bottom-2 text-2xl animate-reaction-float"
+            style={{ left: `${f.x}%` }}
+          >
+            {f.emoji}
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 
 function TrendItem({ title, meta }: { title: string; meta: string }) {
   return (
