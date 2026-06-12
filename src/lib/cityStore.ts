@@ -6,7 +6,10 @@ export type CityKey =
   | "Hyderabad"
   | "Pune"
   | "Mumbai"
-  | "Delhi";
+  | "Delhi"
+  | "Austin"
+  | "San Francisco"
+  | "London";
 
 export const CITIES: CityKey[] = [
   "Bangalore",
@@ -15,6 +18,9 @@ export const CITIES: CityKey[] = [
   "Pune",
   "Mumbai",
   "Delhi",
+  "Austin",
+  "San Francisco",
+  "London",
 ];
 
 export type Merchant = {
