@@ -1495,6 +1495,10 @@ function Index() {
             </span>
           </div>
 
+          <div className="ml-2 hidden sm:block">
+            <HubSelector />
+          </div>
+
           <div className="flex-1 max-w-md ml-2">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
