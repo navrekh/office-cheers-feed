@@ -2261,6 +2261,7 @@ const PostCard = memo(function PostCard({
 }) {
   const [popKey, setPopKey] = useState(0);
   const [bumpKey, setBumpKey] = useState(0);
+  const decoded = useMemo(() => decodePostMeta(post.body_text), [post.body_text]);
 
   function handleCheers() {
     if (!cheered) {
@@ -2272,6 +2273,8 @@ const PostCard = memo(function PostCard({
 
   const isSim = isSimulatedPost(post);
   const isMerchant = post.post_type === "merchant";
+  const companyTag = !isMerchant ? decoded.meta.company : undefined;
+
 
   return (
     <Card
