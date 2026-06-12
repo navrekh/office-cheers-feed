@@ -2806,13 +2806,31 @@ function PubsView({
                 </div>
               </div>
 
-              <div className="rounded-md border border-amber-400/30 bg-amber-500/5 p-2.5 mb-3">
-                <div className="text-[10px] uppercase tracking-wider font-bold text-amber-300 mb-1">
-                  🔥 Flash Happy Hour
+              <div className="rounded-md border border-fuchsia-400/40 bg-gradient-to-br from-fuchsia-500/10 via-amber-500/5 to-fuchsia-500/10 p-2.5 mb-3">
+                <div className="text-[10px] uppercase tracking-wider font-bold text-fuchsia-200 mb-1">
+                  👥 Community Push Deal: Unlock 10% Off Group Reward
                 </div>
                 <p className="text-[12px] leading-snug text-foreground/90">
                   {m.deal}
                 </p>
+                {extra >= 10 ? (
+                  <div className="mt-2 rounded border border-emerald-400/50 bg-emerald-500/15 px-2 py-1.5 text-[11px] text-emerald-100 leading-snug animate-pulse">
+                    🎯 <span className="font-bold">Target Hit!</span> 10 techies are heading here. Routing live heat-map data to management to unlock tonight's exclusive DrinkedIn corporate discount code.
+                  </div>
+                ) : (
+                  <div className="mt-2">
+                    <div className="flex items-center justify-between text-[10px] text-fuchsia-100/80 mb-1">
+                      <span><span className="font-bold text-fuchsia-100">{extra}</span> / 10 heading here tonight</span>
+                      <span>{Math.max(0, 10 - extra)} more to unlock</span>
+                    </div>
+                    <div className="h-1.5 rounded-full bg-fuchsia-950/60 overflow-hidden">
+                      <div
+                        className="h-full bg-gradient-to-r from-fuchsia-400 to-amber-300 transition-all duration-500"
+                        style={{ width: `${Math.min(100, (extra / 10) * 100)}%` }}
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div className="flex items-center gap-1.5 text-[11px] text-amber-200/90 mb-3">
@@ -2831,11 +2849,13 @@ function PubsView({
                   className={`h-9 text-[12px] font-bold ${
                     checked
                       ? "bg-emerald-500/20 hover:bg-emerald-500/20 text-emerald-200 border border-emerald-400/40 cursor-default"
-                      : "bg-amber-500 hover:bg-amber-400 text-amber-950"
+                      : "bg-gradient-to-r from-fuchsia-500 to-amber-500 hover:brightness-110 text-amber-950"
                   }`}
+                  title={checked ? "You're on tonight's list" : "1-click Google Sign-In required"}
                 >
-                  {checked ? "On the list ✓" : "I'm heading 🏃‍♂️"}
+                  {checked ? "On the list ✓" : "I'm heading here 🍻"}
                 </Button>
+
                 <a
                   href={mapsDirectionsUrl(m.map_query_address)}
                   target="_blank"
