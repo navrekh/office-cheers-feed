@@ -154,6 +154,10 @@ import BurnoutLeaderboard from "@/components/BurnoutLeaderboard";
 import LocalShoutbox from "@/components/LocalShoutbox";
 import ClaimTicketModal from "@/components/ClaimTicketModal";
 import AuthModal from "@/components/AuthModal";
+import MidWeekSurvivalTracker from "@/components/MidWeekSurvivalTracker";
+import HubLandingModal from "@/components/HubLandingModal";
+import StandupEscapeValve from "@/components/StandupEscapeValve";
+import { useDayContext } from "@/lib/dailyMatrix";
 import CommentsDrawer from "@/components/CommentsDrawer";
 import { useAuth, emailPrefix, signOut, corporateCodename } from "@/lib/useAuth";
 import { useProfile, isRlsDenied, RLS_DENIED_MESSAGE } from "@/lib/useProfile";
@@ -364,6 +368,8 @@ function Index() {
     setAuthModalOpen(true);
     return false;
   }
+  const dayCtx = useDayContext();
+
 
   // Post-OAuth merchant claim + role-based redirect
   const navigate = useNavigate();
@@ -1608,6 +1614,20 @@ function Index() {
 
 
 
+              {/* Mid-Week Survival Tracker — visible Mon–Thu and Fri before
+                  local noon. After Friday noon local, hide so the live radar
+                  + leaderboard take center stage. */}
+              {!dayCtx.isFridayLive && !dayCtx.isWeekend && (
+                <MidWeekSurvivalTracker />
+              )}
+
+              {/* Daily Standup Escape Valve — live during the 09:30–11:00
+                  weekday window, otherwise collapses to a teaser. */}
+              <StandupEscapeValve
+                isAuthenticated={!!user}
+                onSignUp={(reason) => requireAuth(reason)}
+              />
+
               {/* Friday Desperation Index — 1-click anonymous poll */}
               <DesperationPoll
                 onSignUp={(reason) => requireAuth(reason ?? "Drop an anonymous confession — sign in once and you're masked.")}
@@ -1615,6 +1635,7 @@ function Index() {
               <DesperationPollModal
                 onSignUp={(reason) => requireAuth(reason ?? "Drop an anonymous confession — sign in once and you're masked.")}
               />
+
 
 
               {/* Composer */}
@@ -2109,6 +2130,8 @@ function Index() {
       </footer>
 
       <PanicButton />
+      <HubLandingModal />
+
 
 
 
