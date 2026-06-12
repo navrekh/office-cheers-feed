@@ -147,6 +147,7 @@ import CorporateBingo from "@/components/CorporateBingo";
 import VerifiedWateringHole from "@/components/VerifiedWateringHole";
 import LiveVibeBoard from "@/components/LiveVibeBoard";
 import HappyHourTicker from "@/components/HappyHourTicker";
+import HappyHourCountdown from "@/components/HappyHourCountdown";
 import TrendingHappyHoursList from "@/components/TrendingHappyHoursList";
 import RecentEscapesTicker from "@/components/RecentEscapesTicker";
 import PanicButton from "@/components/PanicButton";
@@ -1558,6 +1559,7 @@ function Index() {
             </button>
           </nav>
         </div>
+        <HappyHourCountdown />
         <HappyHourTicker />
       </header>
 
