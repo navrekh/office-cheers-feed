@@ -160,6 +160,7 @@ import MidWeekSurvivalTracker from "@/components/MidWeekSurvivalTracker";
 import HubLandingModal from "@/components/HubLandingModal";
 import StandupEscapeValve from "@/components/StandupEscapeValve";
 import { useDayContext } from "@/lib/dailyMatrix";
+import { useWeekdayVibe } from "@/lib/weekdayVibe";
 import { useGeoAutoRoute } from "@/lib/geoRouting";
 import CommentsDrawer from "@/components/CommentsDrawer";
 import { useAuth, emailPrefix, signOut, corporateCodename } from "@/lib/useAuth";
