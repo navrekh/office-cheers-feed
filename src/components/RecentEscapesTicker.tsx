@@ -54,9 +54,11 @@ export default function RecentEscapesTicker() {
   }, []);
 
   const items = useMemo(() => {
-    const out: string[] = [];
-    for (let i = 0; i < 14; i++) out.push(genItem(seed + i));
-    return out;
+    const raw: string[] = [];
+    for (let i = 0; i < 14; i++) raw.push(genItem(seed + i));
+    // Fisher-Yates shuffle so the ticker sequence differs every page load.
+    const shuffled = shuffleArray(raw);
+    return shuffled.map((text, i) => `${text} · ${stampFor(i)}`);
   }, [seed]);
 
   // Duplicate the run so the marquee can loop seamlessly.
