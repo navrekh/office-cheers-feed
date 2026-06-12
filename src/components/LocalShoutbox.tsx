@@ -145,6 +145,9 @@ export default function LocalShoutbox({ requireAuth, variant = "compact" }: Prop
       created_at: new Date().toISOString(),
     };
     setMsgs((prev) => [...prev.slice(-49), fake]);
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new CustomEvent("drinkedin:ai-chat-message"));
+    }
   }
 
   // Ambient bot vents every 45-90s while feed is quiet (< 3 real msgs).
@@ -154,6 +157,7 @@ export default function LocalShoutbox({ requireAuth, variant = "compact" }: Prop
       const delay = 45000 + Math.random() * 45000;
       const t = setTimeout(() => {
         if (cancelled) return;
+        let appended = false;
         setMsgs((prev) => {
           const realCount = prev.filter((m) => !m.id.startsWith("ai-")).length;
           if (realCount < 3) {
@@ -167,10 +171,14 @@ export default function LocalShoutbox({ requireAuth, variant = "compact" }: Prop
               body: pick(weekdayVibe.aiVents.length ? weekdayVibe.aiVents : AI_VENTS),
               created_at: new Date().toISOString(),
             };
+            appended = true;
             return [...prev.slice(-49), fake];
           }
           return prev;
         });
+        if (appended && typeof window !== "undefined") {
+          window.dispatchEvent(new CustomEvent("drinkedin:ai-chat-message"));
+        }
         schedule();
       }, delay);
       return t;

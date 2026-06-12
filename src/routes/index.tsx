@@ -348,8 +348,9 @@ function Index() {
   const [sortMode, setSortMode] = useState<"recent" | "top" | "mine" | "tribunal">("recent");
   const [proximity, setProximity] = useState<ProximityFilter>("city");
   const [notifOpen, setNotifOpen] = useState(false);
-  const [notifUnread, setNotifUnread] = useState<number>(4);
+  const [notifUnread, setNotifUnread] = useState<number>(0);
   const [notifPulseKey, setNotifPulseKey] = useState<number>(0);
+  const [notifBounce, setNotifBounce] = useState<boolean>(false);
   const seenMilestonesRef = useRef<Set<string>>(new Set());
   const seenCommentIdsRef = useRef<Set<string>>(new Set());
   const [activeCommentPostId, setActiveCommentPostId] = useState<string | null>(null);
@@ -1383,6 +1384,21 @@ function Index() {
     if (notifOpen) setNotifUnread(0);
   }, [notifOpen]);
 
+  // AI Chat Persona Engine → bell badge bridge.
+  // LocalShoutbox dispatches "drinkedin:ai-chat-message" whenever an automated
+  // persona vent or reply is appended; bump the badge and trigger a 1s bounce.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const onAi = () => {
+      setNotifUnread((n) => n + 1);
+      setNotifPulseKey((k) => k + 1);
+      setNotifBounce(true);
+      window.setTimeout(() => setNotifBounce(false), 1000);
+    };
+    window.addEventListener("drinkedin:ai-chat-message", onAi);
+    return () => window.removeEventListener("drinkedin:ai-chat-message", onAi);
+  }, []);
+
   // Live personal stats derived from the user's real posts
   useEffect(() => {
     if (!user) {
@@ -1549,7 +1565,13 @@ function Index() {
             <NavItem icon={<Users className="size-5" />} label="Bar Hop" active={view === "barhop"} onClick={() => setView("barhop")} />
             <NavItem icon={<Beer className="size-5" />} label="Pubs" active={view === "pubs"} onClick={() => setView("pubs")} />
             <NavItem icon={<MessageSquare className="size-5" />} label="Messages" active={view === "messages"} onClick={() => setView("messages")} />
-            <NavItem icon={<Bell className="size-5" />} label="Notifications" badge={notifUnread} pulseKey={notifPulseKey} active={notifOpen} onClick={() => setNotifOpen((o) => !o)} />
+            <NavItem icon={<Bell className="size-5" />} label="Notifications" badge={notifUnread} pulseKey={notifPulseKey} bounce={notifBounce} active={notifOpen} onClick={() => {
+              setNotifUnread(0);
+              setNotifBounce(false);
+              setNotifOpen((o) => !o);
+              toast("🔔 Tech park alerts cleared! You are fully caught up with the pod.");
+            }} />
+
             <button
               type="button"
               onClick={() => {
@@ -2421,6 +2443,7 @@ function NavItem({
   active,
   badge,
   pulseKey,
+  bounce,
   onClick,
 }: {
   icon: React.ReactNode;
@@ -2428,6 +2451,7 @@ function NavItem({
   active?: boolean;
   badge?: number;
   pulseKey?: number;
+  bounce?: boolean;
   onClick?: () => void;
 }) {
   return (
@@ -2444,7 +2468,7 @@ function NavItem({
         {badge ? (
           <span
             key={pulseKey ?? 0}
-            className="absolute -top-1.5 -right-2 bg-amber-500 text-amber-950 text-[9px] font-bold rounded-full min-w-4 h-4 px-1 grid place-items-center shadow-[0_0_10px_rgba(251,191,36,0.8)] animate-notif-glow"
+            className={`absolute -top-1.5 -right-2 bg-amber-500 text-amber-950 text-[9px] font-bold rounded-full min-w-4 h-4 px-1 grid place-items-center shadow-[0_0_10px_rgba(251,191,36,0.8)] animate-notif-glow ${bounce ? "animate-bounce" : ""}`}
           >
             {badge > 99 ? "99+" : badge}
           </span>
