@@ -2405,6 +2405,12 @@ function Index() {
         }}
         onSubmit={(pid, text) => addComment(pid, text)}
       />
+
+      <footer className="mt-10 border-t border-white/5 px-4 py-4 text-center">
+        <p className="mx-auto max-w-4xl text-[10px] leading-relaxed text-gray-600 opacity-60">
+          Disclaimer: DrinkedIn.me is an independent, satirical parody platform and social commentary engine exploring global tech culture. All company names, metrics, and references listed herein are purely fictional user-generated aggregations or parodies. This platform is not affiliated with, endorsed by, or associated with Tata Consultancy Services (TCS), Infosys, Capgemini, Cognizant, or any other corporation mentioned.
+        </p>
+      </footer>
     </div>
   );
 }
