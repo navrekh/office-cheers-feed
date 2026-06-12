@@ -1655,6 +1655,34 @@ function Index() {
                 </aside>
               </div>
 
+              {/* Mobile sticky quick-action drawer */}
+              <div className="lg:hidden fixed bottom-0 inset-x-0 z-40 px-3 pb-3 pt-2 pointer-events-none">
+                <div className="pointer-events-auto mx-auto max-w-md rounded-2xl border border-fuchsia-400/30 bg-zinc-950/95 backdrop-blur p-2 shadow-[0_-8px_30px_-10px_rgba(217,70,239,0.4)] grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      document.getElementById("poll-rail")?.scrollIntoView({ behavior: "smooth", block: "start" });
+                    }}
+                    className="inline-flex items-center justify-center gap-1.5 rounded-xl px-3 py-2.5 text-[12px] font-bold text-white"
+                    style={{ background: "linear-gradient(135deg,#a855f7,#ec4899)" }}
+                  >
+                    🎲 Quick Vote
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      document.getElementById("composer")?.scrollIntoView({ behavior: "smooth", block: "start" });
+                    }}
+                    className="inline-flex items-center justify-center gap-1.5 rounded-xl px-3 py-2.5 text-[12px] font-bold text-white"
+                    style={{ background: "linear-gradient(135deg,#06b6d4,#8b5cf6)" }}
+                  >
+                    💬 Drop Status
+                  </button>
+                </div>
+              </div>
+
+
+
 
 
 
