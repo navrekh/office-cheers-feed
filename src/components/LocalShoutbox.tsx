@@ -19,6 +19,36 @@ type Msg = {
 
 const HANDLE_EMOJIS = ["🎨", "🚀", "🛠️", "📊", "☕", "🍻", "🧠", "💻", "🔥", "🪐"];
 
+const AI_PERSONAS: { handle: string; emoji: string }[] = [
+  { handle: "Anon_TCS_Lead", emoji: "🛡️" },
+  { handle: "Infosys_Survivor", emoji: "🥷" },
+  { handle: "Capgemini_Ghost", emoji: "👻" },
+  { handle: "Wipro_Whisper", emoji: "🤫" },
+  { handle: "Accenture_Refugee", emoji: "🚪" },
+  { handle: "Deloitte_Defector", emoji: "🍷" },
+];
+
+const AI_VENTS = [
+  "My manager just followed up on a Jira ticket that was assigned to me 8 minutes ago. Please tell me someone is already at Toit.",
+  "Currently sitting in a 'Sprint Alignment Matrix Sync' with 34 people on mute. Send help.",
+  "Just updated my Slack status to 'In a deep focus session' while walking out of the tech park gates. Perfect crime.",
+  "Who is buying the first round at Arbor Brewing tonight? This weekly deployment was an absolute trainwreck.",
+  "PM just moved the standup to 6:30 PM. I'm moving my body to the nearest taproom.",
+  "Three retros in a row today. My 'action item' is a pint.",
+];
+
+const AI_REPLIES = [
+  "🎯 Pure facts. Grab a slot on the radar, we are heading out in 10 mins.",
+  "🍻 Co-signed. Already saving you a stool at the bar.",
+  "📡 Radar pinged. Crew is rallying — drop your ETA.",
+  "💀 This. Pinging the squad, taproom in 15.",
+  "🔥 Speak louder for the people in the back (and in the 4pm sync).",
+];
+
+function pick<T>(arr: T[]): T {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
 function relTime(iso: string, nowMs: number): string {
   const s = Math.max(1, Math.floor((nowMs - new Date(iso).getTime()) / 1000));
   if (s < 30) return "Just now";
@@ -83,6 +113,60 @@ export default function LocalShoutbox({ requireAuth, variant = "compact" }: Prop
     if (el) el.scrollTop = el.scrollHeight;
   }, [msgs.length]);
 
+  // --- AI Persona Engine ---
+  function injectAiMessage(body?: string) {
+    const persona = pick(AI_PERSONAS);
+    const fake: Msg = {
+      id: `ai-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+      hub,
+      user_id: "ai-bot",
+      handle: persona.handle,
+      emoji: persona.emoji,
+      body: body ?? pick(AI_VENTS),
+      created_at: new Date().toISOString(),
+    };
+    setMsgs((prev) => [...prev.slice(-49), fake]);
+  }
+
+  // Ambient bot vents every 45-90s while feed is quiet (< 3 real msgs).
+  useEffect(() => {
+    let cancelled = false;
+    function schedule() {
+      const delay = 45000 + Math.random() * 45000;
+      const t = setTimeout(() => {
+        if (cancelled) return;
+        setMsgs((prev) => {
+          const realCount = prev.filter((m) => !m.id.startsWith("ai-")).length;
+          if (realCount < 3) {
+            const persona = pick(AI_PERSONAS);
+            const fake: Msg = {
+              id: `ai-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+              hub,
+              user_id: "ai-bot",
+              handle: persona.handle,
+              emoji: persona.emoji,
+              body: pick(AI_VENTS),
+              created_at: new Date().toISOString(),
+            };
+            return [...prev.slice(-49), fake];
+          }
+          return prev;
+        });
+        schedule();
+      }, delay);
+      return t;
+    }
+    const initial = setTimeout(() => injectAiMessage(), 3000);
+    const handle = schedule();
+    return () => {
+      cancelled = true;
+      clearTimeout(initial);
+      clearTimeout(handle);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hub]);
+
+
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
     const v = text.trim();
@@ -100,6 +184,8 @@ export default function LocalShoutbox({ requireAuth, variant = "compact" }: Prop
     if (error) return;
     setText("");
     trackEngagement("shoutbox_send", { hub });
+    // Instant AI reply 2s later to reward the new whisperer.
+    setTimeout(() => injectAiMessage(pick(AI_REPLIES)), 2000);
   }
 
   function onFocus() {
@@ -121,7 +207,7 @@ export default function LocalShoutbox({ requireAuth, variant = "compact" }: Prop
         </span>
       </header>
 
-      <div ref={scrollRef} className={`overflow-y-auto px-4 py-3 space-y-2 scroll-smooth ${isHero ? "max-h-[28rem] min-h-[18rem]" : "max-h-40 min-h-[6rem] px-3 py-2"}`}>
+      <div ref={scrollRef} className={`overflow-y-auto px-4 py-3 space-y-2 scroll-smooth ${isHero ? "max-h-[220px] min-h-[160px]" : "max-h-40 min-h-[6rem] px-3 py-2"}`}>
         {msgs.length === 0 ? (
           <p className={`text-center text-muted-foreground/70 ${isHero ? "py-12 text-sm" : "py-6 text-[11.5px]"}`}>
             Quiet for a minute in {hub}. Be the first to whisper.
