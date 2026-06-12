@@ -150,6 +150,7 @@ import RecentEscapesTicker from "@/components/RecentEscapesTicker";
 import PanicButton from "@/components/PanicButton";
 import HubSelector from "@/components/HubSelector";
 import BurnoutLeaderboard from "@/components/BurnoutLeaderboard";
+import LocalShoutbox from "@/components/LocalShoutbox";
 import ClaimTicketModal from "@/components/ClaimTicketModal";
 import AuthModal from "@/components/AuthModal";
 import CommentsDrawer from "@/components/CommentsDrawer";
@@ -2057,6 +2058,7 @@ function Index() {
         {/* Right sidebar */}
         <aside className="hidden lg:block col-span-3 space-y-6">
           <BurnoutLeaderboard />
+          <LocalShoutbox requireAuth={requireAuth} />
           <TrendingHappyHoursList />
 
 
