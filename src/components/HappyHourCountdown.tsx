@@ -21,18 +21,26 @@ function getNowParts(timeZone: string) {
 }
 
 export default function HappyHourCountdown() {
+  const [mounted, setMounted] = useState(false);
   const [city, setCity] = useState<CityKey>(() => getSelectedCity());
-  const [tick, setTick] = useState(0);
+  const [, setTick] = useState(0);
 
   useEffect(() => {
+    setMounted(true);
     setCity(getSelectedCity());
     return subscribeCity(setCity);
   }, []);
 
   useEffect(() => {
+    if (!mounted) return;
     const id = setInterval(() => setTick((t) => t + 1), 1000);
     return () => clearInterval(id);
-  }, []);
+  }, [mounted]);
+
+  if (!mounted) {
+    return <div className="w-full h-[26px] border-b border-cyan-400/20 bg-zinc-950/80" aria-hidden />;
+  }
+
 
   const tz = HUB_BY_CITY[city]?.timezones?.[0] ?? Intl.DateTimeFormat().resolvedOptions().timeZone;
   const { h, m, s } = getNowParts(tz);
