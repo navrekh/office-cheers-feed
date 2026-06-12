@@ -204,7 +204,7 @@ export default function LocalShoutbox({ requireAuth, variant = "compact" }: Prop
     setText("");
     trackEngagement("shoutbox_send", { hub });
     // Instant AI reply 2s later to reward the new whisperer.
-    setTimeout(() => injectAiMessage(pick(AI_REPLIES)), 2000);
+    setTimeout(() => injectAiMessage(pick(weekdayVibe.aiReplies.length ? weekdayVibe.aiReplies : AI_REPLIES)), 2000);
   }
 
   function onFocus() {
