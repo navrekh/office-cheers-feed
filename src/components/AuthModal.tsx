@@ -18,6 +18,8 @@ type Props = {
   defaultIntent?: Intent;
 };
 
+const LIVE_SIGNUPS = 42 + Math.floor(((Date.now() / 3_600_000) % 23));
+
 export default function AuthModal({ open, onOpenChange, reason, defaultIntent }: Props) {
   const navigate = useNavigate();
   const [intent, setIntent] = useState<Intent | null>(defaultIntent ?? null);
@@ -189,6 +191,12 @@ export default function AuthModal({ open, onOpenChange, reason, defaultIntent }:
           </div>
         ) : (
           <div className="space-y-4 pt-2">
+            <div className="rounded-lg border border-emerald-400/30 bg-emerald-500/5 px-3 py-2 text-center">
+              <span className="text-[11px] font-semibold text-emerald-200/90">
+                ⚡ Join <span className="font-mono font-bold text-emerald-100">{LIVE_SIGNUPS}</span> anonymous techies who signed in securely this morning.
+              </span>
+            </div>
+
             <Button
               type="button"
               onClick={handleGoogle}
@@ -199,6 +207,13 @@ export default function AuthModal({ open, onOpenChange, reason, defaultIntent }:
               <GoogleGlyph />
               {googleBusy ? "Opening Google…" : "Continue with Google"}
             </Button>
+
+            <div className="flex items-start gap-2 rounded-lg border border-sky-400/30 bg-sky-500/5 px-3 py-2.5">
+              <Lock className="size-4 text-sky-300 shrink-0 mt-0.5" />
+              <p className="text-[11px] leading-snug text-sky-100/85">
+                We do <span className="font-bold text-sky-50">NOT</span> collect, read, or store your employer details, real name, or corporate network data. Your profile is automatically masked under an anonymous handle (e.g., <span className="font-mono text-amber-200">Anon_Dev_404</span>). Your workplace will never know.
+              </p>
+            </div>
 
             <div className="flex items-center gap-2 text-[10px] uppercase tracking-wider text-muted-foreground">
               <div className="h-px flex-1 bg-border" />

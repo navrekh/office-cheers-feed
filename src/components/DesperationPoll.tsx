@@ -488,7 +488,7 @@ function simulatedCounts(pollId: string, hub: string): Record<Tone, number> {
   return { danger: a, thread: b, chill: c };
 }
 
-export default function DesperationPoll({ onSignUp }: { onSignUp: () => void }) {
+export default function DesperationPoll({ onSignUp }: { onSignUp: (reason?: string) => void }) {
   const { user } = useAuth();
   const hub = useCurrentCity();
 
@@ -538,13 +538,34 @@ export default function DesperationPoll({ onSignUp }: { onSignUp: () => void }) 
     });
   }
 
-  function handleSignUp() {
+  function handleSignUp(reason?: string) {
     trackEngagement("desperation_poll_signup_click", {
       poll_id: poll?.id ?? "none",
       choice: choice ?? "none",
       hub,
     });
-    onSignUp();
+    onSignUp(reason);
+  }
+
+  function rollNextPoll() {
+    if (!user) {
+      handleSignUp(
+        "Want to keep rolling the burnout matrix? Lock in your permanent anonymous streak with 1-click Google Sign-In.",
+      );
+      return;
+    }
+    // Signed-in users get a fresh random poll (different from the current one).
+    const pool = poll ? POLLS.filter((p) => p.id !== poll.id) : POLLS;
+    const next = pool[Math.floor(Math.random() * pool.length)];
+    setPoll(next);
+    setCounts(simulatedCounts(next.id, hub));
+    try {
+      const prior = localStorage.getItem(VOTED_KEY(next.id));
+      setChoice(prior === "danger" || prior === "thread" || prior === "chill" ? prior : null);
+    } catch {
+      setChoice(null);
+    }
+    trackEngagement("desperation_poll_roll_next", { poll_id: next.id, hub });
   }
 
   return (
@@ -622,11 +643,20 @@ export default function DesperationPoll({ onSignUp }: { onSignUp: () => void }) 
             );
           })}
 
+          <button
+            type="button"
+            onClick={rollNextPoll}
+            className="mt-3 w-full inline-flex items-center justify-center gap-2 rounded-lg border border-fuchsia-400/40 bg-gradient-to-r from-fuchsia-500/15 via-purple-500/15 to-fuchsia-500/15 hover:from-fuchsia-500/25 hover:to-fuchsia-500/25 hover:border-fuchsia-300/70 transition px-3 py-2.5 text-[12px] font-bold tracking-wide text-fuchsia-100 shadow-[0_0_20px_rgba(217,70,239,0.18)]"
+          >
+            🎲 Roll Next Funny Poll
+            {!user && <span className="text-[10px] font-normal text-fuchsia-200/75">(1-click Google)</span>}
+          </button>
+
           {!user && (
             <button
               type="button"
-              onClick={handleSignUp}
-              className="mt-3 w-full text-left rounded-lg border border-amber-400/30 bg-amber-500/10 hover:bg-amber-500/15 hover:border-amber-300/60 transition px-3 py-2.5 text-[12px] leading-snug text-amber-100/95"
+              onClick={() => handleSignUp()}
+              className="mt-2 w-full text-left rounded-lg border border-amber-400/30 bg-amber-500/10 hover:bg-amber-500/15 hover:border-amber-300/60 transition px-3 py-2.5 text-[12px] leading-snug text-amber-100/95"
             >
               🔗{" "}
               <span className="font-bold">

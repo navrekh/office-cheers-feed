@@ -8,7 +8,7 @@ const SHOWN_KEY = "drinkedin_poll_modal_shown_at";
 const COOLDOWN_MS = 1000 * 60 * 60 * 6; // 6 hours
 const DELAY_MS = 1100;
 
-export default function DesperationPollModal({ onSignUp }: { onSignUp: () => void }) {
+export default function DesperationPollModal({ onSignUp }: { onSignUp: (reason?: string) => void }) {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
@@ -42,9 +42,9 @@ export default function DesperationPollModal({ onSignUp }: { onSignUp: () => voi
         </DialogDescription>
         <div className="rounded-lg overflow-hidden">
           <DesperationPoll
-            onSignUp={() => {
+            onSignUp={(reason) => {
               setOpen(false);
-              onSignUp();
+              onSignUp(reason);
             }}
           />
         </div>
