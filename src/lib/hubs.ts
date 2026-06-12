@@ -32,7 +32,7 @@ export const HUBS: Hub[] = [
     region: "India",
     currency: "INR",
     coords: { lat: 12.9716, lng: 77.5946 },
-    zones: ["Indiranagar", "Whitefield", "Koramangala", "HSR Layout", "Marathahalli"],
+    zones: ["Electronic City", "Whitefield", "Manyata Tech Park", "Indiranagar", "Koramangala", "HSR Layout"],
     timezones: ["Asia/Kolkata", "Asia/Calcutta"],
   },
   {
@@ -45,6 +45,7 @@ export const HUBS: Hub[] = [
     zones: [
       "Hinjawadi Infotech Park",
       "Magarpatta Cybercity",
+      "Yerwada IT Park",
       "Koregaon Park",
       "Kalyani Nagar",
     ],
@@ -108,7 +109,7 @@ export const HUBS: Hub[] = [
     region: "North America",
     currency: "USD",
     coords: { lat: 37.7749, lng: -122.4194 },
-    zones: ["SOMA", "Financial District", "Mission Bay"],
+    zones: ["SOMA", "Mountain View", "Cupertino", "Financial District", "Mission Bay"],
     timezones: ["America/Los_Angeles"],
   },
   // ---- Europe ----
