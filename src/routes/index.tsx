@@ -2443,6 +2443,7 @@ function NavItem({
   active,
   badge,
   pulseKey,
+  bounce,
   onClick,
 }: {
   icon: React.ReactNode;
@@ -2450,6 +2451,7 @@ function NavItem({
   active?: boolean;
   badge?: number;
   pulseKey?: number;
+  bounce?: boolean;
   onClick?: () => void;
 }) {
   return (
