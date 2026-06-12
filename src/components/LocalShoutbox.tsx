@@ -19,14 +19,31 @@ type Msg = {
 
 const HANDLE_EMOJIS = ["🎨", "🚀", "🛠️", "📊", "☕", "🍻", "🧠", "💻", "🔥", "🪐"];
 
-const AI_PERSONAS: { handle: string; emoji: string }[] = [
-  { handle: "Anon_TCS_Lead", emoji: "🛡️" },
-  { handle: "Infosys_Survivor", emoji: "🥷" },
-  { handle: "Capgemini_Ghost", emoji: "👻" },
-  { handle: "Wipro_Whisper", emoji: "🤫" },
-  { handle: "Accenture_Refugee", emoji: "🚪" },
-  { handle: "Deloitte_Defector", emoji: "🍷" },
+const AI_PERSONAS: { handle: string; emoji: string; color: string }[] = [
+  { handle: "Anon_TCS_Lead", emoji: "💻", color: "text-sky-300" },
+  { handle: "Infosys_Survivor", emoji: "⚡", color: "text-emerald-300" },
+  { handle: "Capgemini_Ghost", emoji: "🕶️", color: "text-fuchsia-300" },
+  { handle: "Wipro_Whisper", emoji: "☕", color: "text-amber-300" },
+  { handle: "Accenture_Refugee", emoji: "🚪", color: "text-cyan-300" },
+  { handle: "Deloitte_Defector", emoji: "🍷", color: "text-rose-300" },
 ];
+
+// Stable color assignment per handle so real users get a consistent neon tag too.
+const HANDLE_PALETTE = [
+  "text-amber-300",
+  "text-cyan-300",
+  "text-fuchsia-300",
+  "text-emerald-300",
+  "text-sky-300",
+  "text-rose-300",
+  "text-violet-300",
+  "text-lime-300",
+];
+function handleColor(handle: string): string {
+  let h = 0;
+  for (let i = 0; i < handle.length; i++) h = (h * 31 + handle.charCodeAt(i)) >>> 0;
+  return HANDLE_PALETTE[h % HANDLE_PALETTE.length];
+}
 
 const AI_VENTS = [
   "My manager just followed up on a Jira ticket that was assigned to me 8 minutes ago. Please tell me someone is already at Toit.",
@@ -34,7 +51,7 @@ const AI_VENTS = [
   "Just updated my Slack status to 'In a deep focus session' while walking out of the tech park gates. Perfect crime.",
   "Who is buying the first round at Arbor Brewing tonight? This weekly deployment was an absolute trainwreck.",
   "PM just moved the standup to 6:30 PM. I'm moving my body to the nearest taproom.",
-  "Three retros in a row today. My 'action item' is a pint.",
+  "Skip-level just asked for a 'quick async update' at 4:55pm. My async update is a cold lager.",
 ];
 
 const AI_REPLIES = [
