@@ -88,6 +88,7 @@ import { ProximityAdDispatcher, dealCoord } from "@/components/ProximityAdDispat
 import { useMerchantDeals, type MerchantDeal } from "@/lib/useMerchantDeals";
 import DesperationPoll from "@/components/DesperationPoll";
 import BroetryMemeCard from "@/components/BroetryMemeCard";
+import ErrorBoundary from "@/components/ErrorBoundary";
 
 // ---------- Client-side spam guard ----------
 const RATE_KEY = "drinkedin.rate.posts";
