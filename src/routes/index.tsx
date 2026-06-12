@@ -1532,13 +1532,10 @@ function Index() {
         <h1 className="sr-only">
           DrinkedIn — the corporate sanctuary for anonymous coping, viral Broetry, and verified local happy hours
         </h1>
-        {/* Left sidebar */}
-        <aside className="hidden lg:block col-span-2" aria-hidden="true">
-          {/* Intentional negative space — profile lives in the top-right avatar */}
-        </aside>
+        {/* Left column intentionally collapsed on widescreen — profile lives in the top-right avatar */}
 
         {/* Feed */}
-        <section className="col-span-12 lg:col-span-7 space-y-8 lg:space-y-10 lg:py-2">
+        <section className="col-span-12 lg:col-span-9 space-y-8 lg:space-y-10 lg:py-2">
           {view === "home" && (
             <>
               {/* First-time employees: pick a corporate mask before the feed */}
