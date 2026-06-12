@@ -1654,7 +1654,7 @@ function Index() {
 
 
         {/* Right sidebar — Visual Companions (sticky) */}
-        <aside className="col-span-1 xl:col-span-4 space-y-4 xl:sticky xl:top-20 xl:self-start xl:max-h-[calc(100vh-6rem)] xl:overflow-y-auto xl:pr-1">
+        <aside className="col-span-1 lg:col-span-5 space-y-4 lg:sticky lg:top-20 lg:self-start lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto lg:pr-1">
           <ErrorBoundary label="Radar" message="Radar recalibrating…">
             <div className="rounded-2xl bg-card p-3 shadow-[0_10px_40px_-15px_rgba(0,0,0,0.4)]" style={{ border: "1px solid rgba(255,255,255,0.05)" }}>
               <LiveWorkspaceRadar
