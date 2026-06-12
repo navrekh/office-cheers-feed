@@ -184,6 +184,8 @@ export default function LocalShoutbox({ requireAuth, variant = "compact" }: Prop
     if (error) return;
     setText("");
     trackEngagement("shoutbox_send", { hub });
+    // Instant AI reply 2s later to reward the new whisperer.
+    setTimeout(() => injectAiMessage(pick(AI_REPLIES)), 2000);
   }
 
   function onFocus() {
