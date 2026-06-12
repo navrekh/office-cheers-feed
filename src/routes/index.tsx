@@ -1683,30 +1683,14 @@ function Index() {
             </div>
           </ErrorBoundary>
 
-          <ErrorBoundary label="Clusters" message="Leaderboard offline — refresh to retry.">
-            <TrendingEscapeClusters />
-          </ErrorBoundary>
+          {/* Unified leaderboard stack — Trending Escape Clusters + Desperate Tech Parks */}
+          <div className="rounded-2xl border border-white/5 bg-card/40 p-3 space-y-3">
+            <ErrorBoundary label="Clusters" message="Leaderboard offline — refresh to retry.">
+              <TrendingEscapeClusters />
+            </ErrorBoundary>
+            <BurnoutLeaderboard />
+          </div>
 
-          <BurnoutLeaderboard />
-
-          <Accordion type="single" collapsible className="rounded-2xl border border-white/5 bg-card/60 px-3">
-            <AccordionItem value="happy-hours" className="border-b-0">
-              <AccordionTrigger className="text-xs uppercase tracking-wider text-muted-foreground/80 hover:no-underline">
-                📰 Trending Happy Hours
-              </AccordionTrigger>
-              <AccordionContent>
-                <TrendingHappyHoursList />
-              </AccordionContent>
-            </AccordionItem>
-            <AccordionItem value="vibe" className="border-b-0">
-              <AccordionTrigger className="text-xs uppercase tracking-wider text-muted-foreground/80 hover:no-underline">
-                🎚️ Live Vibe Board
-              </AccordionTrigger>
-              <AccordionContent>
-                <LiveVibeBoard />
-              </AccordionContent>
-            </AccordionItem>
-          </Accordion>
 
           <p className="text-[10px] text-muted-foreground/60 px-2 leading-relaxed">
             DrinkedIn © 2026 · A parody. Please drink responsibly.
