@@ -2140,8 +2140,6 @@ function Index() {
 
         {/* Right sidebar */}
         <aside className="hidden lg:block col-span-3 space-y-6">
-          <BurnoutLeaderboard />
-          <LocalShoutbox requireAuth={requireAuth} />
           <TrendingHappyHoursList />
 
 
