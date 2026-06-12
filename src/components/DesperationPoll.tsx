@@ -246,6 +246,226 @@ const POLLS: Poll[] = [
       makeChoice("chill", "Checking the local tech-park burnout leaderboard"),
     ],
   },
+  {
+    id: "retro_spillover",
+    question:
+      "Your Scrum Master adds an 'Urgent Retrospective Spillover Sync' to your calendar. What is this?",
+    choices: [
+      makeChoice("danger", "A meeting about a meeting that could have been a chat"),
+      makeChoice("thread", "An elaborate strategy to waste my remaining brain cells"),
+      makeChoice("chill", "My cue to double-click the Manager Panic Button"),
+    ],
+  },
+  {
+    id: "jira_honesty",
+    question:
+      "Before a stakeholder review, the honest state of your Jira ticket?",
+    choices: [
+      makeChoice("danger", "In Progress (I haven't opened the codebase yet)"),
+      makeChoice("thread", "Under Review (I'm praying it compiles)"),
+      makeChoice("chill", "Fled to Taproom (The ticket is abandoned)"),
+    ],
+  },
+  {
+    id: "wellness_webinar",
+    question:
+      "Mandatory 'Corporate Wellness Webinar on Overcoming Burnout'. When is it scheduled?",
+    choices: [
+      makeChoice("danger", "Friday at 4:30 PM (The ultimate irony)"),
+      makeChoice("thread", "During my lunch break"),
+      makeChoice("chill", "I don't know, I marked it as spam instantly"),
+    ],
+  },
+  {
+    id: "bandwidth_synergy",
+    question:
+      "A colleague says 'Let's maximize our human bandwidth synergy' in casual chat. Your reaction?",
+    choices: [
+      makeChoice("danger", "Visibly flinch and mute my Zoom microphone"),
+      makeChoice("thread", "Send their name directly to the Broetry Engine"),
+      makeChoice("chill", "Stare into space and question my entire life path"),
+    ],
+  },
+  {
+    id: "music_blocked",
+    question:
+      "IT blocks your favorite music streaming app on your office laptop. What is this signal?",
+    choices: [
+      makeChoice("danger", "A direct assault on developer productivity"),
+      makeChoice("thread", "They want me to listen to server fans hum all day"),
+      makeChoice("chill", "Time to close the lid and head to the nearest brewery"),
+    ],
+  },
+  {
+    id: "zero_meetings",
+    question:
+      "Friday morning: zero meetings scheduled. Your immediate reaction?",
+    choices: [
+      makeChoice("danger", "This is a trap, a crisis is definitely cooking"),
+      makeChoice("thread", "Close my laptop slowly and walk away before they notice"),
+      makeChoice("chill", "Celebrate by checking the local tech park radar"),
+    ],
+  },
+  {
+    id: "quick_second",
+    question:
+      "Manager Slacks 'Got a quick second?'. What do they actually mean?",
+    choices: [
+      makeChoice("danger", "'Prepare to absorb a massive task no one else wants'"),
+      makeChoice("thread", "'I am going to micro-manage your afternoon'"),
+      makeChoice("chill", "'Please save me from this stakeholder review huddle'"),
+    ],
+  },
+  {
+    id: "micro_sprints",
+    question:
+      "Team moves to 'Daily Micro-Sprints with Hourly Standups'. Your survival plan?",
+    choices: [
+      makeChoice("danger", "Automate my Git commits using a randomized cron job"),
+      makeChoice("thread", "Quietly resign and become a full-time mixologist"),
+      makeChoice("chill", "Hide behind an anonymous mask on the DrinkedIn feed"),
+    ],
+  },
+  {
+    id: "collab_pods",
+    question:
+      "Expensive new 'Ergonomic Open Office Collab Pods' are unveiled. Actual use?",
+    choices: [
+      makeChoice("danger", "Taking calls from recruiters in complete privacy"),
+      makeChoice("thread", "Hiding from my cross-functional project delivery lead"),
+      makeChoice("chill", "Looking at pictures of cold craft beers on my phone"),
+    ],
+  },
+  {
+    id: "value_vectors",
+    question:
+      "Align your scope with the 'Overarching Global Strategic Value Vectors'. Your strategy?",
+    choices: [
+      makeChoice("danger", "Using an AI generator to string random buzzwords together"),
+      makeChoice("thread", "Nodding intensely on the video call while muted"),
+      makeChoice("chill", "Mapping out the spatial path to the closest happy hour"),
+    ],
+  },
+  {
+    id: "os_update_45min",
+    question:
+      "OS forces a 45-minute update mid-deployment. Your move?",
+    choices: [
+      makeChoice("danger", "Stare at the progress bar with pure existential dread"),
+      makeChoice("thread", "Use it as an unassailable excuse to take an early lunch"),
+      makeChoice("chill", "Open DrinkedIn on my personal mobile device instantly"),
+    ],
+  },
+  {
+    id: "paradigm_shift_deck",
+    question:
+      "Leadership drops a 50-slide deck: 'The Future of Our Paradigm Shift'. How many slides do you read?",
+    choices: [
+      makeChoice("danger", "0 slides (Downloaded the PDF and archived it)"),
+      makeChoice("thread", "1 slide (The cover slide, out of pure accident)"),
+      makeChoice("chill", "Only the final slide to see if there is an exit package"),
+    ],
+  },
+  {
+    id: "weekend_grind",
+    question:
+      "Manager asks you to work the weekend for an arbitrary client deadline. Internal response?",
+    choices: [
+      makeChoice("danger", "Drafting a highly professional 'No' email template"),
+      makeChoice("thread", "Setting my Slack status to 'Out of Office' permanently"),
+      makeChoice("chill", "Taking a drive straight out of the tech park to a pub"),
+    ],
+  },
+  {
+    id: "compliance_trivia",
+    question:
+      "HR hosts a virtual trivia game about compliance policies. Your engagement level?",
+    choices: [
+      makeChoice("danger", "Sub-zero (Muted, camera off, looking at flight tickets)"),
+      makeChoice("thread", "Intentionally clicking the wrong answers to fail fast"),
+      makeChoice("chill", "Escaping to the live local vibe board to see who is out"),
+    ],
+  },
+  {
+    id: "hr_linkedin_request",
+    question:
+      "HR director sends you a LinkedIn request at 8 PM on a weekday. What is this?",
+    choices: [
+      makeChoice("danger", "An absolute boundary violation"),
+      makeChoice("thread", "They found my anonymous confessions profile"),
+      makeChoice("chill", "Time to switch to a self-declared corporate mask"),
+    ],
+  },
+  {
+    id: "deprecated_docs",
+    question:
+      "Shared docs drive has 4,000 pages of deprecated frameworks. How do you navigate it?",
+    choices: [
+      makeChoice("danger", "Close the browser tab and pray the system doesn't break"),
+      makeChoice("thread", "Ask an AI chatbot to summarize the madness"),
+      makeChoice("chill", "Give up entirely and seek an immediate cold beverage"),
+    ],
+  },
+  {
+    id: "rto_innovation",
+    question:
+      "Strict RTO policy for 'In-Person Organic Innovation'. What have you innovated so far?",
+    choices: [
+      makeChoice("danger", "New ways to look busy while staring at an empty Excel sheet"),
+      makeChoice("thread", "A deep understanding of peak tech-park traffic hours"),
+      makeChoice("chill", "Sneaking out of the building completely unnoticed"),
+    ],
+  },
+  {
+    id: "ui_rewrite_3days",
+    question:
+      "Stakeholder demands a UI rewrite three days before launch. Your response?",
+    choices: [
+      makeChoice("danger", "Cry in the server room"),
+      makeChoice("thread", "Update my resume while the deployment script runs"),
+      makeChoice("chill", "Run a Haversine proximity scan for the nearest taproom"),
+    ],
+  },
+  {
+    id: "lean_startup_irony",
+    question:
+      "'Operate like a lean startup' but 14 approvals for a $10 server upgrade. The reality?",
+    choices: [
+      makeChoice("danger", "Corporate matrix comedy at its finest"),
+      makeChoice("thread", "Running on pure bureaucratic friction"),
+      makeChoice("chill", "Time to take this offline permanently at a bar"),
+    ],
+  },
+  {
+    id: "emergency_channel",
+    question:
+      "You've been added to '#project-recovery-emergency-alignment'. Your stress level?",
+    choices: [
+      makeChoice("danger", "Off the charts (Heart rate matching a high-velocity server cluster)"),
+      makeChoice("thread", "Looking for the 'Leave Channel' button instantly"),
+      makeChoice("chill", "Activating full-screen corporate camouflage mode"),
+    ],
+  },
+  {
+    id: "deep_dive_blocker",
+    question:
+      "45 unread messages saying 'Let's deep-dive into this blocker'. What are you doing?",
+    choices: [
+      makeChoice("danger", "Closing the app and pretending my laptop went offline"),
+      makeChoice("thread", "Replying with a single generic thumbs-up emoji"),
+      makeChoice("chill", "Heading towards the nearest happy hour slot immediately"),
+    ],
+  },
+  {
+    id: "self_eval",
+    question:
+      "Self-evaluation: your 'Core Technical Leadership Triumphs' this quarter?",
+    choices: [
+      makeChoice("danger", "'I survived 90 separate huddles without losing my mind'"),
+      makeChoice("thread", "'I successfully avoided updating my Jira tickets'"),
+      makeChoice("chill", "'I built a secret spatial radar to find local breweries'"),
+    ],
+  },
 ];
 
 const VOTED_KEY = (pollId: string) => `drinkedin_voted_poll_${pollId}`;
