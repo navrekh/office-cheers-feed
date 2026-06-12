@@ -6,6 +6,7 @@ import { trackEngagement } from "@/lib/analytics";
 import { useCurrentCity } from "@/lib/useCurrentCity";
 import { useHubVernacular } from "@/lib/hubVernacular";
 import { useRealtimeHub } from "@/lib/useRealtimeHub";
+import { useWeekdayVibe } from "@/lib/weekdayVibe";
 
 type Msg = {
   id: string;
@@ -83,6 +84,7 @@ export default function LocalShoutbox({ requireAuth, variant = "compact" }: Prop
   const isHero = variant === "hero";
   const { user } = useAuth();
   const hub = useCurrentCity();
+  const weekdayVibe = useWeekdayVibe();
   const vern = useHubVernacular();
   const [msgs, setMsgs] = useState<Msg[]>([]);
   const [text, setText] = useState("");
@@ -139,7 +141,7 @@ export default function LocalShoutbox({ requireAuth, variant = "compact" }: Prop
       user_id: "ai-bot",
       handle: persona.handle,
       emoji: persona.emoji,
-      body: body ?? pick(AI_VENTS),
+      body: body ?? pick(weekdayVibe.aiVents.length ? weekdayVibe.aiVents : AI_VENTS),
       created_at: new Date().toISOString(),
     };
     setMsgs((prev) => [...prev.slice(-49), fake]);
@@ -162,7 +164,7 @@ export default function LocalShoutbox({ requireAuth, variant = "compact" }: Prop
               user_id: "ai-bot",
               handle: persona.handle,
               emoji: persona.emoji,
-              body: pick(AI_VENTS),
+              body: pick(weekdayVibe.aiVents.length ? weekdayVibe.aiVents : AI_VENTS),
               created_at: new Date().toISOString(),
             };
             return [...prev.slice(-49), fake];
@@ -202,7 +204,7 @@ export default function LocalShoutbox({ requireAuth, variant = "compact" }: Prop
     setText("");
     trackEngagement("shoutbox_send", { hub });
     // Instant AI reply 2s later to reward the new whisperer.
-    setTimeout(() => injectAiMessage(pick(AI_REPLIES)), 2000);
+    setTimeout(() => injectAiMessage(pick(weekdayVibe.aiReplies.length ? weekdayVibe.aiReplies : AI_REPLIES)), 2000);
   }
 
   function onFocus() {

@@ -160,6 +160,7 @@ import MidWeekSurvivalTracker from "@/components/MidWeekSurvivalTracker";
 import HubLandingModal from "@/components/HubLandingModal";
 import StandupEscapeValve from "@/components/StandupEscapeValve";
 import { useDayContext } from "@/lib/dailyMatrix";
+import { useWeekdayVibe } from "@/lib/weekdayVibe";
 import { useGeoAutoRoute } from "@/lib/geoRouting";
 import CommentsDrawer from "@/components/CommentsDrawer";
 import { useAuth, emailPrefix, signOut, corporateCodename } from "@/lib/useAuth";
@@ -372,6 +373,7 @@ function Index() {
     return false;
   }
   const dayCtx = useDayContext();
+  const weekdayVibe = useWeekdayVibe();
   useGeoAutoRoute();
 
 
@@ -1598,21 +1600,21 @@ function Index() {
                   <LocalShoutbox requireAuth={requireAuth} variant="hero" />
                 </ErrorBoundary>
 
-                {/* 2. Compact welcome strip — collapsed so it doesn't push the composer down */}
+                {/* 2. Daily Vibe strip — header/subtext/accent driven by Weekday Vibe Engine */}
                 <div
-                  className="relative overflow-hidden rounded-2xl border border-amber-400/25 px-5 py-3 flex items-center gap-3"
-                  style={{
-                    background:
-                      "linear-gradient(90deg, rgba(251,191,36,0.10), rgba(168,85,247,0.10))",
-                  }}
+                  className={`relative overflow-hidden rounded-2xl border ${weekdayVibe.accentBorder} px-5 py-3 flex items-start gap-3`}
+                  style={{ background: weekdayVibe.accentGradient }}
                 >
-                  <span className="text-2xl">🍻</span>
+                  <span className="text-2xl shrink-0">{weekdayVibe.emoji}</span>
                   <div className="min-w-0 flex-1">
-                    <p className="text-[10px] uppercase tracking-[0.22em] text-amber-300/80 font-semibold">
-                      The Breakroom · Live
+                    <p className={`text-[10px] uppercase tracking-[0.22em] ${weekdayVibe.accentText} font-semibold`}>
+                      {weekdayVibe.eyebrow}
                     </p>
-                    <p className="text-sm text-zinc-300/90 truncate">
-                      Whisper anonymously. Vote the poll. No HR. No metrics. Just the pod.
+                    <p className="text-sm font-bold text-zinc-100 leading-snug">
+                      {weekdayVibe.header}
+                    </p>
+                    <p className="text-xs text-zinc-300/85 leading-snug mt-0.5">
+                      {weekdayVibe.subtext}
                     </p>
                   </div>
                 </div>
