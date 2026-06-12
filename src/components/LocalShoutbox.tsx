@@ -30,9 +30,10 @@ function relTime(iso: string, nowMs: number): string {
   return `${Math.floor(h / 24)}d ago`;
 }
 
-type Props = { requireAuth: (reason?: string) => boolean };
+type Props = { requireAuth: (reason?: string) => boolean; variant?: "compact" | "hero" };
 
-export default function LocalShoutbox({ requireAuth }: Props) {
+export default function LocalShoutbox({ requireAuth, variant = "compact" }: Props) {
+  const isHero = variant === "hero";
   const { user } = useAuth();
   const hub = useCurrentCity();
   const vern = useHubVernacular();
@@ -110,9 +111,9 @@ export default function LocalShoutbox({ requireAuth }: Props) {
       aria-label="Live Breakroom Chat"
       className="rounded-2xl border border-amber-500/20 bg-gradient-to-br from-zinc-950/60 via-zinc-900/40 to-zinc-950/60 backdrop-blur-xl shadow-[0_0_40px_rgba(251,191,36,0.06)] overflow-hidden"
     >
-      <header className="flex items-center justify-between px-4 py-3 border-b border-white/5">
-        <h3 className="text-sm font-bold tracking-tight text-amber-100">
-          💬 Live Breakroom Chat <span className="text-[10px] text-amber-300/70 font-medium">({hub})</span>
+      <header className={`flex items-center justify-between px-4 border-b border-white/5 ${isHero ? "py-4" : "py-3"}`}>
+        <h3 className={`font-bold tracking-tight text-amber-100 ${isHero ? "text-lg" : "text-sm"}`}>
+          💬 Live Breakroom Chat <span className={`text-amber-300/70 font-medium ${isHero ? "text-xs ml-1" : "text-[10px]"}`}>({hub})</span>
         </h3>
         <span className="inline-flex items-center gap-1.5 text-[10px] text-emerald-300/80">
           <span className="size-1.5 rounded-full bg-emerald-400 animate-pulse" />
@@ -120,15 +121,15 @@ export default function LocalShoutbox({ requireAuth }: Props) {
         </span>
       </header>
 
-      <div ref={scrollRef} className="max-h-40 min-h-[6rem] overflow-y-auto px-3 py-2 space-y-2 scroll-smooth">
+      <div ref={scrollRef} className={`overflow-y-auto px-4 py-3 space-y-2 scroll-smooth ${isHero ? "max-h-[28rem] min-h-[18rem]" : "max-h-40 min-h-[6rem] px-3 py-2"}`}>
         {msgs.length === 0 ? (
-          <p className="text-center text-[11.5px] text-muted-foreground/70 py-6">
+          <p className={`text-center text-muted-foreground/70 ${isHero ? "py-12 text-sm" : "py-6 text-[11.5px]"}`}>
             Quiet for a minute in {hub}. Be the first to whisper.
           </p>
         ) : (
           msgs.map((m) => (
             <div key={m.id} className="group animate-fade-in">
-              <div className="flex items-baseline gap-2 text-[11px]">
+              <div className={`flex items-baseline gap-2 ${isHero ? "text-xs" : "text-[11px]"}`}>
                 <span className="font-semibold text-amber-200/90">
                   <span className="mr-1">{m.emoji}</span>{m.handle}
                 </span>
@@ -136,7 +137,7 @@ export default function LocalShoutbox({ requireAuth }: Props) {
                   · {nowMs === 0 ? "" : relTime(m.created_at, nowMs)}
                 </span>
               </div>
-              <p className="mt-0.5 text-[12.5px] leading-snug text-foreground/90 rounded-lg bg-white/[0.03] border border-white/5 px-2.5 py-1.5">
+              <p className={`mt-1 leading-snug text-foreground/90 rounded-lg bg-white/[0.03] border border-white/5 ${isHero ? "text-[14px] px-3 py-2" : "text-[12.5px] px-2.5 py-1.5"}`}>
                 {m.body}
               </p>
             </div>
@@ -144,7 +145,7 @@ export default function LocalShoutbox({ requireAuth }: Props) {
         )}
       </div>
 
-      <form onSubmit={onSubmit} className="flex items-center gap-2 p-2 border-t border-white/5 bg-black/20">
+      <form onSubmit={onSubmit} className={`flex items-center gap-2 border-t border-white/5 bg-black/30 ${isHero ? "p-3" : "p-2"}`}>
         <input
           type="text"
           value={text}
@@ -152,16 +153,27 @@ export default function LocalShoutbox({ requireAuth }: Props) {
           onFocus={onFocus}
           maxLength={280}
           placeholder={vern.shoutboxPlaceholder}
-          className="flex-1 h-9 px-3 rounded-lg bg-white/[0.04] border border-white/10 text-[12.5px] text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:border-amber-400/40 focus:bg-white/[0.06] transition"
+          className={`flex-1 px-3 rounded-lg bg-white/[0.04] border border-white/10 text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:border-amber-400/40 focus:bg-white/[0.06] transition ${isHero ? "h-12 text-sm" : "h-9 text-[12.5px]"}`}
         />
-        <button
-          type="submit"
-          aria-label="Send message"
-          className="inline-grid place-items-center size-9 rounded-lg bg-amber-500 hover:bg-amber-400 text-amber-950 transition shadow-[0_0_20px_rgba(251,191,36,0.25)] disabled:opacity-50"
-          disabled={!text.trim() || sending}
-        >
-          <Send className="size-4" />
-        </button>
+        {isHero ? (
+          <button
+            type="submit"
+            disabled={!text.trim() || sending}
+            className="inline-flex items-center gap-2 h-12 px-5 rounded-lg bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-amber-950 font-bold text-sm tracking-tight transition shadow-[0_0_30px_rgba(251,191,36,0.55)] hover:shadow-[0_0_45px_rgba(251,191,36,0.8)] disabled:opacity-50 disabled:shadow-none animate-pulse"
+          >
+            <Send className="size-4" />
+            Whisper Anonymously
+          </button>
+        ) : (
+          <button
+            type="submit"
+            aria-label="Send message"
+            className="inline-grid place-items-center size-9 rounded-lg bg-amber-500 hover:bg-amber-400 text-amber-950 transition shadow-[0_0_20px_rgba(251,191,36,0.25)] disabled:opacity-50"
+            disabled={!text.trim() || sending}
+          >
+            <Send className="size-4" />
+          </button>
+        )}
       </form>
     </section>
   );
