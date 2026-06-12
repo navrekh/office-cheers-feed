@@ -146,6 +146,7 @@ import VerifiedWateringHole from "@/components/VerifiedWateringHole";
 import LiveVibeBoard from "@/components/LiveVibeBoard";
 import HappyHourTicker from "@/components/HappyHourTicker";
 import TrendingHappyHoursList from "@/components/TrendingHappyHoursList";
+import RecentEscapesTicker from "@/components/RecentEscapesTicker";
 import HubSelector from "@/components/HubSelector";
 import BurnoutLeaderboard from "@/components/BurnoutLeaderboard";
 import ClaimTicketModal from "@/components/ClaimTicketModal";
