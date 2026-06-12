@@ -88,6 +88,7 @@ import { ProximityAdDispatcher, dealCoord } from "@/components/ProximityAdDispat
 import { useMerchantDeals, type MerchantDeal } from "@/lib/useMerchantDeals";
 import DesperationPoll from "@/components/DesperationPoll";
 import BroetryMemeCard from "@/components/BroetryMemeCard";
+import ErrorBoundary from "@/components/ErrorBoundary";
 
 // ---------- Client-side spam guard ----------
 const RATE_KEY = "drinkedin.rate.posts";
@@ -1550,31 +1551,37 @@ function Index() {
               )}
 
               {/* Live Workspace Radar — proximity-aware ambient ticker */}
-              <div className="rounded-2xl bg-card p-8 sm:p-10 lg:p-14 shadow-[0_10px_40px_-15px_rgba(0,0,0,0.4)]" style={{ border: "1px solid rgba(255,255,255,0.05)" }}>
-                <LiveWorkspaceRadar
-                  origin={geoCoords}
-                  geoStatus={geoStatus}
-                  posts={posts.map((p) => ({
-                    id: p.id,
-                    latitude: (p as any).latitude ?? null,
-                    longitude: (p as any).longitude ?? null,
-                    created_at: p.created_at,
-                    author_name: p.author_name,
-                  }))}
-                  merchants={(MERCHANTS[selectedCity] ?? []).map((m) => ({
-                    id: m.id,
-                    name: m.name,
-                    area: m.area,
-                  }))}
-                  proximity={proximity}
-                  onProximityChange={(p) => {
-                    setProximity(p);
-                    import("@/lib/analytics").then((m) =>
-                      m.trackEngagement("radar_proximity_change", { proximity: p })
-                    );
-                  }}
-                />
-              </div>
+              <ErrorBoundary
+                label="Radar"
+                message="The radar hit a temporary cloud of corporate synergy. Refreshing the sonar scan…"
+              >
+                <div className="rounded-2xl bg-card p-8 sm:p-10 lg:p-14 shadow-[0_10px_40px_-15px_rgba(0,0,0,0.4)]" style={{ border: "1px solid rgba(255,255,255,0.05)" }}>
+                  <LiveWorkspaceRadar
+                    origin={geoCoords}
+                    geoStatus={geoStatus}
+                    posts={posts.map((p) => ({
+                      id: p.id,
+                      latitude: (p as any).latitude ?? null,
+                      longitude: (p as any).longitude ?? null,
+                      created_at: p.created_at,
+                      author_name: p.author_name,
+                    }))}
+                    merchants={(MERCHANTS[selectedCity] ?? []).map((m) => ({
+                      id: m.id,
+                      name: m.name,
+                      area: m.area,
+                    }))}
+                    proximity={proximity}
+                    onProximityChange={(p) => {
+                      setProximity(p);
+                      import("@/lib/analytics").then((m) =>
+                        m.trackEngagement("radar_proximity_change", { proximity: p })
+                      );
+                    }}
+                  />
+                </div>
+              </ErrorBoundary>
+
 
 
               {/* Friday Desperation Index — 1-click anonymous poll */}
@@ -1691,7 +1698,14 @@ function Index() {
                   </div>
 
                   {/* Broetry meme preview + download card */}
-                  {broetryPreview && <BroetryMemeCard text={broetryPreview} />}
+                  {broetryPreview && (
+                    <ErrorBoundary
+                      label="Broetry Engine"
+                      message="The Broetry engine spilled its kombucha. Tweak your draft and try again — the rest of the dashboard is safe."
+                    >
+                      <BroetryMemeCard text={broetryPreview} />
+                    </ErrorBoundary>
+                  )}
 
                   {/* Current Vibe matrix */}
                   <div className="pl-14">
