@@ -488,7 +488,7 @@ function simulatedCounts(pollId: string, hub: string): Record<Tone, number> {
   return { danger: a, thread: b, chill: c };
 }
 
-export default function DesperationPoll({ onSignUp }: { onSignUp: () => void }) {
+export default function DesperationPoll({ onSignUp }: { onSignUp: (reason?: string) => void }) {
   const { user } = useAuth();
   const hub = useCurrentCity();
 
