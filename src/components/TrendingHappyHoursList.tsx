@@ -8,6 +8,7 @@ import {
   type CityKey,
   type Merchant,
 } from "@/lib/cityStore";
+import { useHubVernacular } from "@/lib/hubVernacular";
 
 type Vibe = {
   density: "Low" | "Medium" | "High" | "Packed";
@@ -95,18 +96,19 @@ export default function TrendingHappyHoursList() {
     [merchants, hour],
   );
 
+  const vern = useHubVernacular();
 
   return (
     <Card className="p-4 border-border">
       <div className="flex items-center justify-between mb-3">
         <h4 className="text-sm font-semibold flex items-center gap-1.5">
-          <TrendingUp className="size-4 text-primary" /> Trending Happy Hours
+          <TrendingUp className="size-4 text-primary" /> {vern.trendingTitle}
         </h4>
         <MoreHorizontal className="size-4 text-muted-foreground" />
       </div>
       {rows.length === 0 ? (
         <p className="text-[11px] text-muted-foreground leading-snug">
-          No verified taprooms wired up in <span className="font-semibold text-foreground">{city}</span> yet — your sector unlocks once 3 venues claim their slot.
+          No verified {vern.pubs} wired up in <span className="font-semibold text-foreground">{city}</span> yet — your sector unlocks once 3 {vern.wateringHole}s claim their slot.
         </p>
       ) : (
         <ul className="space-y-3 text-xs">

@@ -25,7 +25,10 @@ export default function HubLandingModal() {
 
   function pick(city: CityKey) {
     setSelectedCity(city);
-    try { localStorage.setItem(KEY, "1"); } catch { /* ignore */ }
+    try {
+      localStorage.setItem(KEY, "1");
+      localStorage.setItem("drinkedin.hub.manualPick", "1");
+    } catch { /* ignore */ }
     import("@/lib/analytics").then((m) => m.trackEngagement("hub_landing_pick", { city }));
     setOpen(false);
   }

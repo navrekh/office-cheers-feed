@@ -91,6 +91,7 @@ export default function HubSelector() {
                           aria-selected={active}
                           onClick={() => {
                             setSelectedCity(h.city);
+                            try { localStorage.setItem("drinkedin.hub.manualPick", "1"); } catch { /* ignore */ }
                             setOpen(false);
                             import("@/lib/analytics").then((m) =>
                               m.trackEngagement("hub_switch", { city: h.city, region }),

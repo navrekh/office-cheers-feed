@@ -158,6 +158,7 @@ import MidWeekSurvivalTracker from "@/components/MidWeekSurvivalTracker";
 import HubLandingModal from "@/components/HubLandingModal";
 import StandupEscapeValve from "@/components/StandupEscapeValve";
 import { useDayContext } from "@/lib/dailyMatrix";
+import { useGeoAutoRoute } from "@/lib/geoRouting";
 import CommentsDrawer from "@/components/CommentsDrawer";
 import { useAuth, emailPrefix, signOut, corporateCodename } from "@/lib/useAuth";
 import { useProfile, isRlsDenied, RLS_DENIED_MESSAGE } from "@/lib/useProfile";
@@ -369,6 +370,8 @@ function Index() {
     return false;
   }
   const dayCtx = useDayContext();
+  useGeoAutoRoute();
+
 
 
   // Post-OAuth merchant claim + role-based redirect
