@@ -141,7 +141,7 @@ export default function LocalShoutbox({ requireAuth, variant = "compact" }: Prop
       user_id: "ai-bot",
       handle: persona.handle,
       emoji: persona.emoji,
-      body: body ?? pick(AI_VENTS),
+      body: body ?? pick(weekdayVibe.aiVents.length ? weekdayVibe.aiVents : AI_VENTS),
       created_at: new Date().toISOString(),
     };
     setMsgs((prev) => [...prev.slice(-49), fake]);
