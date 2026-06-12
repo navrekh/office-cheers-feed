@@ -55,9 +55,10 @@ export default function FloatingMaskCta() {
     <div
       role="region"
       aria-label="Claim your anonymous mask"
-      className="fixed inset-x-0 bottom-0 z-50 pb-[env(safe-area-inset-bottom)] pointer-events-none"
+      className="fixed inset-x-0 top-0 z-50 pt-[env(safe-area-inset-top)] pointer-events-none"
     >
-      <div className="mx-auto max-w-3xl px-3 pb-3 pointer-events-none">
+      <div className="mx-auto max-w-3xl px-3 pt-3 pointer-events-none">
+
         <div
           className="pointer-events-auto flex items-center gap-3 rounded-2xl px-3 sm:px-4 py-2.5 shadow-[0_12px_48px_-12px_rgba(0,0,0,0.65)]"
           style={{

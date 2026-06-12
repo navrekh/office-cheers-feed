@@ -629,16 +629,17 @@ export default function DesperationPoll({ onSignUp }: { onSignUp: (reason?: stri
       </div>
 
       {poll && !choice && (
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 animate-fade-in">
+        <div className="flex flex-col gap-3 animate-fade-in">
           {poll.choices.map((opt) => (
             <button
               key={opt.key}
               type="button"
               onClick={() => vote(opt.key)}
-              className={`group flex flex-col items-start gap-1 rounded-xl border px-3 py-3 text-left transition hover-scale ${opt.accent}`}
+              className={`group flex items-start gap-2 w-full rounded-xl border text-left h-auto py-3 px-4 normal-case leading-tight transition hover-scale ${opt.accent}`}
+              style={{ whiteSpace: "normal", wordBreak: "break-word" }}
             >
-              <span className="text-2xl leading-none">{opt.emoji}</span>
-              <span className="text-[13px] font-bold leading-tight">
+              <span className="text-xl leading-none shrink-0">{opt.emoji}</span>
+              <span className="text-[13px] font-bold leading-tight break-words min-w-0 flex-1">
                 {opt.label}
               </span>
             </button>

@@ -1586,20 +1586,19 @@ function Index() {
                 />
               )}
 
-              {/* Above-the-fold hero grid: visual feeds left, interactive poll rail right */}
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6">
-                <div className="lg:col-span-8 space-y-4 lg:space-y-5 min-w-0">
-                  {/* Trending Escape Clusters — live tribal leaderboard above the map */}
+              {/* Above-the-fold hero grid: 3-column strict viewport layout
+                  · 5 cols visual telemetry · 4 cols interactive poll · 3 cols community hub */}
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+                {/* Column 1 — Visual Telemetry */}
+                <div className="lg:col-span-5 space-y-4 min-w-0 lg:overflow-y-auto lg:max-h-[calc(100vh-120px)] lg:pr-1">
                   <ErrorBoundary label="Clusters" message="Leaderboard offline — refresh to retry.">
                     <TrendingEscapeClusters />
                   </ErrorBoundary>
-
-                  {/* Live Workspace Radar — proximity-aware ambient ticker */}
                   <ErrorBoundary
                     label="Radar"
                     message="The radar hit a temporary cloud of corporate synergy. Refreshing the sonar scan…"
                   >
-                    <div className="rounded-2xl bg-card p-4 sm:p-5 lg:p-6 shadow-[0_10px_40px_-15px_rgba(0,0,0,0.4)]" style={{ border: "1px solid rgba(255,255,255,0.05)" }}>
+                    <div className="rounded-2xl bg-card p-4 shadow-[0_10px_40px_-15px_rgba(0,0,0,0.4)]" style={{ border: "1px solid rgba(255,255,255,0.05)" }}>
                       <LiveWorkspaceRadar
                         origin={geoCoords}
                         geoStatus={geoStatus}
@@ -1625,27 +1624,20 @@ function Index() {
                       />
                     </div>
                   </ErrorBoundary>
-
-                  {/* Mid-Week Survival Tracker — visible Mon–Thu and Fri before
-                      local noon. After Friday noon local, hide so the live radar
-                      + leaderboard take center stage. */}
                   {!dayCtx.isFridayLive && !dayCtx.isWeekend && (
                     <MidWeekSurvivalTracker />
                   )}
-
-                  {/* Daily Standup Escape Valve — live during the 09:30–11:00
-                      weekday window, otherwise collapses to a teaser. */}
                   <StandupEscapeValve
                     isAuthenticated={!!user}
                     onSignUp={(reason) => requireAuth(reason)}
                   />
                 </div>
 
+                {/* Column 2 — Interactive Engagement Engine */}
                 <aside
                   id="poll-rail"
-                  className="lg:col-span-4 lg:sticky lg:top-20 lg:self-start space-y-4 min-w-0"
+                  className="lg:col-span-4 space-y-4 min-w-0 lg:overflow-y-auto lg:max-h-[calc(100vh-120px)] lg:pr-1"
                 >
-                  {/* Friday Desperation Index — 1-click anonymous poll */}
                   <DesperationPoll
                     onSignUp={(reason) => requireAuth(reason ?? "Drop an anonymous confession — sign in once and you're masked.")}
                   />
@@ -1653,6 +1645,12 @@ function Index() {
                     onSignUp={(reason) => requireAuth(reason ?? "Drop an anonymous confession — sign in once and you're masked.")}
                   />
                 </aside>
+
+                {/* Column 3 — Global Community Hub */}
+                <div className="lg:col-span-3 space-y-3 min-w-0 lg:overflow-y-auto lg:max-h-[calc(100vh-120px)] lg:pr-1">
+                  <BurnoutLeaderboard />
+                  <LocalShoutbox requireAuth={requireAuth} />
+                </div>
               </div>
 
               {/* Mobile sticky quick-action drawer */}
@@ -2142,8 +2140,6 @@ function Index() {
 
         {/* Right sidebar */}
         <aside className="hidden lg:block col-span-3 space-y-6">
-          <BurnoutLeaderboard />
-          <LocalShoutbox requireAuth={requireAuth} />
           <TrendingHappyHoursList />
 
 
