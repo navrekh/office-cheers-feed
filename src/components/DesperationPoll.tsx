@@ -86,6 +86,166 @@ const POLLS: Poll[] = [
       makeChoice("chill", "Completely fried"),
     ],
   },
+  {
+    id: "eta_panic",
+    question:
+      "Your manager asks for your 'updated ETA' on a task you started exactly 14 minutes ago. Current status?",
+    choices: [
+      makeChoice("danger", "Writing a 3-page justification essay"),
+      makeChoice("thread", "Intentionally moving Jira tickets back and forth"),
+      makeChoice("chill", "Closing laptop to seek immediate sanctuary"),
+    ],
+  },
+  {
+    id: "urgent_alignment",
+    question:
+      "A Friday email arrives titled: 'Urgent Alignment on Cross-Functional Synergies'. Your internal translation?",
+    choices: [
+      makeChoice("danger", "Someone panicked and scheduled a 2-hour meeting"),
+      makeChoice("thread", "My weekend plans are officially under heavy risk"),
+      makeChoice("chill", "Mark as read and escape to the nearest brewery"),
+    ],
+  },
+  {
+    id: "meeting_overrun",
+    question:
+      "Primary survival mechanism when a meeting extends 20 minutes past its scheduled end?",
+    choices: [
+      makeChoice("danger", "Staring blankly at my wallpaper"),
+      makeChoice("thread", "Aggressively typing passive-aggressive Slack vents"),
+      makeChoice("chill", "Double-clicking the 'Panic Button' for visual peace"),
+    ],
+  },
+  {
+    id: "ai_tracking_tool",
+    question:
+      "Your team adopts a new 'AI-powered productivity tracking tool'. Immediate response?",
+    choices: [
+      makeChoice("danger", "Setting up an automated mouse-jiggler macro"),
+      makeChoice("thread", "Looking for a new job with a less dystopian stack"),
+      makeChoice("chill", "Generating a high-cringe Broetry card about it"),
+    ],
+  },
+  {
+    id: "mandatory_fun",
+    question:
+      "Newsletter announces a 'Mandatory Virtual Friday Happy Hour'. Your vibe?",
+    choices: [
+      makeChoice("danger", "Maximum awkwardness over Zoom camera"),
+      makeChoice("thread", "Claiming my local camera hardware just malfunctioned"),
+      makeChoice("chill", "Sneaking out to a real taproom under an anonymous mask"),
+    ],
+  },
+  {
+    id: "calendar_optimized",
+    question:
+      "Your calendar has been 'optimized' with 6 back-to-back huddles on Friday morning. Remaining energy?",
+    choices: [
+      makeChoice("danger", "0% (Running entirely on caffeine and spite)"),
+      makeChoice("thread", "Critical thermal throttling"),
+      makeChoice("chill", "Sub-zero motivation"),
+    ],
+  },
+  {
+    id: "offline_translation",
+    question:
+      "What does 'Let's take this offline' actually mean in an executive board meeting?",
+    choices: [
+      makeChoice("danger", "'Stop talking, you are ruining my slide deck'"),
+      makeChoice("thread", "'We are never going to discuss this again'"),
+      makeChoice("chill", "'Meet me at the nearest pub in 10 minutes'"),
+    ],
+  },
+  {
+    id: "hyper_hybrid_matrix",
+    question:
+      "Your company rolls out a 'Hyper-Hybrid-Synchronous Workspace Collaboration Matrix'. What even is that?",
+    choices: [
+      makeChoice("danger", "A random string of words HR found on LinkedIn"),
+      makeChoice("thread", "An expensive way to track my badge sign-ins"),
+      makeChoice("chill", "An undeniable sign that I need a cold craft beer"),
+    ],
+  },
+  {
+    id: "friday_prod_bug",
+    question:
+      "You find a massive bug in production at 4:55 PM on a Friday. Standard protocol?",
+    choices: [
+      makeChoice("danger", "Blame a deprecated third-party microservice API"),
+      makeChoice("thread", "Commit, push, turn off phone, and run"),
+      makeChoice("chill", "Pretend the entire cloud region is experiencing an outage"),
+    ],
+  },
+  {
+    id: "ballpark_estimate",
+    question:
+      "PM asks for a 'High-Level Ballpark Estimation' that will become a hard deadline. Your estimate strategy?",
+    choices: [
+      makeChoice("danger", "Take my true estimate and multiply it by 4"),
+      makeChoice("thread", "Guess a random number between 1 and 45 weeks"),
+      makeChoice("chill", "Shrug and look for the nearest happy hour slot"),
+    ],
+  },
+  {
+    id: "tech_park_traffic",
+    question:
+      "The tech-park corridor outside your office is completely red on Google Maps at 4 PM. Your strategy?",
+    choices: [
+      makeChoice("danger", "Wait it out in a highly depressing cubicle"),
+      makeChoice("thread", "Brave the gridlock and question my life choices"),
+      makeChoice("chill", "Take refuge at the closest brewery on the radar grid"),
+    ],
+  },
+  {
+    id: "linkedin_cringe",
+    question:
+      "Influencer posts: 'Why I love waking up at 4 AM to review legacy enterprise codebases'. Your reaction?",
+    choices: [
+      makeChoice("danger", "Report the post for deeply offensive content"),
+      makeChoice("thread", "Instantly feed it to the Broetry Engine for a parody"),
+      makeChoice("chill", "Close LinkedIn forever out of pure cringe"),
+    ],
+  },
+  {
+    id: "hey_navin",
+    question:
+      "Your manager Slacks 'Hey Navin.' with no further context or typing indicator. State of mind?",
+    choices: [
+      makeChoice("danger", "Calculating my severance package options"),
+      makeChoice("thread", "Heart rate instantly spiking past 150 BPM"),
+      makeChoice("chill", "Disappearing into anonymous camouflage mode"),
+    ],
+  },
+  {
+    id: "pantry_downgrade",
+    question:
+      "The pantry replaces premium coffee with a budget instant-mix. What is this signal?",
+    choices: [
+      makeChoice("danger", "The company's Q3 budget runway is actively collapsing"),
+      makeChoice("thread", "A declaration of war against the engineering team"),
+      makeChoice("chill", "Time to transition my portfolio to a pub table"),
+    ],
+  },
+  {
+    id: "weekly_report",
+    question:
+      "Weekly report demands 'Actionable, Data-Driven Key Results'. Your actual status?",
+    choices: [
+      makeChoice("danger", "Survived 4 status alignment huddles"),
+      makeChoice("thread", "Wrote 3 lines of code and deleted 400 lines"),
+      makeChoice("chill", "Spent the entire day looking at the spatial radar"),
+    ],
+  },
+  {
+    id: "laptop_boot_25min",
+    question:
+      "Your corporate laptop takes 25 minutes to boot from security scans. What is that time used for?",
+    choices: [
+      makeChoice("danger", "Questioning why I chose a career in software delivery"),
+      makeChoice("thread", "Drinking a third cup of tea in deep silence"),
+      makeChoice("chill", "Checking the local tech-park burnout leaderboard"),
+    ],
+  },
 ];
 
 const VOTED_KEY = (pollId: string) => `drinkedin_voted_poll_${pollId}`;
