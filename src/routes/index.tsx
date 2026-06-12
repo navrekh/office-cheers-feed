@@ -1612,6 +1612,10 @@ function Index() {
               <DesperationPoll
                 onSignUp={() => requireAuth("Drop an anonymous confession — sign in once and you're masked.")}
               />
+              <DesperationPollModal
+                onSignUp={() => requireAuth("Drop an anonymous confession — sign in once and you're masked.")}
+              />
+
 
               {/* Composer */}
               <Card className="p-4 border-border">
