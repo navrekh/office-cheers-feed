@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { applyJitter, haversineKm, type LatLng } from "@/lib/geo";
 import { getScrubbedRadarBlips, type ScrubbedBlip } from "@/lib/radar.functions";
 import { useT } from "@/lib/i18n";
+import { usePanicState } from "@/lib/usePanicState";
 
 type CheckIn = {
   id: string;
@@ -112,8 +113,10 @@ export function LiveWorkspaceRadar({
   const [pulses, setPulses] = useState<number[]>([]);
   const [whisperActive, setWhisperActive] = useState(false);
   const whisperTimerRef = useRef<number | null>(null);
+  const panicActive = usePanicState();
   useEffect(() => {
     function onPulse() {
+      if (panicActive) return;
       const id = Date.now() + Math.random();
       setPulses((prev) => [...prev, id]);
       window.setTimeout(() => {
@@ -128,7 +131,16 @@ export function LiveWorkspaceRadar({
       window.removeEventListener("drinkedin:radar-pulse", onPulse);
       if (whisperTimerRef.current) window.clearTimeout(whisperTimerRef.current);
     };
-  }, []);
+  }, [panicActive]);
+
+  // Hard-clear any in-flight pulses the instant panic activates so nothing
+  // glows through the camouflage sheet.
+  useEffect(() => {
+    if (panicActive) {
+      setPulses([]);
+      setWhisperActive(false);
+    }
+  }, [panicActive]);
 
 
 
