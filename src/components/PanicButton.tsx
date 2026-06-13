@@ -32,8 +32,8 @@ export default function PanicButton() {
     setCamo(false);
     trackEngagement("panic_camouflage_deactivate", { ts: Date.now() });
     toast.success(
-      "Crisis averted. Your manager thinks you are deep in a Kubernetes deployment.",
-      { description: "Back to the radar! 🤫🍻", duration: 5000 },
+      "💨 Danger averted. Manager has cleared the sector. Welcome back to the breakroom.",
+      { duration: 4500 },
     );
   }
 
@@ -74,22 +74,22 @@ function CamouflageLayer({ onExit }: { onExit: () => void }) {
       className="fixed inset-0 z-[100] bg-[#f4f5f7] text-[#1f2937] overflow-auto select-text animate-fade-in"
       onDoubleClick={onExit}
       role="dialog"
-      aria-label="Q2 Cross-Functional Cloud Infrastructure Architecture Realignment Metrics"
+      aria-label="AWS Cloud Cost Optimization Matrix — Q2 Forecast"
     >
       {/* Enterprise header */}
       <header className="bg-white border-b border-slate-200 sticky top-0 z-10">
         <div className="max-w-[1400px] mx-auto px-5 h-12 flex items-center gap-4">
           <div className="flex items-center gap-2 text-[13px] font-bold text-slate-700">
-            <div className="size-6 rounded bg-[#0a66c2] grid place-items-center text-white text-[11px] font-black">CI</div>
-            <span>CloudIntelliOps · Pipeline Stability Console</span>
+            <div className="size-6 rounded bg-[#ff9900] grid place-items-center text-white text-[11px] font-black">AW</div>
+            <span>AWS · Cloud Cost Optimization Matrix</span>
           </div>
           <nav className="hidden md:flex items-center gap-4 text-[11.5px] text-slate-500">
-            <span className="font-semibold text-slate-700">Overview</span>
-            <span>Deployments</span>
-            <span>Incidents</span>
-            <span>Cost Allocation</span>
+            <span className="font-semibold text-slate-700">Forecast</span>
+            <span>Reserved Instances</span>
+            <span>Savings Plans</span>
+            <span>Anomaly Detection</span>
+            <span>Budgets</span>
             <span>Compliance (SOC 2)</span>
-            <span>Quarterly Realignment</span>
           </nav>
           <div className="ml-auto flex items-center gap-3 text-[11px] text-slate-500 font-mono">
             <span>Env: prod-eu-west-1</span>
@@ -98,7 +98,7 @@ function CamouflageLayer({ onExit }: { onExit: () => void }) {
             <button
               type="button"
               onClick={(e) => { e.stopPropagation(); onExit(); }}
-              title="Exit (or double-click anywhere)"
+              title="Exit (ESC, or double-click anywhere)"
               aria-label="Exit camouflage"
               className="size-3 rounded-full bg-slate-300/60 hover:bg-slate-400 transition"
             />
@@ -109,17 +109,17 @@ function CamouflageLayer({ onExit }: { onExit: () => void }) {
       <main className="max-w-[1400px] mx-auto px-5 py-6 space-y-5">
         <div className="flex items-baseline justify-between">
           <h1 className="text-[18px] font-bold text-slate-800">
-            Q2 Cross-Functional Cloud Infrastructure Architecture Realignment Metrics
+            AWS Cloud Cost Optimization Matrix — Q2 Forecast
           </h1>
           <span className="text-[11px] text-slate-500 font-mono">Last sync: {now}</span>
         </div>
 
         {/* KPI tiles */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <KpiTile label="System Pipeline Stability" value="99.83%" trend="+0.04%" />
-          <KpiTile label="P95 Deploy Latency" value="412 ms" trend="-3.1%" />
-          <KpiTile label="Error Budget Remaining" value="86.2%" trend="+1.2%" />
-          <KpiTile label="MTTR (Rolling 30d)" value="14m 22s" trend="-9.4%" />
+          <KpiTile label="Forecasted Spend (Q2)" value="$1.84M" trend="-3.2%" />
+          <KpiTile label="Cost Variance vs Plan" value="-2.8%" trend="-0.6%" />
+          <KpiTile label="Reserved Instance Coverage" value="76.4%" trend="+1.9%" />
+          <KpiTile label="Idle Capacity (vCPU)" value="412" trend="-9.4%" />
         </div>
 
         {/* Graphs */}
@@ -138,14 +138,14 @@ function CamouflageLayer({ onExit }: { onExit: () => void }) {
         {/* Spreadsheet */}
         <section className="bg-white border border-slate-200 rounded-md overflow-hidden">
           <div className="px-4 h-10 flex items-center justify-between border-b border-slate-200 bg-slate-50">
-            <div className="text-[12px] font-bold text-slate-700">Resource Allocation Matrix · Sheet1</div>
+            <div className="text-[12px] font-bold text-slate-700">AWS Cost Optimization Matrix · Sheet1</div>
             <div className="text-[10.5px] text-slate-500 font-mono">42 rows · CSV export ready</div>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-[11.5px] tabular-nums">
               <thead className="bg-slate-100 text-slate-600">
                 <tr>
-                  {["Workload ID","Cost Center","Region","vCPU","Mem (GiB)","Uptime","SLO","Owner"].map((h) => (
+                  {["Instance ID","Cost Center","Region","Allocated vCPU","Mem (GiB)","Uptime","Cost Variance","Owner"].map((h) => (
                     <th key={h} className="text-left font-semibold px-3 py-1.5 border-b border-slate-200">{h}</th>
                   ))}
                 </tr>
@@ -159,7 +159,9 @@ function CamouflageLayer({ onExit }: { onExit: () => void }) {
                     <td className="px-3 py-1.5 border-b border-slate-100">{r.vcpu}</td>
                     <td className="px-3 py-1.5 border-b border-slate-100">{r.mem}</td>
                     <td className="px-3 py-1.5 border-b border-slate-100 text-emerald-700 font-semibold">{r.uptime}</td>
-                    <td className="px-3 py-1.5 border-b border-slate-100">{r.slo}</td>
+                    <td className={`px-3 py-1.5 border-b border-slate-100 font-mono ${i % 3 === 0 ? "text-rose-600" : "text-emerald-700"}`}>
+                      {(i % 3 === 0 ? "+" : "-") + (1.2 + (i * 0.37) % 4.8).toFixed(2)}%
+                    </td>
                     <td className="px-3 py-1.5 border-b border-slate-100 text-slate-600">{r.owner}</td>
                   </tr>
                 ))}
@@ -169,9 +171,10 @@ function CamouflageLayer({ onExit }: { onExit: () => void }) {
         </section>
 
         <p className="text-[10.5px] text-slate-400 text-center py-4">
-          Confidential · Internal use only · Generated by CloudIntelliOps Pipeline Engine v4.2.1
+          Confidential · Internal use only · Generated by AWS Cost Explorer Pipeline v4.2.1
         </p>
       </main>
+
 
       {/* Hidden escape hatch — translucent dot, double-click also works anywhere. */}
       <button
