@@ -50,9 +50,33 @@ export default function TrendingEscapeClusters() {
     companies.map((c: string, i: number) => ({ name: c, pct: seedPct(c), tag: TAGS[i % TAGS.length] }))
   );
 
+  // Hydrate boosted scores from localStorage after mount
   useEffect(() => {
-    setClusters(companies.map((c: string, i: number) => ({ name: c, pct: seedPct(c), tag: TAGS[i % TAGS.length] })));
+    if (typeof window === "undefined") return;
+    try {
+      const raw = window.localStorage.getItem("drinkedin_leaderboard_scores");
+      if (!raw) return;
+      const stored = JSON.parse(raw) as Record<string, number>;
+      setClusters((prev) =>
+        prev.map((c) => (stored[c.name] != null ? { ...c, pct: stored[c.name] } : c))
+      );
+    } catch {}
+  }, []);
+
+  useEffect(() => {
+    setClusters(companies.map((c: string, i: number) => {
+      let pct = seedPct(c);
+      try {
+        const raw = window.localStorage.getItem("drinkedin_leaderboard_scores");
+        if (raw) {
+          const stored = JSON.parse(raw) as Record<string, number>;
+          if (stored[c] != null) pct = stored[c];
+        }
+      } catch {}
+      return { name: c, pct, tag: TAGS[i % TAGS.length] };
+    }));
   }, [companies]);
+
 
   useEffect(() => {
     const id = setInterval(() => {
