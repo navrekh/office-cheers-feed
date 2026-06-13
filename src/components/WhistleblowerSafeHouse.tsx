@@ -25,6 +25,7 @@ export default function WhistleblowerSafeHouse() {
     setBurst(pieces);
     window.setTimeout(() => setBurst([]), 2600);
     setOpen(true);
+    try { window.dispatchEvent(new CustomEvent("drinkedin:achievement", { detail: { key: "WHISTLEBLOWER_ELITE" } })); } catch {}
   }
 
   return (
