@@ -9,6 +9,26 @@ function randInt(min: number, max: number) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
+const FEED_COUNTS_KEY = "drinkedin_local_feed";
+
+function readCounts(): Record<string, { v: number; p: number }> {
+  if (typeof window === "undefined") return {};
+  try {
+    const raw = window.localStorage.getItem(FEED_COUNTS_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch {
+    return {};
+  }
+}
+function writeCounts(postId: string, v: number, p: number) {
+  if (typeof window === "undefined") return;
+  try {
+    const all = readCounts();
+    all[postId] = { v, p };
+    window.localStorage.setItem(FEED_COUNTS_KEY, JSON.stringify(all));
+  } catch {}
+}
+
 function PostActions({
   postId,
   authorName,
@@ -29,14 +49,31 @@ function PostActions({
   const [foam, setFoam] = useState<number[]>([]);
   const [copied, setCopied] = useState(false);
 
+  // Hydrate persisted counts after mount (avoids SSR mismatch).
+  useEffect(() => {
+    const stored = readCounts()[postId];
+    if (stored) {
+      setValidated(stored.v);
+      setPints(stored.p);
+    }
+  }, [postId]);
+
   function onValidate() {
-    setValidated((n) => n + 1);
+    setValidated((n) => {
+      const next = n + 1;
+      writeCounts(postId, next, pints);
+      return next;
+    });
     setVPulse(true);
     window.setTimeout(() => setVPulse(false), 220);
   }
 
   function onPint() {
-    setPints((n) => n + 1);
+    setPints((n) => {
+      const next = n + 1;
+      writeCounts(postId, validated, next);
+      return next;
+    });
     setPPulse(true);
     window.setTimeout(() => setPPulse(false), 220);
     const id = Date.now() + Math.random();
@@ -46,6 +83,7 @@ function PostActions({
       duration: 1800,
     });
   }
+
 
   function detectMood(text: string): string {
     const t = text.toLowerCase();
