@@ -32,8 +32,8 @@ export default function PanicButton() {
     setCamo(false);
     trackEngagement("panic_camouflage_deactivate", { ts: Date.now() });
     toast.success(
-      "Crisis averted. Your manager thinks you are deep in a Kubernetes deployment.",
-      { description: "Back to the radar! 🤫🍻", duration: 5000 },
+      "💨 Danger averted. Manager has cleared the sector. Welcome back to the breakroom.",
+      { duration: 4500 },
     );
   }
 
