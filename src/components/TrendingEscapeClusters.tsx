@@ -72,14 +72,39 @@ export default function TrendingEscapeClusters() {
     [clusters]
   );
 
-  const rally = async () => {
-    const text = `${top?.name ?? "Capgemini"} is currently beating us on the DrinkedIn Escape Radar. Hit the link, vote in the burnout roulette, and let's head to the taproom early: https://drinkedin.me`;
+  const [flashIdx, setFlashIdx] = useState<number | null>(null);
+  const [copiedIdx, setCopiedIdx] = useState<number | null>(null);
+
+  const rallyCompany = async (idx: number) => {
+    const boost = Math.round((0.2 + Math.random() * 0.3) * 10) / 10;
+    let updatedPct = 0;
+    let companyName = "";
+    setClusters((prev) =>
+      prev.map((c, i) => {
+        if (i !== idx) return c;
+        const next = Math.min(99.9, Math.round((c.pct + boost) * 10) / 10);
+        updatedPct = next;
+        companyName = c.name;
+        return { ...c, pct: next };
+      })
+    );
+    setFlashIdx(idx);
+    window.setTimeout(() => setFlashIdx((v) => (v === idx ? null : v)), 700);
+
+    const text = `📊 COMPASS ALERT: ${companyName} is currently tracking at ${updatedPct.toFixed(
+      1
+    )}% Escape Velocity on the live breakroom tracker. We are losing to the other tech parks. Hit the button, log your burnout state, and rally our sector to the top: https://drinkedin.me`;
     try {
       await navigator.clipboard.writeText(text);
-      toast.success("Rally message copied — paste it in your team chat.");
-    } catch {
-      toast.error("Clipboard blocked — long-press to copy manually.");
-    }
+    } catch {}
+    setCopiedIdx(idx);
+    window.setTimeout(() => setCopiedIdx((v) => (v === idx ? null : v)), 1500);
+    toast.success("🔥 Team rallied! You just boosted your company's escape velocity index.");
+  };
+
+  const rallyTop = async () => {
+    const idx = clusters.findIndex((c) => c.name === top?.name);
+    if (idx >= 0) rallyCompany(idx);
   };
 
   return (
@@ -103,7 +128,7 @@ export default function TrendingEscapeClusters() {
           </h3>
         </div>
         <button
-          onClick={rally}
+          onClick={rallyTop}
           className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition hover:scale-105"
           style={{
             background: "linear-gradient(135deg, #f97316, #ef4444)",
@@ -117,33 +142,53 @@ export default function TrendingEscapeClusters() {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        {clusters.map((c) => (
-          <div key={c.name} className="space-y-1.5">
-            <div className="flex items-center justify-between text-xs">
-              <span className="font-mono font-semibold text-foreground/90">
-                {c.name}
-              </span>
-              <span className="font-mono tabular-nums text-cyan-300 animate-pulse">
-                {c.pct.toFixed(1)}% {c.tag}
-              </span>
-            </div>
-            <div
-              className="h-2 rounded-full overflow-hidden"
-              style={{ background: "rgba(255,255,255,0.06)" }}
-            >
+        {clusters.map((c, idx) => {
+          const isFlashing = flashIdx === idx;
+          const isCopied = copiedIdx === idx;
+          return (
+            <div key={c.name} className="space-y-1.5">
+              <div className="flex items-center justify-between text-xs gap-2">
+                <span className="font-mono font-semibold text-foreground/90 truncate">
+                  {c.name}
+                </span>
+                <span className="font-mono tabular-nums text-cyan-300 animate-pulse">
+                  {c.pct.toFixed(1)}% {c.tag}
+                </span>
+              </div>
               <div
-                className="h-full rounded-full transition-all duration-1000 ease-out"
-                style={{
-                  width: `${c.pct}%`,
-                  background:
-                    "linear-gradient(90deg, #a855f7 0%, #ec4899 50%, #f97316 100%)",
-                  boxShadow: "0 0 10px rgba(236,72,153,0.6)",
-                }}
-              />
+                className={`h-2 rounded-full overflow-hidden transition-colors duration-300 ${
+                  isFlashing ? "ring-1 ring-amber-300/70" : ""
+                }`}
+                style={{ background: "rgba(255,255,255,0.06)" }}
+              >
+                <div
+                  className="h-full rounded-full transition-all duration-300 ease-out"
+                  style={{
+                    width: `${c.pct}%`,
+                    background: isFlashing
+                      ? "#fbbf24"
+                      : "linear-gradient(90deg, #a855f7 0%, #ec4899 50%, #f97316 100%)",
+                    boxShadow: isFlashing
+                      ? "0 0 14px rgba(251,191,36,0.9)"
+                      : "0 0 10px rgba(236,72,153,0.6)",
+                  }}
+                />
+              </div>
+              <button
+                onClick={() => rallyCompany(idx)}
+                className={`mt-1 w-full text-[10px] font-bold uppercase tracking-wider rounded-full px-2 py-1 border transition-all duration-200 ${
+                  isCopied
+                    ? "border-emerald-400/70 bg-emerald-500/15 text-emerald-200"
+                    : "border-amber-400/40 bg-amber-500/[0.06] text-amber-200 hover:bg-amber-500/[0.14] hover:border-amber-300/60"
+                }`}
+              >
+                {isCopied ? "📋 Link Packaged!" : "📣 Rally My Team"}
+              </button>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
 }
+
