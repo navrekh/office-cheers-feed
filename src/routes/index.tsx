@@ -86,6 +86,7 @@ import { LiveWorkspaceRadar, type ProximityFilter } from "@/components/LiveWorks
 import WhistleblowerSafeHouse from "@/components/WhistleblowerSafeHouse";
 import GlobalTimezoneMatrix from "@/components/GlobalTimezoneMatrix";
 import MidnightLeakDigest from "@/components/MidnightLeakDigest";
+import GlobalEscapeSimulator from "@/components/GlobalEscapeSimulator";
 import TrendingEscapeClusters from "@/components/TrendingEscapeClusters";
 import { WorkplaceSelectorCard } from "@/components/WorkplaceSelectorCard";
 import { ProximityAdDispatcher, dealCoord } from "@/components/ProximityAdDispatcher";
