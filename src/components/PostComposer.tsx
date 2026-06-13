@@ -31,6 +31,7 @@ export default function PostComposer({
 }) {
   const { user } = useAuth();
   const [body, setBody] = useState("");
+  const [mood, setMood] = useState<string | null>(null);
   const [file, setFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [mediaType, setMediaType] = useState<"image" | "video" | null>(null);
