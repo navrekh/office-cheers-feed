@@ -389,6 +389,7 @@ function makeSimPost(idx: number, msg?: string): FeedPost {
 
 export default function PostsFeed() {
   const { user } = useAuth();
+  const panicActive = usePanicState();
   const [posts, setPosts] = useState<FeedPost[] | null>(null);
   const [simPosts, setSimPosts] = useState<FeedPost[]>([]);
   const [replies, setReplies] = useState<Record<string, SimReply[]>>({});
@@ -437,19 +438,20 @@ export default function PostsFeed() {
   // 1 fresh weekend message every 90s to keep the feed organically alive.
   useEffect(() => {
     if (new Date().getDay() !== 6) return;
+    if (panicActive) return;
     setSimPosts([makeSimPost(0), makeSimPost(1), makeSimPost(2)]);
     const interval = window.setInterval(() => {
       setSimPosts((prev) => [makeSimPost(prev.length), ...prev].slice(0, 12));
     }, 90_000);
     return () => window.clearInterval(interval);
-  }, []);
+  }, [panicActive]);
 
 
 
   // Automated reply engine: when a user-owned post appears AFTER mount,
   // schedule a 12-25s delayed simulated reply from a random AI persona.
   useEffect(() => {
-    if (!posts || !user?.id) return;
+    if (!posts || !user?.id || panicActive) return;
     const timers: number[] = [];
 
     for (const p of posts) {
