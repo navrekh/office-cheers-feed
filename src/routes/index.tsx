@@ -1664,6 +1664,9 @@ function Index() {
                 />
               )}
 
+              {/* Live social presence — anons online + typing indicators */}
+              <PresenceBar />
+
               {/* HERO 1 — Post Composer */}
               <ErrorBoundary label="Composer" message="Composer is reloading…">
                 {(() => {
