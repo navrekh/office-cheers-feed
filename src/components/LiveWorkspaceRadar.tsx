@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { Card } from "@/components/ui/card";
 import { Radio, Loader2, Compass, MapPinOff, Beer } from "lucide-react";
@@ -292,7 +292,9 @@ export function LiveWorkspaceRadar({
             {t("radar.title")}
           </div>
           <p className="text-[12px] leading-snug text-muted-foreground">
-            {calibrating
+            {whisperActive
+              ? "📡 NEW WHISPER DETECTED NEAR BY"
+              : calibrating
               ? "🛰️ Calibrating sonar… requesting your high-accuracy fix."
               : `${postBlips.length} colleague signal${postBlips.length === 1 ? "" : "s"} · ${merchantBlips.length} verified watering hole${merchantBlips.length === 1 ? "" : "s"} within ${metersLabel(maxKm)}.`}
           </p>
