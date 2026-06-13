@@ -96,6 +96,7 @@ import BroetryMemeCard from "@/components/BroetryMemeCard";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import GodModeDeck from "@/components/GodModeDeck";
 import AchievementEngine from "@/components/AchievementEngine";
+import RumorMillBracket from "@/components/RumorMillBracket";
 
 // ---------- Client-side spam guard ----------
 const RATE_KEY = "drinkedin.rate.posts";
