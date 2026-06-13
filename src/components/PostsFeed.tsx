@@ -492,7 +492,7 @@ export default function PostsFeed() {
   const { user } = useAuth();
   const panicActive = usePanicState();
   const [posts, setPosts] = useState<FeedPost[] | null>(null);
-  const [simPosts, setSimPosts] = useState<FeedPost[]>(() => [makeNavinLaunchPost()]);
+  const [simPosts, setSimPosts] = useState<FeedPost[]>(() => [makeNavinLaunchPost(), ...makeGlobalSeedPosts()]);
   const [replies, setReplies] = useState<Record<string, SimReply[]>>({});
   const scheduledRef = useRef<Set<string>>(new Set());
   const mountTimeRef = useRef<number>(Date.now());
