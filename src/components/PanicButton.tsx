@@ -74,22 +74,22 @@ function CamouflageLayer({ onExit }: { onExit: () => void }) {
       className="fixed inset-0 z-[100] bg-[#f4f5f7] text-[#1f2937] overflow-auto select-text animate-fade-in"
       onDoubleClick={onExit}
       role="dialog"
-      aria-label="Q2 Cross-Functional Cloud Infrastructure Architecture Realignment Metrics"
+      aria-label="AWS Cloud Cost Optimization Matrix — Q2 Forecast"
     >
       {/* Enterprise header */}
       <header className="bg-white border-b border-slate-200 sticky top-0 z-10">
         <div className="max-w-[1400px] mx-auto px-5 h-12 flex items-center gap-4">
           <div className="flex items-center gap-2 text-[13px] font-bold text-slate-700">
-            <div className="size-6 rounded bg-[#0a66c2] grid place-items-center text-white text-[11px] font-black">CI</div>
-            <span>CloudIntelliOps · Pipeline Stability Console</span>
+            <div className="size-6 rounded bg-[#ff9900] grid place-items-center text-white text-[11px] font-black">AW</div>
+            <span>AWS · Cloud Cost Optimization Matrix</span>
           </div>
           <nav className="hidden md:flex items-center gap-4 text-[11.5px] text-slate-500">
-            <span className="font-semibold text-slate-700">Overview</span>
-            <span>Deployments</span>
-            <span>Incidents</span>
-            <span>Cost Allocation</span>
+            <span className="font-semibold text-slate-700">Forecast</span>
+            <span>Reserved Instances</span>
+            <span>Savings Plans</span>
+            <span>Anomaly Detection</span>
+            <span>Budgets</span>
             <span>Compliance (SOC 2)</span>
-            <span>Quarterly Realignment</span>
           </nav>
           <div className="ml-auto flex items-center gap-3 text-[11px] text-slate-500 font-mono">
             <span>Env: prod-eu-west-1</span>
@@ -98,7 +98,7 @@ function CamouflageLayer({ onExit }: { onExit: () => void }) {
             <button
               type="button"
               onClick={(e) => { e.stopPropagation(); onExit(); }}
-              title="Exit (or double-click anywhere)"
+              title="Exit (ESC, or double-click anywhere)"
               aria-label="Exit camouflage"
               className="size-3 rounded-full bg-slate-300/60 hover:bg-slate-400 transition"
             />
@@ -109,7 +109,7 @@ function CamouflageLayer({ onExit }: { onExit: () => void }) {
       <main className="max-w-[1400px] mx-auto px-5 py-6 space-y-5">
         <div className="flex items-baseline justify-between">
           <h1 className="text-[18px] font-bold text-slate-800">
-            Q2 Cross-Functional Cloud Infrastructure Architecture Realignment Metrics
+            AWS Cloud Cost Optimization Matrix — Q2 Forecast
           </h1>
           <span className="text-[11px] text-slate-500 font-mono">Last sync: {now}</span>
         </div>
