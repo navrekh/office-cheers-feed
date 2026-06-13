@@ -497,7 +497,7 @@ export default function PostsFeed() {
     return () => {
       timers.forEach((t) => window.clearTimeout(t));
     };
-  }, [posts, user?.id]);
+  }, [posts, user?.id, panicActive]);
 
   // Allow the notifications drawer to scroll a target post into view.
   useEffect(() => {
