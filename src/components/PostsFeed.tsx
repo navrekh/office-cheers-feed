@@ -413,6 +413,81 @@ function makeNavinLaunchPost(): FeedPost {
   };
 }
 
+type GlobalSeed = {
+  id: string;
+  author_name: string;
+  author_headline: string;
+  body_text: string;
+  minutesAgo: number;
+  cheers: number;
+};
+
+const GLOBAL_SEED_POSTS: GlobalSeed[] = [
+  {
+    id: "global-seed-meta-e6",
+    author_name: "Anon_Meta_E6",
+    author_headline: "Silicon Valley · RSU Golden Handcuff Prisoner",
+    body_text:
+      "Manager just hinted at another round of 'efficiency calibration' during our Friday 1-on-1. Unlimited PTO is a trap, y'all. Taking a mental health day on Monday.",
+    minutesAgo: 8,
+    cheers: 312,
+  },
+  {
+    id: "global-seed-london-quant",
+    author_name: "London_Quant_Lead",
+    author_headline: "UK · Legacy Cobol Archaeologist",
+    body_text:
+      "Production server at the Canary Wharf branch is held together by pure hope and ancient caffeine deposits. On-call rotation this weekend is pure misery.",
+    minutesAgo: 19,
+    cheers: 248,
+  },
+  {
+    id: "global-seed-berlin-unicorn",
+    author_name: "Berlin_Unicorn_Dev",
+    author_headline: "Germany · Agile Standup Survivor",
+    body_text:
+      "Founder just asked the engineering pod to work Saturday morning to 'hit our Q2 velocity KPIs.' My Slack status is set to offline and I am currently in a cafe pretending to have no signal. ☕",
+    minutesAgo: 32,
+    cheers: 401,
+  },
+  {
+    id: "global-seed-nyc-fintech",
+    author_name: "NYC_Fintech_Sec",
+    author_headline: "New York · Senior Slide-Deck Architect",
+    body_text:
+      "Spent 4 hours formatting alignment slides for a managing director who won't even open the deck. Transitioning this baseline telemetry to deep-focus sleep mode immediately.",
+    minutesAgo: 47,
+    cheers: 189,
+  },
+  {
+    id: "global-seed-stealth-saas",
+    author_name: "Stealth_SaaS_Founder",
+    author_headline: "Austin · Principal Refactoring Fugitive",
+    body_text:
+      "Currently building my independent SaaS project in an office corner while actively muted on a 45-person corporate alignment sync call.",
+    minutesAgo: 61,
+    cheers: 527,
+  },
+];
+
+function makeGlobalSeedPosts(): FeedPost[] {
+  const now = Date.now();
+  return GLOBAL_SEED_POSTS.map((s) => ({
+    id: s.id,
+    author_name: s.author_name,
+    author_headline: s.author_headline,
+    body_text: s.body_text,
+    created_at: new Date(now - s.minutesAgo * 60_000).toISOString(),
+    attached_visual_url: null,
+    media_type: null,
+    tags: null,
+    cheers_count: s.cheers,
+    user_id: null,
+    isUserOwned: false,
+  }));
+}
+
+
 export default function PostsFeed() {
   const { user } = useAuth();
   const panicActive = usePanicState();
