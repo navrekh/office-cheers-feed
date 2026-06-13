@@ -1667,10 +1667,16 @@ function Index() {
                 })()}
               </ErrorBoundary>
 
+              {/* Rumor Mill voting bracket — above the live feed */}
+              <ErrorBoundary label="RumorMill">
+                <RumorMillBracket />
+              </ErrorBoundary>
+
               {/* Card 0b — Live posts feed */}
               <ErrorBoundary label="Feed" message="Feed is reconnecting…">
                 <PostsFeed />
               </ErrorBoundary>
+
 
               {/* Card 1 — TODAY'S DESPERATION INDEX (large, first interactive asset) */}
               <ErrorBoundary label="Poll" message="Poll engine is rebooting…">
