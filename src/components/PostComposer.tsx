@@ -313,7 +313,7 @@ export default function PostComposer({
             <button
               key={m}
               type="button"
-              onClick={() => setMood(active ? null : m)}
+              onClick={() => updateMood(active ? null : m)}
               className={`px-2.5 py-1 rounded-full text-[11px] font-semibold border transition whitespace-nowrap ${
                 active
                   ? "bg-amber-500/10 border-amber-500 text-amber-200 shadow-[0_0_12px_rgba(251,191,36,0.35)]"
