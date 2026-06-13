@@ -1,7 +1,8 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Hash, AtSign, Loader2, ImageOff } from "lucide-react";
+import { Hash, AtSign, Loader2, ImageOff, CornerDownRight } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import { useAuth } from "@/lib/useAuth";
 
 type FeedPost = {
   id: string;
@@ -13,7 +14,44 @@ type FeedPost = {
   media_type: string | null;
   tags: string[] | null;
   cheers_count: number;
+  user_id: string | null;
+  isUserOwned?: boolean;
 };
+
+type SimReply = {
+  id: string;
+  persona: string;
+  text: string;
+  ts: number;
+};
+
+const REPLY_PERSONAS = [
+  "Capgemini_Ghost",
+  "Deloitte_Defector",
+  "Anon_TCS_Lead",
+  "Wipro_Survivor",
+  "Infosys_Refugee",
+  "HCL_Zombie",
+  "Accenture_Scout",
+  "Google_Burnout",
+];
+
+const REPLY_LINES = [
+  "Standard middle-management behavior right here. 💀",
+  "Big agree, run for the hills mate.",
+  "Are you on my team? This sounds exactly like our current sprint alignment.",
+  "Bro this is my JIRA backlog in human form.",
+  "Saving this for my exit interview. 📌",
+  "Reading this between two 'urgent' Slack pings.",
+  "The standup energy is unmatched today. 🫠",
+  "My manager would weaponize this against me.",
+  "Take a half-day. Trust.",
+  "Production is on fire and so are we. 🔥",
+];
+
+function pick<T>(arr: T[]): T {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
 
 function initials(name: string) {
   return name
@@ -25,25 +63,16 @@ function initials(name: string) {
     .join("") || "?";
 }
 
-// Render body with #tag and @mention highlights
 function RichBody({ text }: { text: string }) {
   const parts = text.split(/(\s+)/);
   return (
     <p className="text-[13.5px] leading-relaxed text-foreground/90 whitespace-pre-wrap break-words">
       {parts.map((p, i) => {
         if (/^#[A-Za-z0-9_]{2,}$/.test(p)) {
-          return (
-            <span key={i} className="text-fuchsia-300 font-semibold">
-              {p}
-            </span>
-          );
+          return <span key={i} className="text-fuchsia-300 font-semibold">{p}</span>;
         }
         if (/^@[A-Za-z0-9_]{2,}$/.test(p)) {
-          return (
-            <span key={i} className="text-cyan-300 font-semibold">
-              {p}
-            </span>
-          );
+          return <span key={i} className="text-cyan-300 font-semibold">{p}</span>;
         }
         return <span key={i}>{p}</span>;
       })}
@@ -58,14 +87,13 @@ function MediaThumb({ path, kind }: { path: string; kind: string | null }) {
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      // If it's already a full URL (legacy posts), use it directly.
       if (/^https?:\/\//.test(path)) {
         setUrl(path);
         return;
       }
       const { data, error } = await supabase.storage
         .from("post_media")
-        .createSignedUrl(path, 60 * 60 * 6); // 6h
+        .createSignedUrl(path, 60 * 60 * 6);
       if (cancelled) return;
       if (error || !data?.signedUrl) {
         setErr(true);
@@ -104,12 +132,16 @@ function MediaThumb({ path, kind }: { path: string; kind: string | null }) {
 }
 
 export default function PostsFeed() {
+  const { user } = useAuth();
   const [posts, setPosts] = useState<FeedPost[] | null>(null);
+  const [replies, setReplies] = useState<Record<string, SimReply[]>>({});
+  const scheduledRef = useRef<Set<string>>(new Set());
+  const mountTimeRef = useRef<number>(Date.now());
 
   const load = useCallback(async () => {
     const { data, error } = await (supabase as any)
       .from("posts")
-      .select("id,author_name,author_headline,body_text,created_at,attached_visual_url,media_type,tags,cheers_count,is_hidden")
+      .select("id,author_name,author_headline,body_text,created_at,attached_visual_url,media_type,tags,cheers_count,is_hidden,user_id")
       .eq("is_hidden", false)
       .order("created_at", { ascending: false })
       .limit(25);
@@ -117,8 +149,12 @@ export default function PostsFeed() {
       setPosts([]);
       return;
     }
-    setPosts((data ?? []) as FeedPost[]);
-  }, []);
+    const list = ((data ?? []) as FeedPost[]).map((p) => ({
+      ...p,
+      isUserOwned: !!user?.id && p.user_id === user.id,
+    }));
+    setPosts(list);
+  }, [user?.id]);
 
   useEffect(() => {
     void load();
@@ -139,6 +175,74 @@ export default function PostsFeed() {
       supabase.removeChannel(channel);
     };
   }, [load]);
+
+  // Automated reply engine: when a user-owned post appears AFTER mount,
+  // schedule a 12-25s delayed simulated reply from a random AI persona.
+  useEffect(() => {
+    if (!posts || !user?.id) return;
+    const timers: number[] = [];
+
+    for (const p of posts) {
+      if (!p.isUserOwned) continue;
+      if (scheduledRef.current.has(p.id)) continue;
+      const createdMs = new Date(p.created_at).getTime();
+      // Only react to posts that landed during this session — not historical ones.
+      if (createdMs < mountTimeRef.current - 5_000) {
+        scheduledRef.current.add(p.id);
+        continue;
+      }
+      scheduledRef.current.add(p.id);
+
+      const delay = 12_000 + Math.floor(Math.random() * 13_000); // 12–25s
+      const t = window.setTimeout(() => {
+        const persona = pick(REPLY_PERSONAS);
+        const text = pick(REPLY_LINES);
+        const reply: SimReply = {
+          id: `${p.id}-${Date.now()}`,
+          persona,
+          text,
+          ts: Date.now(),
+        };
+        setReplies((prev) => ({ ...prev, [p.id]: [...(prev[p.id] ?? []), reply] }));
+
+        // Bridge to navbar bell + notifications drawer
+        window.dispatchEvent(
+          new CustomEvent("drinkedin:post-reply", {
+            detail: {
+              postId: p.id,
+              persona,
+              text,
+              snippet: p.body_text.slice(0, 80),
+            },
+          })
+        );
+        // Reuse the existing AI-chat bell pulse bridge as well
+        window.dispatchEvent(new CustomEvent("drinkedin:ai-chat-message"));
+      }, delay);
+      timers.push(t);
+    }
+
+    return () => {
+      timers.forEach((t) => window.clearTimeout(t));
+    };
+  }, [posts, user?.id]);
+
+  // Allow the notifications drawer to scroll a target post into view.
+  useEffect(() => {
+    function onScrollTo(e: Event) {
+      const detail = (e as CustomEvent).detail as { postId?: string } | undefined;
+      const id = detail?.postId;
+      if (!id) return;
+      const el = document.getElementById(`post-${id}`);
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "center" });
+        el.classList.add("ring-2", "ring-amber-400/60");
+        window.setTimeout(() => el.classList.remove("ring-2", "ring-amber-400/60"), 2000);
+      }
+    }
+    window.addEventListener("drinkedin:scroll-to-post", onScrollTo);
+    return () => window.removeEventListener("drinkedin:scroll-to-post", onScrollTo);
+  }, []);
 
   return (
     <div
@@ -171,7 +275,15 @@ export default function PostsFeed() {
       ) : (
         <ul className="space-y-4 max-h-[640px] overflow-y-auto pr-1">
           {posts.map((p) => (
-            <li key={p.id} className="rounded-xl border border-white/5 bg-zinc-950/50 p-3 animate-fade-in">
+            <li
+              key={p.id}
+              id={`post-${p.id}`}
+              className={`rounded-xl border p-3 animate-fade-in transition-shadow ${
+                p.isUserOwned
+                  ? "border-amber-400/30 bg-amber-500/[0.04]"
+                  : "border-white/5 bg-zinc-950/50"
+              }`}
+            >
               <div className="flex items-start gap-2.5">
                 <div className="size-9 shrink-0 rounded-full bg-gradient-to-br from-fuchsia-500/30 to-amber-400/30 border border-white/10 grid place-items-center text-[11px] font-extrabold text-foreground/90">
                   {initials(p.author_name)}
@@ -179,6 +291,11 @@ export default function PostsFeed() {
                 <div className="min-w-0 flex-1">
                   <div className="flex items-baseline gap-2 flex-wrap">
                     <span className="text-[12.5px] font-bold text-foreground truncate">{p.author_name}</span>
+                    {p.isUserOwned && (
+                      <span className="text-[9px] uppercase tracking-wider font-bold text-amber-300 bg-amber-500/15 border border-amber-400/30 rounded-full px-1.5 py-0.5">
+                        You
+                      </span>
+                    )}
                     <span className="text-[10px] text-muted-foreground truncate">{p.author_headline}</span>
                   </div>
                   <div className="text-[10px] text-muted-foreground mb-1.5">
@@ -207,6 +324,23 @@ export default function PostsFeed() {
                       ))}
                     </div>
                   )}
+
+                  {/* Simulated AI persona replies */}
+                  {(replies[p.id] ?? []).map((r) => (
+                    <div
+                      key={r.id}
+                      className="mt-2.5 ml-1 rounded-lg border border-cyan-400/20 bg-cyan-500/[0.06] p-2.5 animate-fade-in"
+                    >
+                      <div className="flex items-center gap-1.5 text-[10.5px] font-bold text-cyan-200">
+                        <CornerDownRight className="size-3" />
+                        {r.persona}
+                        <span className="font-normal text-muted-foreground">
+                          · {formatDistanceToNow(new Date(r.ts), { addSuffix: true })}
+                        </span>
+                      </div>
+                      <p className="mt-1 text-[12.5px] text-foreground/90 leading-snug">{r.text}</p>
+                    </div>
+                  ))}
                 </div>
               </div>
             </li>
