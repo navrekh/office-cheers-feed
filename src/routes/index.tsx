@@ -1767,6 +1767,10 @@ function Index() {
             <GlobalTimezoneMatrix />
           </ErrorBoundary>
 
+          <ErrorBoundary label="MidnightLeakDigest">
+            <MidnightLeakDigest />
+          </ErrorBoundary>
+
           {/* Unified leaderboard panel — Trending Escape Clusters + Desperate Tech Parks */}
           <div
             className="rounded-2xl p-4 shadow-xl space-y-4"
