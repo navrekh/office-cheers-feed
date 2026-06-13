@@ -78,7 +78,7 @@ export default function RoastMyManager() {
         onChange={(e) => setText(e.target.value)}
         rows={3}
         maxLength={800}
-        placeholder='e.g. "Let'"'"'s take this offline and circle back tomorrow."'
+        placeholder={`e.g. "Let's take this offline and circle back tomorrow."`}
         className="w-full resize-none rounded-lg bg-black/60 border border-[#2b2b2b] text-[12px] text-foreground/90 placeholder:text-muted-foreground/60 px-3 py-2 focus:outline-none focus:border-orange-500/40"
       />
 
