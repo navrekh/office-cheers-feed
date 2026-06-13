@@ -255,6 +255,12 @@ const REPLY_PERSONAS = [
   "HCL_Zombie",
   "Accenture_Scout",
   "Google_Burnout",
+  "Pune_TCS_Lead",
+  "SFO_Google_Architect",
+  "Austin_Tesla_Dev",
+  "London_Quant_Lead",
+  "Berlin_Unicorn_Dev",
+  "NYC_Fintech_Sec",
 ];
 
 const REPLY_LINES = [
