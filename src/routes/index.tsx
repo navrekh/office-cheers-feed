@@ -106,6 +106,7 @@ import BreakroomStreak from "@/components/BreakroomStreak";
 import LayoffLeaderboard from "@/components/LayoffLeaderboard";
 import OfficeDramaPolls from "@/components/OfficeDramaPolls";
 import PresenceBar from "@/components/PresenceBar";
+import NewSipsPill from "@/components/NewSipsPill";
 import { useNewPostsNotifier } from "@/lib/presence";
 
 // ---------- Client-side spam guard ----------
@@ -1680,6 +1681,9 @@ function Index() {
                   );
                 })()}
               </ErrorBoundary>
+
+              {/* Floating "+N new sips" pill — only shows when user scrolled past the fold */}
+              <NewSipsPill />
 
               {/* HERO 2 — Live posts feed (the social core) */}
               <ErrorBoundary label="Feed" message="Feed is reconnecting…">

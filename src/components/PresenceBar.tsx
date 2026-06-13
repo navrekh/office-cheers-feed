@@ -1,13 +1,34 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { usePresenceCount, useTypingPeers } from "@/lib/presence";
 
 /**
- * Slim social-presence strip that sits above the feed.
- * Layout-safe: single row, full width of its parent, no width changes.
+ * Slim social-presence strip above the feed.
+ * - Live anon count via Supabase Presence
+ * - Typing pings via Realtime broadcast
+ * - 🔴 LIVE badge that pulses for ~2s on every new post insert
  */
 export default function PresenceBar() {
   const count = usePresenceCount();
   const typing = useTypingPeers();
+  const [pulse, setPulse] = useState(false);
+
+  useEffect(() => {
+    const ch = supabase
+      .channel("presence-bar-live")
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "posts" },
+        () => {
+          setPulse(true);
+          setTimeout(() => setPulse(false), 2200);
+        },
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(ch);
+    };
+  }, []);
 
   const typingLabel = useMemo(() => {
     if (typing.length === 0) return null;
@@ -39,6 +60,17 @@ export default function PresenceBar() {
         <span className="text-[11px] uppercase tracking-wider text-foreground/70 truncate">
           anon{displayCount === 1 ? "" : "s"} sipping right now
         </span>
+        <span
+          className={`ml-1 inline-flex items-center gap-1 rounded-full border px-1.5 py-0.5 text-[9px] font-extrabold uppercase tracking-wider shrink-0 transition-all duration-300 ${
+            pulse
+              ? "border-red-400/80 bg-red-500/20 text-red-200 shadow-[0_0_12px_rgba(248,113,113,0.6)] scale-105"
+              : "border-red-500/30 bg-red-500/5 text-red-400/60"
+          }`}
+          aria-label="Live feed indicator"
+        >
+          <span className={`h-1.5 w-1.5 rounded-full bg-red-500 ${pulse ? "animate-ping" : ""}`} />
+          LIVE
+        </span>
       </div>
       {typingLabel && (
         <div className="hidden sm:flex items-center gap-1.5 text-[11px] text-amber-300/80 italic truncate min-w-0">
@@ -53,3 +85,4 @@ export default function PresenceBar() {
     </div>
   );
 }
+
