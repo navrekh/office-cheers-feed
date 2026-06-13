@@ -1403,6 +1403,28 @@ function Index() {
     return () => window.removeEventListener("drinkedin:ai-chat-message", onAi);
   }, []);
 
+  // Post-reply notifications: capture detail so the drawer can deep-link to the post.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const onReply = (e: Event) => {
+      const d = (e as CustomEvent).detail as { postId?: string; persona?: string; snippet?: string } | undefined;
+      if (!d?.postId) return;
+      setPostReplyNotifs((prev) =>
+        [
+          {
+            id: `${d.postId}-${Date.now()}`,
+            postId: d.postId!,
+            persona: d.persona ?? "Anonymous colleague",
+            snippet: d.snippet ?? "",
+            ts: Date.now(),
+          },
+          ...prev,
+        ].slice(0, 20)
+      );
+    };
+    window.addEventListener("drinkedin:post-reply", onReply);
+    return () => window.removeEventListener("drinkedin:post-reply", onReply);
+
   // Live personal stats derived from the user's real posts
   useEffect(() => {
     if (!user) {
