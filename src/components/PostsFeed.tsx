@@ -112,6 +112,7 @@ function PostActions({
         "🔗 Leak packaged! Go drop it into your private company WhatsApp group chat or Slack thread to rally your team.",
         { duration: 2600 }
       );
+      try { window.dispatchEvent(new CustomEvent("drinkedin:radar-pulse")); } catch {}
     };
 
     try {

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { Card } from "@/components/ui/card";
 import { Radio, Loader2, Compass, MapPinOff, Beer } from "lucide-react";
@@ -107,6 +107,30 @@ export function LiveWorkspaceRadar({
   const [checkins, setCheckins] = useState<CheckIn[]>([]);
   const [serverBlips, setServerBlips] = useState<ScrubbedBlip[]>([]);
   const fetchScrubbedBlips = useServerFn(getScrubbedRadarBlips);
+
+  // Sonar pulse event bridge — fired from composer/rally/share actions
+  const [pulses, setPulses] = useState<number[]>([]);
+  const [whisperActive, setWhisperActive] = useState(false);
+  const whisperTimerRef = useRef<number | null>(null);
+  useEffect(() => {
+    function onPulse() {
+      const id = Date.now() + Math.random();
+      setPulses((prev) => [...prev, id]);
+      window.setTimeout(() => {
+        setPulses((prev) => prev.filter((p) => p !== id));
+      }, 2000);
+      setWhisperActive(true);
+      if (whisperTimerRef.current) window.clearTimeout(whisperTimerRef.current);
+      whisperTimerRef.current = window.setTimeout(() => setWhisperActive(false), 2000);
+    }
+    window.addEventListener("drinkedin:radar-pulse", onPulse);
+    return () => {
+      window.removeEventListener("drinkedin:radar-pulse", onPulse);
+      if (whisperTimerRef.current) window.clearTimeout(whisperTimerRef.current);
+    };
+  }, []);
+
+
 
   useEffect(() => {
     let cancelled = false;
@@ -292,7 +316,9 @@ export function LiveWorkspaceRadar({
             {t("radar.title")}
           </div>
           <p className="text-[12px] leading-snug text-muted-foreground">
-            {calibrating
+            {whisperActive
+              ? "📡 NEW WHISPER DETECTED NEAR BY"
+              : calibrating
               ? "🛰️ Calibrating sonar… requesting your high-accuracy fix."
               : `${postBlips.length} colleague signal${postBlips.length === 1 ? "" : "s"} · ${merchantBlips.length} verified watering hole${merchantBlips.length === 1 ? "" : "s"} within ${metersLabel(maxKm)}.`}
           </p>
@@ -337,10 +363,19 @@ export function LiveWorkspaceRadar({
         <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 group">
           <span className="block size-3 rounded-full bg-emerald-300 shadow-[0_0_14px_rgba(110,231,183,0.95)]" />
           <span className="absolute inset-0 rounded-full ring-2 ring-emerald-300/70 animate-ping" aria-hidden />
+          {pulses.map((id) => (
+            <span
+              key={id}
+              aria-hidden
+              className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 size-24 rounded-full border-2 border-emerald-400/50 shadow-[0_0_22px_rgba(16,185,129,0.55)] animate-ping"
+              style={{ animationDuration: "2s" }}
+            />
+          ))}
           <span className="absolute left-1/2 top-full mt-1 -translate-x-1/2 whitespace-nowrap rounded bg-zinc-900/95 px-1.5 py-0.5 text-[9px] font-mono text-emerald-200 border border-emerald-500/30 opacity-0 group-hover:opacity-100 transition pointer-events-none">
             Your Cubicle (You)
           </span>
         </div>
+
 
         {/* Colleague blips — cyan = same declared company, amber = nearby */}
         {postBlips.map((b) => {
