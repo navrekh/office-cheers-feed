@@ -94,6 +94,7 @@ import DesperationPoll from "@/components/DesperationPoll";
 import DesperationPollModal from "@/components/DesperationPollModal";
 import BroetryMemeCard from "@/components/BroetryMemeCard";
 import ErrorBoundary from "@/components/ErrorBoundary";
+import GodModeDeck from "@/components/GodModeDeck";
 
 // ---------- Client-side spam guard ----------
 const RATE_KEY = "drinkedin.rate.posts";
@@ -1552,7 +1553,10 @@ function Index() {
       <header className={`sticky top-0 z-40 backdrop-blur border-b shadow-sm transition-colors ${happyHour ? "happy-hour-header border-amber-300/50" : "bg-card/95 border-border"}`}>
         <div className="mx-auto max-w-7xl px-4 h-14 flex items-center gap-3">
           <div
-            className="flex items-center gap-2 select-none"
+            className="flex items-center gap-2 select-none cursor-pointer"
+            onClick={() => {
+              try { window.dispatchEvent(new CustomEvent("drinkedin:godmode-bump")); } catch {}
+            }}
             onPointerDown={() => {
               if (logoPressTimer.current) clearTimeout(logoPressTimer.current);
               logoPressTimer.current = setTimeout(() => setDevOpen(true), 5000);
@@ -1817,6 +1821,7 @@ function Index() {
       </footer>
 
       <PanicButton />
+      <GodModeDeck />
       <HubLandingModal />
 
 
