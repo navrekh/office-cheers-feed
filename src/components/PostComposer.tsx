@@ -25,9 +25,11 @@ type Suggestion = { kind: "tag" | "mention"; value: string };
 export default function PostComposer({
   requireAuth,
   onPosted,
+  weekend = false,
 }: {
   requireAuth: (reason?: string) => boolean;
   onPosted?: () => void;
+  weekend?: boolean;
 }) {
   const { user } = useAuth();
   const [body, setBody] = useState("");
