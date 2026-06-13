@@ -1945,6 +1945,15 @@ function Index() {
         myPosts={myPosts}
         origin={geoCoords}
         city={selectedCity}
+        postReplies={postReplyNotifs}
+        onPostReplyClick={(postId) => {
+          setNotifUnread(0);
+          setPostReplyNotifs([]);
+          setNotifOpen(false);
+          window.setTimeout(() => {
+            window.dispatchEvent(new CustomEvent("drinkedin:scroll-to-post", { detail: { postId } }));
+          }, 250);
+        }}
       />
 
       <CommentsDrawer
