@@ -1617,6 +1617,16 @@ function Index() {
                 />
               )}
 
+              {/* Card 0 — Post Composer (text + image/video + #tag / @mention) */}
+              <ErrorBoundary label="Composer" message="Composer is reloading…">
+                <PostComposer requireAuth={requireAuth} />
+              </ErrorBoundary>
+
+              {/* Card 0b — Live posts feed */}
+              <ErrorBoundary label="Feed" message="Feed is reconnecting…">
+                <PostsFeed />
+              </ErrorBoundary>
+
               {/* Card 1 — TODAY'S DESPERATION INDEX (large, first interactive asset) */}
               <ErrorBoundary label="Poll" message="Poll engine is rebooting…">
                 <div
