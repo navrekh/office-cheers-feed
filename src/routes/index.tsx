@@ -154,6 +154,8 @@ import PanicButton from "@/components/PanicButton";
 import HubSelector from "@/components/HubSelector";
 import BurnoutLeaderboard from "@/components/BurnoutLeaderboard";
 import LocalShoutbox from "@/components/LocalShoutbox";
+import PostComposer from "@/components/PostComposer";
+import PostsFeed from "@/components/PostsFeed";
 import ClaimTicketModal from "@/components/ClaimTicketModal";
 import AuthModal from "@/components/AuthModal";
 import MidWeekSurvivalTracker from "@/components/MidWeekSurvivalTracker";
@@ -1614,6 +1616,16 @@ function Index() {
                   onSaved={() => void refreshProfile()}
                 />
               )}
+
+              {/* Card 0 — Post Composer (text + image/video + #tag / @mention) */}
+              <ErrorBoundary label="Composer" message="Composer is reloading…">
+                <PostComposer requireAuth={requireAuth} />
+              </ErrorBoundary>
+
+              {/* Card 0b — Live posts feed */}
+              <ErrorBoundary label="Feed" message="Feed is reconnecting…">
+                <PostsFeed />
+              </ErrorBoundary>
 
               {/* Card 1 — TODAY'S DESPERATION INDEX (large, first interactive asset) */}
               <ErrorBoundary label="Poll" message="Poll engine is rebooting…">

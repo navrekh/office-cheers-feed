@@ -413,8 +413,10 @@ export type Database = {
           is_in_tribunal: boolean
           latitude: number | null
           longitude: number | null
+          media_type: string | null
           misconduct_votes: number
           post_type: string
+          tags: string[]
           user_id: string | null
           valid_votes: number
         }
@@ -432,8 +434,10 @@ export type Database = {
           is_in_tribunal?: boolean
           latitude?: number | null
           longitude?: number | null
+          media_type?: string | null
           misconduct_votes?: number
           post_type?: string
+          tags?: string[]
           user_id?: string | null
           valid_votes?: number
         }
@@ -451,8 +455,10 @@ export type Database = {
           is_in_tribunal?: boolean
           latitude?: number | null
           longitude?: number | null
+          media_type?: string | null
           misconduct_votes?: number
           post_type?: string
+          tags?: string[]
           user_id?: string | null
           valid_votes?: number
         }
