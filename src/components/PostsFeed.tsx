@@ -468,12 +468,56 @@ export default function PostsFeed() {
   useEffect(() => {
     if (new Date().getDay() !== 6) return;
     if (panicActive) return;
-    setSimPosts([makeSimPost(0), makeSimPost(1), makeSimPost(2)]);
+    setSimPosts((prev) => {
+      const pinned = prev.filter((p) => p.id === NAVIN_LAUNCH_POST_ID);
+      return [...pinned, makeSimPost(0), makeSimPost(1), makeSimPost(2)];
+    });
     const interval = window.setInterval(() => {
-      setSimPosts((prev) => [makeSimPost(prev.length), ...prev].slice(0, 12));
+      setSimPosts((prev) => {
+        const pinned = prev.filter((p) => p.id === NAVIN_LAUNCH_POST_ID);
+        const others = prev.filter((p) => p.id !== NAVIN_LAUNCH_POST_ID);
+        return [...pinned, makeSimPost(others.length), ...others].slice(0, 13);
+      });
     }, 90_000);
     return () => window.clearInterval(interval);
   }, [panicActive]);
+
+  // Force the AI persona reply engine to fire 5s after mount against the
+  // hardcoded launch post — guarantees a fresh notification bell ping on
+  // every single page load without relying on the user posting anything.
+  useEffect(() => {
+    if (panicActive) return;
+    const t = window.setTimeout(() => {
+      const persona = "Pune_Tech_Park_Lead";
+      const text =
+        "Huge milestone! Already dropped my burnout metric on the sidebar grid. Let's run it up! 🚀";
+      const reply: SimReply = {
+        id: `${NAVIN_LAUNCH_POST_ID}-launch-${Date.now()}`,
+        persona,
+        text,
+        ts: Date.now(),
+      };
+      setReplies((prev) => ({
+        ...prev,
+        [NAVIN_LAUNCH_POST_ID]: [...(prev[NAVIN_LAUNCH_POST_ID] ?? []), reply],
+      }));
+      try {
+        window.dispatchEvent(
+          new CustomEvent("drinkedin:post-reply", {
+            detail: {
+              postId: NAVIN_LAUNCH_POST_ID,
+              persona,
+              text,
+              snippet: "your weekend status update",
+            },
+          })
+        );
+        window.dispatchEvent(new CustomEvent("drinkedin:ai-chat-message"));
+      } catch {}
+    }, 5_000);
+    return () => window.clearTimeout(t);
+  }, [panicActive]);
+
 
 
 
