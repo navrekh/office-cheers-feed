@@ -55,7 +55,7 @@ export default function NewSipsPill() {
         className="pointer-events-auto inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-amber-950 text-[12px] font-extrabold uppercase tracking-wider px-4 py-2 shadow-[0_4px_24px_-2px_rgba(251,191,36,0.6)] border border-amber-300/60 transition-transform hover:scale-105 active:scale-95"
       >
         <span className="relative flex h-2 w-2">
-          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-500 opacity-80" />
+          <span className="absolute inline-flex h-full w-full animate-soft-breathe rounded-full bg-red-500/60" />
           <span className="relative inline-flex h-2 w-2 rounded-full bg-red-500" />
         </span>
         <span>+{count} new sip{count === 1 ? "" : "s"}</span>
