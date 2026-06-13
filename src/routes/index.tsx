@@ -101,6 +101,8 @@ import RumorMillBracket from "@/components/RumorMillBracket";
 import ExcuseFabricator from "@/components/ExcuseFabricator";
 import BurnoutTelemetry from "@/components/BurnoutTelemetry";
 import AnonymousFeedbackTerminal from "@/components/AnonymousFeedbackTerminal";
+import RoastMyManager from "@/components/RoastMyManager";
+import BreakroomStreak from "@/components/BreakroomStreak";
 
 // ---------- Client-side spam guard ----------
 const RATE_KEY = "drinkedin.rate.posts";
@@ -1729,6 +1731,11 @@ function Index() {
                 >
                   <LocalShoutbox requireAuth={requireAuth} variant="hero" />
                 </div>
+              </ErrorBoundary>
+
+              {/* AI Manager Roast Engine — additive, slots above feedback terminal */}
+              <ErrorBoundary label="RoastEngine">
+                <RoastMyManager />
               </ErrorBoundary>
 
               {/* Anonymous feedback terminal — very bottom of left column rail */}
