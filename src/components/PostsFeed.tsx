@@ -819,7 +819,7 @@ export default function PostsFeed() {
                     </div>
                   ))}
 
-                  <PostActions postId={p.id} authorName={p.author_name} bodyText={p.body_text} />
+                  <PostActions postId={p.id} authorName={p.author_name} bodyText={p.body_text} isUserOwned={p.isUserOwned} />
                 </div>
               </div>
             </li>
