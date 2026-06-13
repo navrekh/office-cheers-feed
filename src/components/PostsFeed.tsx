@@ -34,15 +34,18 @@ function PostActions({
   postId,
   authorName,
   bodyText,
+  isUserOwned = false,
 }: {
   postId: string;
   authorName: string;
   bodyText: string;
+  isUserOwned?: boolean;
 }) {
   const seed = useMemo(
-    () => ({ v: randInt(14, 85), p: randInt(3, 22) }),
-    [postId]
+    () => (isUserOwned ? { v: 0, p: 0 } : { v: randInt(14, 85), p: randInt(3, 22) }),
+    [postId, isUserOwned]
   );
+
   const [validated, setValidated] = useState(seed.v);
   const [pints, setPints] = useState(seed.p);
   const [vPulse, setVPulse] = useState(false);
@@ -816,7 +819,7 @@ export default function PostsFeed() {
                     </div>
                   ))}
 
-                  <PostActions postId={p.id} authorName={p.author_name} bodyText={p.body_text} />
+                  <PostActions postId={p.id} authorName={p.author_name} bodyText={p.body_text} isUserOwned={p.isUserOwned} />
                 </div>
               </div>
             </li>
