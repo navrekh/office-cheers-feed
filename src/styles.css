@@ -98,43 +98,46 @@
 }
 
 .dark {
-  /* DrinkedIn pub-noir palette: deep oak, amber lager, brass */
-  --background: oklch(0.16 0.018 60);
-  --foreground: oklch(0.96 0.012 85);
-  --card: oklch(0.21 0.022 65);
-  --card-foreground: oklch(0.96 0.012 85);
-  --popover: oklch(0.21 0.022 65);
-  --popover-foreground: oklch(0.96 0.012 85);
-  --primary: oklch(0.78 0.165 75);
-  --primary-foreground: oklch(0.18 0.025 60);
-  --secondary: oklch(0.27 0.028 60);
-  --secondary-foreground: oklch(0.96 0.012 85);
-  --muted: oklch(0.24 0.022 60);
-  --muted-foreground: oklch(0.72 0.03 80);
-  --accent: oklch(0.62 0.18 35);
-  --accent-foreground: oklch(0.98 0.01 85);
-  --destructive: oklch(0.6 0.22 25);
+  /* Pub Noir Premium — warm graphite base, single amber identity, hairline borders.
+     2026 premium dark: think Linear meets a speakeasy. Off-black with a whisper
+     of warmth, layered surfaces, calm motion. */
+  --background: oklch(0.155 0.008 55);          /* warm graphite, not pure black */
+  --foreground: oklch(0.965 0.008 80);          /* warm bone white */
+  --card: oklch(0.195 0.01 58);                 /* elevated surface +4% */
+  --card-foreground: oklch(0.965 0.008 80);
+  --popover: oklch(0.22 0.012 60);              /* elevated surface +6% */
+  --popover-foreground: oklch(0.97 0.008 80);
+  --primary: oklch(0.79 0.16 72);               /* signature amber — the only loud color */
+  --primary-foreground: oklch(0.16 0.02 60);
+  --secondary: oklch(0.24 0.012 58);            /* subtle interactive surface */
+  --secondary-foreground: oklch(0.93 0.01 80);
+  --muted: oklch(0.215 0.01 58);
+  --muted-foreground: oklch(0.66 0.018 75);     /* calmer, readable */
+  --accent: oklch(0.79 0.16 72);                /* unify accent with primary — no color soup */
+  --accent-foreground: oklch(0.16 0.02 60);
+  --destructive: oklch(0.58 0.2 25);
   --destructive-foreground: oklch(0.98 0 0);
-  --border: oklch(0.32 0.028 65);
-  --input: oklch(0.27 0.028 60);
-  --ring: oklch(0.78 0.165 75);
-  --chart-1: oklch(0.78 0.165 75);
-  --chart-2: oklch(0.62 0.18 35);
-  --chart-3: oklch(0.55 0.12 145);
-  --chart-4: oklch(0.7 0.15 50);
-  --chart-5: oklch(0.5 0.08 30);
-  --sidebar: oklch(0.19 0.02 62);
-  --sidebar-foreground: oklch(0.96 0.012 85);
-  --sidebar-primary: oklch(0.78 0.165 75);
-  --sidebar-primary-foreground: oklch(0.18 0.025 60);
-  --sidebar-accent: oklch(0.27 0.028 60);
-  --sidebar-accent-foreground: oklch(0.96 0.012 85);
-  --sidebar-border: oklch(0.32 0.028 65);
-  --sidebar-ring: oklch(0.78 0.165 75);
+  --border: oklch(1 0 0 / 0.07);                /* hairline border, 7% white */
+  --input: oklch(1 0 0 / 0.06);
+  --ring: oklch(0.79 0.16 72 / 0.55);
+  --chart-1: oklch(0.79 0.16 72);
+  --chart-2: oklch(0.62 0.14 35);
+  --chart-3: oklch(0.55 0.1 145);
+  --chart-4: oklch(0.7 0.13 50);
+  --chart-5: oklch(0.5 0.06 30);
+  --sidebar: oklch(0.175 0.009 56);
+  --sidebar-foreground: oklch(0.965 0.008 80);
+  --sidebar-primary: oklch(0.79 0.16 72);
+  --sidebar-primary-foreground: oklch(0.16 0.02 60);
+  --sidebar-accent: oklch(0.24 0.012 58);
+  --sidebar-accent-foreground: oklch(0.965 0.008 80);
+  --sidebar-border: oklch(1 0 0 / 0.07);
+  --sidebar-ring: oklch(0.79 0.16 72 / 0.55);
 }
 
 @theme inline {
-  --font-display: "Georgia", "Times New Roman", serif;
+  --font-display: "Instrument Serif", "Georgia", "Times New Roman", serif;
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 }
 
 @layer base {
@@ -142,17 +145,58 @@
     border-color: var(--color-border);
   }
 
+  /* Ambient warm bloom — a single soft amber glow in the top-right, almost
+     imperceptible. Gives the page warmth without adding any chrome. */
+  .dark body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    background-image:
+      radial-gradient(900px 600px at 88% -10%, oklch(0.79 0.16 72 / 0.07), transparent 60%),
+      radial-gradient(700px 500px at 5% 8%, oklch(0.6 0.14 35 / 0.04), transparent 65%);
+    background-attachment: fixed;
+  }
+
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
   }
 
-  /* Global soft-glass pass for all shadcn Card containers in dark mode
-     (sidebars, radar chassis, composer card, etc.) — weightless & premium */
+  /* Premium glass pass for shadcn Card containers in dark mode —
+     warm tint instead of cool grey, deeper blur, hairline border */
   .dark .bg-card {
-    background-color: rgba(24, 20, 20, 0.65) !important;
-    backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.05) !important;
+    background-color: oklch(0.21 0.012 60 / 0.62) !important;
+    backdrop-filter: blur(20px) saturate(140%);
+    border: 1px solid oklch(1 0 0 / 0.06) !important;
+  }
+
+  /* Lift legacy hardcoded surfaces from earlier widgets so the whole page
+     adopts the premium tokens without touching each component. Targets the
+     pure-black panels (#0d0d0d) used across Pub Tools, Telemetry, etc. */
+  .dark [class*="bg-[#0d0d0d]"] {
+    background-color: oklch(0.21 0.012 60 / 0.62) !important;
+    backdrop-filter: blur(20px) saturate(140%);
+  }
+  .dark [class*="border-[#1f1f1f]"],
+  .dark [class*="border-[#2b2b2b]"] {
+    border-color: oklch(1 0 0 / 0.07) !important;
+  }
+
+  /* Calmer focus ring + subtle hover lift for interactive surfaces */
+  .dark button:focus-visible,
+  .dark a:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--color-background), 0 0 0 4px var(--color-ring);
+    border-radius: 6px;
+  }
+
+  /* Soften the scrollbars on dark surfaces */
+  .dark ::-webkit-scrollbar { width: 10px; height: 10px; }
+  .dark ::-webkit-scrollbar-thumb {
+    background: oklch(1 0 0 / 0.08);
+    border-radius: 999px;
+  }
+  .dark ::-webkit-scrollbar-thumb:hover {
+    background: oklch(1 0 0 / 0.14);
   }
 }
 
