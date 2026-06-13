@@ -9,7 +9,15 @@ function randInt(min: number, max: number) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-function PostActions({ postId }: { postId: string }) {
+function PostActions({
+  postId,
+  authorName,
+  bodyText,
+}: {
+  postId: string;
+  authorName: string;
+  bodyText: string;
+}) {
   const seed = useMemo(
     () => ({ v: randInt(14, 85), p: randInt(3, 22) }),
     [postId]
@@ -19,6 +27,7 @@ function PostActions({ postId }: { postId: string }) {
   const [vPulse, setVPulse] = useState(false);
   const [pPulse, setPPulse] = useState(false);
   const [foam, setFoam] = useState<number[]>([]);
+  const [copied, setCopied] = useState(false);
 
   function onValidate() {
     setValidated((n) => n + 1);
@@ -38,8 +47,57 @@ function PostActions({ postId }: { postId: string }) {
     });
   }
 
+  function detectMood(text: string): string {
+    const t = text.toLowerCase();
+    if (/(fire|🔥|burn|prod|on-call|panic)/.test(t)) return "🔥";
+    if (/(meeting|standup|jira|sprint|manager)/.test(t)) return "🥱";
+    if (/(beer|toit|pint|🍻|happy hour|taproom)/.test(t)) return "🍻";
+    if (/(side-hustle|quit|exit|resign|escape)/.test(t)) return "🚀";
+    if (/(ghost|slack|read|📴|leave)/.test(t)) return "👻";
+    return "🤯";
+  }
+
+  function onShare() {
+    const mood = detectMood(bodyText);
+    const truncated =
+      bodyText.length > 80 ? bodyText.slice(0, 80) : bodyText;
+    const payload =
+      `🚨 DRINKEDIN LEAK: An anonymous ${authorName} just dropped a confession from the tech park breakroom...\n\n` +
+      `Mood: ${mood}\n` +
+      `Status: "${truncated}..."\n\n` +
+      `Read the full unfiltered timeline and check your company's real-time checkout velocity here: https://drinkedin.me`;
+
+    const done = () => {
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1500);
+      toast(
+        "🔗 Leak packaged! Go drop it into your private company WhatsApp group chat or Slack thread to rally your team.",
+        { duration: 2600 }
+      );
+    };
+
+    try {
+      navigator.clipboard.writeText(payload).then(done).catch(() => {
+        // Fallback
+        const ta = document.createElement("textarea");
+        ta.value = payload;
+        document.body.appendChild(ta);
+        ta.select();
+        try { document.execCommand("copy"); } catch {}
+        document.body.removeChild(ta);
+        done();
+      });
+    } catch {
+      done();
+    }
+  }
+
   return (
-    <div className="mt-3 flex items-center gap-2 pt-2 border-t border-white/5">
+    <div
+      className={`mt-3 flex items-center gap-2 flex-wrap pt-2 border-t transition-colors duration-300 ${
+        copied ? "border-emerald-400/60" : "border-white/5"
+      }`}
+    >
       <button
         type="button"
         onClick={onValidate}
@@ -66,6 +124,17 @@ function PostActions({ postId }: { postId: string }) {
           </span>
         ))}
       </button>
+      <button
+        type="button"
+        onClick={onShare}
+        className={`px-3 py-1 rounded-full text-[11px] font-bold border transition-all duration-200 ${
+          copied
+            ? "border-emerald-400/70 bg-emerald-500/15 text-emerald-200"
+            : "border-white/15 bg-white/[0.03] text-white/70 hover:bg-white/[0.08] hover:border-white/25"
+        }`}
+      >
+        {copied ? "✅ Copied to Clipboard!" : "🔗 Share Leak"}
+      </button>
       <style>{`
         @keyframes foam-float {
           0% { opacity: 0; transform: translate(-50%, 0) scale(0.6); }
@@ -76,6 +145,7 @@ function PostActions({ postId }: { postId: string }) {
     </div>
   );
 }
+
 
 
 type FeedPost = {
@@ -474,7 +544,7 @@ export default function PostsFeed() {
                     </div>
                   ))}
 
-                  <PostActions postId={p.id} />
+                  <PostActions postId={p.id} authorName={p.author_name} bodyText={p.body_text} />
                 </div>
               </div>
             </li>
