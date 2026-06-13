@@ -93,13 +93,11 @@ export default function RallyBoard({ requireAuth }: Props) {
 
   // Realtime: RSVPs (not hub-filtered server-side; filter client-side by known rally ids).
   useEffect(() => {
-    const channel = supabase
+    const channel = (supabase as any)
       .channel(`rally_rsvps:all`)
-      // @ts-expect-error broad payload type
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "rally_rsvps" }, (p: { new: Rsvp }) => {
         setRsvps((prev) => (prev.some((r) => r.id === p.new.id) ? prev : [...prev, p.new]));
       })
-      // @ts-expect-error broad payload type
       .on("postgres_changes", { event: "DELETE", schema: "public", table: "rally_rsvps" }, (p: { old: Rsvp }) => {
         setRsvps((prev) => prev.filter((r) => r.id !== p.old.id));
       })
