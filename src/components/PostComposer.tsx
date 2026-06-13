@@ -155,7 +155,11 @@ export default function PostComposer({
         mtype = mediaType;
       }
 
-      const baseAlias = `${(user?.email || "anon").split("@")[0]} 🎭`;
+      const HUBS = ["TCS", "Infosys", "Wipro", "Capgemini", "Cognizant", "HCL", "Accenture", "Deloitte", "Google", "Meta", "Amazon", "Microsoft"];
+      const ROLES = ["Dev", "Survivor", "Refugee", "Lead", "Intern", "PM", "Ghost", "Zombie", "Martyr", "Scout"];
+      const hub = HUBS[Math.floor(Math.random() * HUBS.length)];
+      const role = ROLES[Math.floor(Math.random() * ROLES.length)];
+      const baseAlias = `Anon_${hub}_${role}`;
       const alias = mood ? `${baseAlias} [${mood}]` : baseAlias;
       const headline = `Anonymous · ${getSelectedCity()}`;
 

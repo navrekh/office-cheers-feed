@@ -171,7 +171,7 @@ export default function PostsFeed() {
       ) : (
         <ul className="space-y-4 max-h-[640px] overflow-y-auto pr-1">
           {posts.map((p) => (
-            <li key={p.id} className="rounded-xl border border-white/5 bg-zinc-950/50 p-3">
+            <li key={p.id} className="rounded-xl border border-white/5 bg-zinc-950/50 p-3 animate-fade-in">
               <div className="flex items-start gap-2.5">
                 <div className="size-9 shrink-0 rounded-full bg-gradient-to-br from-fuchsia-500/30 to-amber-400/30 border border-white/10 grid place-items-center text-[11px] font-extrabold text-foreground/90">
                   {initials(p.author_name)}
