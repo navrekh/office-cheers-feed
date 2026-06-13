@@ -155,7 +155,8 @@ export default function PostComposer({
         mtype = mediaType;
       }
 
-      const alias = `${(user?.email || "anon").split("@")[0]} 🎭`;
+      const baseAlias = `${(user?.email || "anon").split("@")[0]} 🎭`;
+      const alias = mood ? `${baseAlias} [${mood}]` : baseAlias;
       const headline = `Anonymous · ${getSelectedCity()}`;
 
       const { error } = await (supabase as any).from("posts").insert({
