@@ -106,6 +106,7 @@ import BreakroomStreak from "@/components/BreakroomStreak";
 import LayoffLeaderboard from "@/components/LayoffLeaderboard";
 import OfficeDramaPolls from "@/components/OfficeDramaPolls";
 import PresenceBar from "@/components/PresenceBar";
+import NewSipsPill from "@/components/NewSipsPill";
 import { useNewPostsNotifier } from "@/lib/presence";
 
 // ---------- Client-side spam guard ----------
