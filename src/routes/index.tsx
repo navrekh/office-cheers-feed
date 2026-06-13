@@ -171,6 +171,7 @@ import PanicButton from "@/components/PanicButton";
 import HubSelector from "@/components/HubSelector";
 import BurnoutLeaderboard from "@/components/BurnoutLeaderboard";
 import LocalShoutbox from "@/components/LocalShoutbox";
+import RallyBoard from "@/components/RallyBoard";
 import PostComposer from "@/components/PostComposer";
 import PostsFeed from "@/components/PostsFeed";
 import WeekendBoundaryModule from "@/components/WeekendBoundaryModule";
@@ -1690,10 +1691,10 @@ function Index() {
                 <PostsFeed />
               </ErrorBoundary>
 
-              {/* HERO 3 — Live Breakroom Chat (presence + conversation) */}
+              {/* HERO 3 — Live Breakroom Chat (presence + conversation) + Rally Board */}
               <ErrorBoundary label="Shoutbox" message="Chat is reconnecting…">
                 <div
-                  className="rounded-2xl p-4 shadow-xl [&_[data-shoutbox-log]]:max-h-[300px] [&_[data-shoutbox-log]]:overflow-y-auto"
+                  className="rounded-2xl p-4 shadow-xl space-y-4 [&_[data-shoutbox-log]]:max-h-[300px] [&_[data-shoutbox-log]]:overflow-y-auto"
                   style={{
                     background: "rgba(13, 13, 13, 0.8)",
                     backdropFilter: "blur(12px)",
@@ -1701,6 +1702,7 @@ function Index() {
                     border: "1px solid #1f1f1f",
                   }}
                 >
+                  <RallyBoard requireAuth={requireAuth} />
                   <LocalShoutbox requireAuth={requireAuth} variant="hero" />
                 </div>
               </ErrorBoundary>

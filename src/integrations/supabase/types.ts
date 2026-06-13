@@ -518,6 +518,83 @@ export type Database = {
         }
         Relationships: []
       }
+      rallies: {
+        Row: {
+          created_at: string
+          creator_emoji: string
+          creator_handle: string
+          creator_id: string
+          eta_minutes: number
+          expires_at: string
+          hub: string
+          id: string
+          note: string | null
+          source_message_id: string | null
+          venue: string
+        }
+        Insert: {
+          created_at?: string
+          creator_emoji?: string
+          creator_handle: string
+          creator_id: string
+          eta_minutes?: number
+          expires_at?: string
+          hub: string
+          id?: string
+          note?: string | null
+          source_message_id?: string | null
+          venue: string
+        }
+        Update: {
+          created_at?: string
+          creator_emoji?: string
+          creator_handle?: string
+          creator_id?: string
+          eta_minutes?: number
+          expires_at?: string
+          hub?: string
+          id?: string
+          note?: string | null
+          source_message_id?: string | null
+          venue?: string
+        }
+        Relationships: []
+      }
+      rally_rsvps: {
+        Row: {
+          created_at: string
+          emoji: string
+          handle: string
+          id: string
+          rally_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          emoji?: string
+          handle: string
+          id?: string
+          rally_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          emoji?: string
+          handle?: string
+          id?: string
+          rally_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rally_rsvps_rally_id_fkey"
+            columns: ["rally_id"]
+            isOneToOne: false
+            referencedRelation: "rallies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       shoutbox_messages: {
         Row: {
           body: string
