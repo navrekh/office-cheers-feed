@@ -555,9 +555,9 @@ export default function PostsFeed() {
     });
     const interval = window.setInterval(() => {
       setSimPosts((prev) => {
-        const pinned = prev.filter((p) => p.id === NAVIN_LAUNCH_POST_ID);
-        const others = prev.filter((p) => p.id !== NAVIN_LAUNCH_POST_ID);
-        return [...pinned, makeSimPost(others.length), ...others].slice(0, 13);
+        const pinned = prev.filter((p) => p.id === NAVIN_LAUNCH_POST_ID || p.id.startsWith("global-seed-"));
+        const others = prev.filter((p) => p.id !== NAVIN_LAUNCH_POST_ID && !p.id.startsWith("global-seed-"));
+        return [...pinned, makeSimPost(others.length), ...others].slice(0, 18);
       });
     }, 90_000);
     return () => window.clearInterval(interval);
