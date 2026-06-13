@@ -322,17 +322,17 @@ export default function PostsFeed() {
         </span>
       </div>
 
-      {posts === null ? (
+      {merged === null ? (
         <div className="grid place-items-center py-10">
           <Loader2 className="size-5 animate-spin text-muted-foreground" />
         </div>
-      ) : posts.length === 0 ? (
+      ) : merged.length === 0 ? (
         <p className="text-[12.5px] text-muted-foreground py-6 text-center">
           No posts yet — be the first to drop a confession ☝️
         </p>
       ) : (
         <ul className="space-y-4 max-h-[640px] overflow-y-auto pr-1">
-          {posts.map((p) => (
+          {merged.map((p) => (
             <li
               key={p.id}
               id={`post-${p.id}`}
