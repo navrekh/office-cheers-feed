@@ -3,6 +3,7 @@ import { Megaphone, Flame } from "lucide-react";
 import { getSelectedCity, subscribeCity } from "@/lib/cityStore";
 import type { CityKey } from "@/lib/cityStore";
 import { toast } from "sonner";
+import { usePanicState } from "@/lib/usePanicState";
 
 type Cluster = { name: string; pct: number; tag: string };
 
@@ -78,7 +79,9 @@ export default function TrendingEscapeClusters() {
   }, [companies]);
 
 
+  const panicActive = usePanicState();
   useEffect(() => {
+    if (panicActive) return;
     const id = setInterval(() => {
       setClusters((prev) =>
         prev.map((c) => {
@@ -89,7 +92,7 @@ export default function TrendingEscapeClusters() {
       );
     }, 2200);
     return () => clearInterval(id);
-  }, []);
+  }, [panicActive]);
 
   const top = useMemo(
     () => [...clusters].sort((a, b) => b.pct - a.pct)[0],
