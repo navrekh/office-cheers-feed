@@ -73,6 +73,7 @@ export default function PostComposer({
   function handleBodyChange(e: React.ChangeEvent<HTMLTextAreaElement>) {
     const v = e.target.value.slice(0, MAX_BODY);
     setBody(v);
+    if (v.length > 0) broadcastTyping();
     const caret = e.target.selectionStart ?? v.length;
     const head = v.slice(0, caret);
     const m = head.match(/(^|\s)([#@])([A-Za-z0-9_]*)$/);
