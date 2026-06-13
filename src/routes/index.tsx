@@ -156,6 +156,7 @@ import BurnoutLeaderboard from "@/components/BurnoutLeaderboard";
 import LocalShoutbox from "@/components/LocalShoutbox";
 import PostComposer from "@/components/PostComposer";
 import PostsFeed from "@/components/PostsFeed";
+import WeekendBoundaryModule from "@/components/WeekendBoundaryModule";
 import ClaimTicketModal from "@/components/ClaimTicketModal";
 import AuthModal from "@/components/AuthModal";
 import MidWeekSurvivalTracker from "@/components/MidWeekSurvivalTracker";
