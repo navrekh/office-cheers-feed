@@ -388,14 +388,42 @@ function makeSimPost(idx: number, msg?: string): FeedPost {
   };
 }
 
+const NAVIN_LAUNCH_POST_ID = "navin-launch-post-1";
+
+function makeNavinLaunchPost(): FeedPost {
+  return {
+    id: NAVIN_LAUNCH_POST_ID,
+    author_name: "Anon_Founder (You)",
+    author_headline: "Just now",
+    body_text:
+      "Happy weekend everyone! DrinkedIn is officially live. Drop your tech park telemetry below. 🍻🔥",
+    created_at: new Date().toISOString(),
+    attached_visual_url: null,
+    media_type: null,
+    tags: null,
+    cheers_count: 142,
+    user_id: null,
+    isUserOwned: true,
+  };
+}
+
 export default function PostsFeed() {
   const { user } = useAuth();
   const panicActive = usePanicState();
   const [posts, setPosts] = useState<FeedPost[] | null>(null);
-  const [simPosts, setSimPosts] = useState<FeedPost[]>([]);
+  const [simPosts, setSimPosts] = useState<FeedPost[]>(() => [makeNavinLaunchPost()]);
   const [replies, setReplies] = useState<Record<string, SimReply[]>>({});
   const scheduledRef = useRef<Set<string>>(new Set());
   const mountTimeRef = useRef<number>(Date.now());
+
+  // Seed persisted validation/pint counts for the hardcoded launch post so the
+  // PostActions row hydrates to 142 / 38 on first paint (and on every reload
+  // unless the visitor has actively tapped the buttons since).
+  useEffect(() => {
+    const existing = readCounts()[NAVIN_LAUNCH_POST_ID];
+    if (!existing) writeCounts(NAVIN_LAUNCH_POST_ID, 142, 38);
+  }, []);
+
 
   const load = useCallback(async () => {
     const { data, error } = await (supabase as any)
