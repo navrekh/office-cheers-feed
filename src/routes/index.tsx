@@ -98,6 +98,7 @@ import GodModeDeck from "@/components/GodModeDeck";
 import AchievementEngine from "@/components/AchievementEngine";
 import RumorMillBracket from "@/components/RumorMillBracket";
 import ExcuseFabricator from "@/components/ExcuseFabricator";
+import BurnoutTelemetry from "@/components/BurnoutTelemetry";
 
 // ---------- Client-side spam guard ----------
 const RATE_KEY = "drinkedin.rate.posts";
@@ -1676,6 +1677,11 @@ function Index() {
               {/* Excuse Fabricator — stacked below the bracket */}
               <ErrorBoundary label="ExcuseFabricator">
                 <ExcuseFabricator />
+              </ErrorBoundary>
+
+              {/* Burnout telemetry — above the live feed */}
+              <ErrorBoundary label="BurnoutTelemetry">
+                <BurnoutTelemetry />
               </ErrorBoundary>
 
               {/* Card 0b — Live posts feed */}
