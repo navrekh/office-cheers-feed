@@ -3015,6 +3015,8 @@ function NotificationsDrawer({
   myPosts,
   origin,
   city,
+  postReplies = [],
+  onPostReplyClick,
 }: {
   open: boolean;
   onOpenChange: (v: boolean) => void;
@@ -3022,6 +3024,8 @@ function NotificationsDrawer({
   myPosts: Post[];
   origin: { latitude: number; longitude: number } | null;
   city: CityKey;
+  postReplies?: Array<{ id: string; postId: string; persona: string; snippet: string; ts: number }>;
+  onPostReplyClick?: (postId: string) => void;
 }) {
   const { deals } = useMerchantDeals(city);
 
