@@ -184,6 +184,42 @@ function PostActions({
   );
 }
 
+const SATIRICAL_TITLES = [
+  "Senior Fire Extinguisher (Production Support)",
+  "Jira Ticket Moving Champion",
+  "Legacy Code Archaeologist",
+  "On-Call Martyr & Caffeine Depository",
+  "Slide-Deck Aesthetic Architect",
+  "VP of Over-Promising & Under-Delivering",
+  "Lead Alignment Synergy Liaison",
+  "Sprint Retrospective Survivor",
+  "Muted Attendee in 45-Person Syncs",
+  "Principal Legacy Refactoring Fugitive",
+];
+
+const AVATAR_GRADIENTS = [
+  "from-emerald-500/40 to-teal-500/10 ring-emerald-400/40",
+  "from-pink-500/40 to-fuchsia-500/10 ring-pink-400/40",
+  "from-amber-500/40 to-orange-500/10 ring-amber-400/40",
+  "from-indigo-500/40 to-violet-500/10 ring-indigo-400/40",
+  "from-cyan-500/40 to-sky-500/10 ring-cyan-400/40",
+  "from-rose-500/40 to-red-500/10 ring-rose-400/40",
+];
+
+function hashStr(s: string): number {
+  let h = 0;
+  for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0;
+  return h;
+}
+function pickTitle(seed: string): string {
+  return SATIRICAL_TITLES[hashStr(seed) % SATIRICAL_TITLES.length];
+}
+function pickGradient(seed: string): string {
+  return AVATAR_GRADIENTS[hashStr(seed + "g") % AVATAR_GRADIENTS.length];
+}
+
+
+
 
 
 type FeedPost = {
@@ -525,7 +561,11 @@ export default function PostsFeed() {
               }`}
             >
               <div className="flex items-start gap-2.5">
-                <div className="size-9 shrink-0 rounded-full bg-gradient-to-br from-fuchsia-500/30 to-amber-400/30 border border-white/10 grid place-items-center text-[11px] font-extrabold text-foreground/90">
+                <div
+                  className={`size-9 shrink-0 rounded-full bg-gradient-to-br ${pickGradient(
+                    p.id
+                  )} backdrop-blur-sm border border-white/10 ring-2 grid place-items-center text-[11px] font-extrabold text-foreground/90 shadow-[inset_0_0_8px_rgba(255,255,255,0.08)]`}
+                >
                   {initials(p.author_name)}
                 </div>
                 <div className="min-w-0 flex-1">
@@ -536,8 +576,16 @@ export default function PostsFeed() {
                         You
                       </span>
                     )}
-                    <span className="text-[10px] text-muted-foreground truncate">{p.author_headline}</span>
+                    <span className="text-[10px] text-muted-foreground truncate">
+                      · {pickTitle(p.id)}
+                    </span>
                   </div>
+                  {p.author_headline && (
+                    <div className="text-[9.5px] text-muted-foreground/70 truncate">
+                      {p.author_headline}
+                    </div>
+                  )}
+
                   <div className="text-[10px] text-muted-foreground mb-1.5">
                     {formatDistanceToNow(new Date(p.created_at), { addSuffix: true })}
                   </div>
