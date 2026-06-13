@@ -4,6 +4,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 
 const STORAGE_KEY = "drinkedin_user_feedback";
+const VOTES_KEY = "drinkedin_roadmap_votes";
 
 type FeedbackEntry = {
   id: string;
@@ -11,6 +12,37 @@ type FeedbackEntry = {
   company: string;
   ts: number;
 };
+
+type RoadmapFeature = {
+  id: string;
+  title: string;
+  description: string;
+  baseVotes: number;
+};
+
+const ROADMAP_FEATURES: RoadmapFeature[] = [
+  {
+    id: "dm-mesh",
+    title: "🕵️‍♂️ Anonymous DM Mesh Network",
+    description:
+      "Securely message colleagues in your same tech park without entering compliance logs.",
+    baseVotes: 342,
+  },
+  {
+    id: "manager-registry",
+    title: "🚩 Corporate Toxic Manager Registry",
+    description:
+      "A crowd-sourced, encrypted heat-map to cross-reference manager turnover histories.",
+    baseVotes: 518,
+  },
+  {
+    id: "visa-space",
+    title: "🛂 H-1B / Visa Sponsor Safe Space",
+    description:
+      "Dedicated tech-hub boards for tracking immigration delays, stealth PTO rules, and transfer protocols.",
+    baseVotes: 289,
+  },
+];
 
 function loadFeedback(): FeedbackEntry[] {
   if (typeof window === "undefined") return [];
@@ -24,14 +56,35 @@ function loadFeedback(): FeedbackEntry[] {
   }
 }
 
+function loadVotes(): Record<string, { count: number; voted: boolean }> {
+  const base: Record<string, { count: number; voted: boolean }> = {};
+  for (const f of ROADMAP_FEATURES) base[f.id] = { count: f.baseVotes, voted: false };
+  if (typeof window === "undefined") return base;
+  try {
+    const raw = window.localStorage.getItem(VOTES_KEY);
+    if (!raw) return base;
+    const parsed = JSON.parse(raw) as Record<string, { count: number; voted: boolean }>;
+    for (const f of ROADMAP_FEATURES) {
+      if (parsed[f.id]) base[f.id] = parsed[f.id];
+    }
+    return base;
+  } catch {
+    return base;
+  }
+}
+
 export default function AnonymousFeedbackTerminal() {
   const [idea, setIdea] = useState("");
   const [company, setCompany] = useState("");
   const [entries, setEntries] = useState<FeedbackEntry[]>([]);
   const [sent, setSent] = useState(false);
+  const [votes, setVotes] = useState<Record<string, { count: number; voted: boolean }>>(() =>
+    loadVotes(),
+  );
 
   useEffect(() => {
     setEntries(loadFeedback());
+    setVotes(loadVotes());
   }, []);
 
   const submit = () => {
@@ -57,6 +110,23 @@ export default function AnonymousFeedbackTerminal() {
     setCompany("");
     setSent(true);
     toast.success("🚀 Feedback sent completely anonymously!");
+  };
+
+  const upvote = (id: string) => {
+    setVotes((prev) => {
+      if (prev[id]?.voted) return prev;
+      const next = {
+        ...prev,
+        [id]: { count: (prev[id]?.count ?? 0) + 1, voted: true },
+      };
+      try {
+        window.localStorage.setItem(VOTES_KEY, JSON.stringify(next));
+      } catch {
+        /* best effort */
+      }
+      return next;
+    });
+    toast.success("🎯 Signal logged. Priority queue updated in the founder's matrix.");
   };
 
   return (
@@ -107,6 +177,51 @@ export default function AnonymousFeedbackTerminal() {
           </p>
         </div>
       )}
+
+      <div className="border-t border-dashed border-[#2b2b2b] my-4" />
+
+      <h4 className="text-[10px] uppercase tracking-[0.22em] font-bold text-emerald-400 drop-shadow-[0_0_8px_rgba(16,185,129,0.6)] mb-3 font-mono">
+        📡 Current Deployment Signal Queue (Vote for Next Unlock)
+      </h4>
+
+      <ul className="space-y-2">
+        {ROADMAP_FEATURES.map((f) => {
+          const v = votes[f.id] ?? { count: f.baseVotes, voted: false };
+          return (
+            <li
+              key={f.id}
+              className="flex items-start gap-3 rounded-xl border border-[#1f1f1f] bg-black/50 p-3"
+            >
+              <div className="min-w-0 flex-1">
+                <div className="text-[12px] font-bold text-emerald-200 leading-tight break-words">
+                  {f.title}
+                </div>
+                <p className="text-[11px] text-zinc-400 font-mono mt-1 leading-snug break-words">
+                  {f.description}
+                </p>
+              </div>
+              <div className="flex flex-col items-center gap-1 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => upvote(f.id)}
+                  disabled={v.voted}
+                  aria-label={`Upvote ${f.title}`}
+                  className={
+                    v.voted
+                      ? "w-8 h-8 rounded-lg border border-emerald-400/80 bg-emerald-500/25 text-emerald-300 font-bold text-sm shadow-[0_0_12px_rgba(16,185,129,0.75)] cursor-not-allowed"
+                      : "w-8 h-8 rounded-lg border border-[#2b2b2b] bg-black/60 text-emerald-400 hover:border-emerald-500/60 hover:bg-emerald-500/15 hover:text-emerald-200 font-bold text-sm transition-colors"
+                  }
+                >
+                  ▲
+                </button>
+                <span className="text-[10px] font-mono font-bold text-emerald-300 tabular-nums">
+                  {v.count.toLocaleString()}
+                </span>
+              </div>
+            </li>
+          );
+        })}
+      </ul>
     </div>
   );
 }
