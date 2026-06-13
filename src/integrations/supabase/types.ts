@@ -574,48 +574,6 @@ export type Database = {
         }
         Relationships: []
       }
-      public_merchant_profiles: {
-        Row: {
-          declared_company: string | null
-          flash_deal_text: string | null
-          id: string | null
-          latitude: number | null
-          longitude: number | null
-          map_query_address: string | null
-          merchant_website: string | null
-          pub_name: string | null
-          role: Database["public"]["Enums"]["app_role"] | null
-          tech_park_zone: string | null
-          verified_hub_city: string | null
-        }
-        Insert: {
-          declared_company?: string | null
-          flash_deal_text?: string | null
-          id?: string | null
-          latitude?: number | null
-          longitude?: number | null
-          map_query_address?: string | null
-          merchant_website?: string | null
-          pub_name?: string | null
-          role?: Database["public"]["Enums"]["app_role"] | null
-          tech_park_zone?: string | null
-          verified_hub_city?: string | null
-        }
-        Update: {
-          declared_company?: string | null
-          flash_deal_text?: string | null
-          id?: string | null
-          latitude?: number | null
-          longitude?: number | null
-          map_query_address?: string | null
-          merchant_website?: string | null
-          pub_name?: string | null
-          role?: Database["public"]["Enums"]["app_role"] | null
-          tech_park_zone?: string | null
-          verified_hub_city?: string | null
-        }
-        Relationships: []
-      }
     }
     Functions: {
       admin_approve_lead: {
