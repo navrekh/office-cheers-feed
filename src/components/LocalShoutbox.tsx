@@ -331,6 +331,19 @@ export default function LocalShoutbox({ requireAuth, variant = "compact" }: Prop
                     {m.body}
                   </p>
                 </div>
+                <button
+                  type="button"
+                  title="Turn this whisper into a live rally"
+                  onClick={() => {
+                    if (typeof window === "undefined") return;
+                    window.dispatchEvent(new CustomEvent("drinkedin:rally-from-message", {
+                      detail: { messageId: m.id.startsWith("ai-") ? null : m.id, suggested: "" },
+                    }));
+                  }}
+                  className="self-start opacity-0 group-hover:opacity-100 focus:opacity-100 transition inline-flex items-center gap-1 text-[10px] font-extrabold uppercase tracking-wider px-2 py-1 rounded-md bg-amber-400/10 hover:bg-amber-400/25 text-amber-300 border border-amber-400/30"
+                >
+                  🚨 Rally
+                </button>
               </div>
             );
           })
