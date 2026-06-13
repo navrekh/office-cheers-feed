@@ -26,11 +26,17 @@ export default function PanicButton() {
   function activate() {
     setCamo(true);
     trackEngagement("panic_camouflage_activate", { ts: Date.now() });
+    try {
+      window.dispatchEvent(new CustomEvent("drinkedin:panic-state", { detail: { active: true } }));
+    } catch {}
   }
 
   function deactivate() {
     setCamo(false);
     trackEngagement("panic_camouflage_deactivate", { ts: Date.now() });
+    try {
+      window.dispatchEvent(new CustomEvent("drinkedin:panic-state", { detail: { active: false } }));
+    } catch {}
     toast.success(
       "💨 Danger averted. Manager has cleared the sector. Welcome back to the breakroom.",
       { duration: 4500 },
