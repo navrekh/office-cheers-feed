@@ -105,6 +105,8 @@ import RoastMyManager from "@/components/RoastMyManager";
 import BreakroomStreak from "@/components/BreakroomStreak";
 import LayoffLeaderboard from "@/components/LayoffLeaderboard";
 import OfficeDramaPolls from "@/components/OfficeDramaPolls";
+import PresenceBar from "@/components/PresenceBar";
+import { useNewPostsNotifier } from "@/lib/presence";
 
 // ---------- Client-side spam guard ----------
 const RATE_KEY = "drinkedin.rate.posts";
