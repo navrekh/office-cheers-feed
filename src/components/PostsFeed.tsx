@@ -294,6 +294,14 @@ export default function PostsFeed() {
     return () => window.removeEventListener("drinkedin:scroll-to-post", onScrollTo);
   }, []);
 
+  // Merge real + simulated weekend posts, sorted newest-first
+  const merged: FeedPost[] | null =
+    posts === null
+      ? null
+      : [...simPosts, ...posts].sort(
+          (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        );
+
   return (
     <div
       className="rounded-2xl p-4 shadow-xl"
