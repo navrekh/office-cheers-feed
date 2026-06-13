@@ -1823,6 +1823,7 @@ function Index() {
 
       <PanicButton />
       <GodModeDeck />
+      <AchievementEngine />
       <HubLandingModal />
 
 
