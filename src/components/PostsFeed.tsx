@@ -213,6 +213,19 @@ export default function PostsFeed() {
     };
   }, [load]);
 
+  // Saturday Vibe Matrix: seed 3 weekend persona posts on mount, then append
+  // 1 fresh weekend message every 90s to keep the feed organically alive.
+  useEffect(() => {
+    if (new Date().getDay() !== 6) return;
+    setSimPosts([makeSimPost(0), makeSimPost(1), makeSimPost(2)]);
+    const interval = window.setInterval(() => {
+      setSimPosts((prev) => [makeSimPost(prev.length), ...prev].slice(0, 12));
+    }, 90_000);
+    return () => window.clearInterval(interval);
+  }, []);
+
+
+
   // Automated reply engine: when a user-owned post appears AFTER mount,
   // schedule a 12-25s delayed simulated reply from a random AI persona.
   useEffect(() => {
