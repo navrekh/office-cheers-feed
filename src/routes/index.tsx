@@ -99,6 +99,7 @@ import AchievementEngine from "@/components/AchievementEngine";
 import RumorMillBracket from "@/components/RumorMillBracket";
 import ExcuseFabricator from "@/components/ExcuseFabricator";
 import BurnoutTelemetry from "@/components/BurnoutTelemetry";
+import AnonymousFeedbackTerminal from "@/components/AnonymousFeedbackTerminal";
 
 // ---------- Client-side spam guard ----------
 const RATE_KEY = "drinkedin.rate.posts";
@@ -1728,7 +1729,13 @@ function Index() {
                   <LocalShoutbox requireAuth={requireAuth} variant="hero" />
                 </div>
               </ErrorBoundary>
+
+              {/* Anonymous feedback terminal — very bottom of left column rail */}
+              <ErrorBoundary label="FeedbackTerminal">
+                <AnonymousFeedbackTerminal />
+              </ErrorBoundary>
             </>
+
           )}
 
           {view === "pubs" && (
