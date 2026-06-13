@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/useAuth";
 import { toast } from "sonner";
 import { getSelectedCity } from "@/lib/cityStore";
+import { broadcastTyping } from "@/lib/presence";
 
 const COMPANY_TAGS = [
   "TCS", "Infosys", "Wipro", "Capgemini", "Cognizant", "HCLTech",
