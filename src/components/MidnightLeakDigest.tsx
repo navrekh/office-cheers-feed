@@ -26,6 +26,7 @@ export default function MidnightLeakDigest() {
     window.setTimeout(() => {
       setSubmitting(false);
       setSubmitted(true);
+      try { window.dispatchEvent(new CustomEvent("drinkedin:achievement", { detail: { key: "UNDERGROUND_INFILTRATOR" } })); } catch {}
     }, 350);
   };
 

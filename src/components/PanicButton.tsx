@@ -28,6 +28,7 @@ export default function PanicButton() {
     trackEngagement("panic_camouflage_activate", { ts: Date.now() });
     try {
       window.dispatchEvent(new CustomEvent("drinkedin:panic-state", { detail: { active: true } }));
+      window.dispatchEvent(new CustomEvent("drinkedin:achievement", { detail: { key: "DESK_DEFENDER" } }));
     } catch {}
   }
 
