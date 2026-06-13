@@ -191,7 +191,7 @@ export default function PostComposer({
       if (error) throw error;
 
       setBody("");
-      setMood(null);
+      updateMood(null);
       clearAttachment();
       toast.success("Posted to the breakroom feed.");
       onPosted?.();
