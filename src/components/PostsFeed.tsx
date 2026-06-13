@@ -131,9 +131,46 @@ function MediaThumb({ path, kind }: { path: string; kind: string | null }) {
   );
 }
 
+const SATURDAY_VIBES = [
+  "Woke up at 8 AM out of pure corporate habit and panicking that I missed a standup call... someone clear my cache 💀",
+  "Currently at a local cafe in Baner working on my side-hustle. The goal is to quit before the Q3 appraisal cycle hits.",
+  "Manager texted 'Hey, quick question when you're free' on a Saturday morning. Leaving that notification on read until Monday 9:01 AM. 📴",
+  "Heading over to Toit / High Spirits later to erase all memory of this week's micro-management.",
+  "On-call rotation is pure pain today. Production server is hanging and the senior dev is completely ghosting.",
+  "Saturday standup energy? None. Saturday side-project energy? Unmatched. 🛠️",
+];
+
+const SAT_PERSONAS = [
+  { name: "Anon_Infosys_Refugee", headline: "Weekend · Pune" },
+  { name: "Capgemini_Ghost", headline: "Weekend · Bangalore" },
+  { name: "Wipro_Survivor", headline: "Weekend · Hyderabad" },
+  { name: "Anon_TCS_Lead", headline: "Weekend · Mumbai" },
+  { name: "Deloitte_Defector", headline: "Weekend · Gurgaon" },
+  { name: "HCL_Zombie", headline: "Weekend · Bangalore" },
+];
+
+function makeSimPost(idx: number, msg?: string): FeedPost {
+  const persona = SAT_PERSONAS[Math.floor(Math.random() * SAT_PERSONAS.length)];
+  const body = msg ?? SATURDAY_VIBES[Math.floor(Math.random() * SATURDAY_VIBES.length)];
+  return {
+    id: `sim-sat-${Date.now()}-${idx}-${Math.random().toString(36).slice(2, 6)}`,
+    author_name: persona.name,
+    author_headline: persona.headline,
+    body_text: body,
+    created_at: new Date(Date.now() - idx * 1000).toISOString(),
+    attached_visual_url: null,
+    media_type: null,
+    tags: null,
+    cheers_count: 0,
+    user_id: null,
+    isUserOwned: false,
+  };
+}
+
 export default function PostsFeed() {
   const { user } = useAuth();
   const [posts, setPosts] = useState<FeedPost[] | null>(null);
+  const [simPosts, setSimPosts] = useState<FeedPost[]>([]);
   const [replies, setReplies] = useState<Record<string, SimReply[]>>({});
   const scheduledRef = useRef<Set<string>>(new Set());
   const mountTimeRef = useRef<number>(Date.now());
@@ -175,6 +212,19 @@ export default function PostsFeed() {
       supabase.removeChannel(channel);
     };
   }, [load]);
+
+  // Saturday Vibe Matrix: seed 3 weekend persona posts on mount, then append
+  // 1 fresh weekend message every 90s to keep the feed organically alive.
+  useEffect(() => {
+    if (new Date().getDay() !== 6) return;
+    setSimPosts([makeSimPost(0), makeSimPost(1), makeSimPost(2)]);
+    const interval = window.setInterval(() => {
+      setSimPosts((prev) => [makeSimPost(prev.length), ...prev].slice(0, 12));
+    }, 90_000);
+    return () => window.clearInterval(interval);
+  }, []);
+
+
 
   // Automated reply engine: when a user-owned post appears AFTER mount,
   // schedule a 12-25s delayed simulated reply from a random AI persona.
@@ -244,6 +294,14 @@ export default function PostsFeed() {
     return () => window.removeEventListener("drinkedin:scroll-to-post", onScrollTo);
   }, []);
 
+  // Merge real + simulated weekend posts, sorted newest-first
+  const merged: FeedPost[] | null =
+    posts === null
+      ? null
+      : [...simPosts, ...posts].sort(
+          (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        );
+
   return (
     <div
       className="rounded-2xl p-4 shadow-xl"
@@ -264,17 +322,17 @@ export default function PostsFeed() {
         </span>
       </div>
 
-      {posts === null ? (
+      {merged === null ? (
         <div className="grid place-items-center py-10">
           <Loader2 className="size-5 animate-spin text-muted-foreground" />
         </div>
-      ) : posts.length === 0 ? (
+      ) : merged.length === 0 ? (
         <p className="text-[12.5px] text-muted-foreground py-6 text-center">
           No posts yet — be the first to drop a confession ☝️
         </p>
       ) : (
         <ul className="space-y-4 max-h-[640px] overflow-y-auto pr-1">
-          {posts.map((p) => (
+          {merged.map((p) => (
             <li
               key={p.id}
               id={`post-${p.id}`}
