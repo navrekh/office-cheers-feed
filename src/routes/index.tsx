@@ -354,6 +354,7 @@ function Index() {
   const [notifUnread, setNotifUnread] = useState<number>(0);
   const [notifPulseKey, setNotifPulseKey] = useState<number>(0);
   const [notifBounce, setNotifBounce] = useState<boolean>(false);
+  const [postReplyNotifs, setPostReplyNotifs] = useState<Array<{ id: string; postId: string; persona: string; snippet: string; ts: number }>>([]);
   const seenMilestonesRef = useRef<Set<string>>(new Set());
   const seenCommentIdsRef = useRef<Set<string>>(new Set());
   const [activeCommentPostId, setActiveCommentPostId] = useState<string | null>(null);
