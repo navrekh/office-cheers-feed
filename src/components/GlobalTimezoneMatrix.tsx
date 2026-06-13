@@ -93,7 +93,7 @@ export default function GlobalTimezoneMatrix() {
                   {h.flag} {h.city}
                 </span>
                 <span className="text-[9px] font-mono text-white/50 tabular-nums">
-                  {localTime(h.tz, now)} {h.tzLabel}
+                  {now ? `${localTime(h.tz, now)} ${h.tzLabel}` : `-- ${h.tzLabel}`}
                 </span>
               </div>
               <div className="text-[10px] text-white/60 mt-0.5 leading-snug">
