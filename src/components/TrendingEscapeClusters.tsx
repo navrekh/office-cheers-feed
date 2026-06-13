@@ -130,6 +130,7 @@ export default function TrendingEscapeClusters() {
     setCopiedIdx(idx);
     window.setTimeout(() => setCopiedIdx((v) => (v === idx ? null : v)), 1500);
     toast.success("🔥 Team rallied! You just boosted your company's escape velocity index.");
+    try { window.dispatchEvent(new CustomEvent("drinkedin:radar-pulse")); } catch {}
   };
 
   const rallyTop = async () => {

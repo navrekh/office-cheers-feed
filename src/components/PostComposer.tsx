@@ -196,6 +196,7 @@ export default function PostComposer({
       toast.success("Posted to the breakroom feed.");
       onPosted?.();
       window.dispatchEvent(new CustomEvent("drinkedin:post-created"));
+      window.dispatchEvent(new CustomEvent("drinkedin:radar-pulse"));
     } catch (e: any) {
       toast.error("Couldn't post", { description: e?.message ?? "Try again in a moment." });
     } finally {
