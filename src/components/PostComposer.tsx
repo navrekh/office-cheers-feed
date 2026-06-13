@@ -31,6 +31,7 @@ export default function PostComposer({
 }) {
   const { user } = useAuth();
   const [body, setBody] = useState("");
+  const [mood, setMood] = useState<string | null>(null);
   const [file, setFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [mediaType, setMediaType] = useState<"image" | "video" | null>(null);
@@ -154,7 +155,8 @@ export default function PostComposer({
         mtype = mediaType;
       }
 
-      const alias = `${(user?.email || "anon").split("@")[0]} 🎭`;
+      const baseAlias = `${(user?.email || "anon").split("@")[0]} 🎭`;
+      const alias = mood ? `${baseAlias} [${mood}]` : baseAlias;
       const headline = `Anonymous · ${getSelectedCity()}`;
 
       const { error } = await (supabase as any).from("posts").insert({
@@ -170,6 +172,7 @@ export default function PostComposer({
       if (error) throw error;
 
       setBody("");
+      setMood(null);
       clearAttachment();
       toast.success("Posted to the breakroom feed.");
       onPosted?.();
@@ -264,6 +267,36 @@ export default function PostComposer({
           ))}
         </div>
       )}
+
+
+      <div className="mt-3 flex items-center gap-2 flex-wrap">
+        <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">
+          Current Mood:
+        </span>
+        {[
+          "🤯 Burnt Out",
+          "🥱 In a Meeting",
+          "🤫 Stealth PTO",
+          "🔋 1% Battery",
+          "🍻 Ready for Toit",
+        ].map((m) => {
+          const active = mood === m;
+          return (
+            <button
+              key={m}
+              type="button"
+              onClick={() => setMood(active ? null : m)}
+              className={`px-2.5 py-1 rounded-full text-[11px] font-semibold border transition whitespace-nowrap ${
+                active
+                  ? "bg-amber-500/10 border-amber-500 text-amber-200 shadow-[0_0_12px_rgba(251,191,36,0.35)]"
+                  : "bg-zinc-950/40 border-white/10 text-foreground/80 hover:border-white/25"
+              }`}
+            >
+              {m}
+            </button>
+          );
+        })}
+      </div>
 
       <div className="mt-3 flex items-center justify-between gap-2 flex-wrap">
         <div className="flex items-center gap-1.5">
