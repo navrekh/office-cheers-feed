@@ -1,8 +1,82 @@
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useState, useCallback, useRef, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Hash, AtSign, Loader2, ImageOff, CornerDownRight } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import { toast } from "sonner";
 import { useAuth } from "@/lib/useAuth";
+
+function randInt(min: number, max: number) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function PostActions({ postId }: { postId: string }) {
+  const seed = useMemo(
+    () => ({ v: randInt(14, 85), p: randInt(3, 22) }),
+    [postId]
+  );
+  const [validated, setValidated] = useState(seed.v);
+  const [pints, setPints] = useState(seed.p);
+  const [vPulse, setVPulse] = useState(false);
+  const [pPulse, setPPulse] = useState(false);
+  const [foam, setFoam] = useState<number[]>([]);
+
+  function onValidate() {
+    setValidated((n) => n + 1);
+    setVPulse(true);
+    window.setTimeout(() => setVPulse(false), 220);
+  }
+
+  function onPint() {
+    setPints((n) => n + 1);
+    setPPulse(true);
+    window.setTimeout(() => setPPulse(false), 220);
+    const id = Date.now() + Math.random();
+    setFoam((f) => [...f, id]);
+    window.setTimeout(() => setFoam((f) => f.filter((x) => x !== id)), 1200);
+    toast("🍺 You just slid a cold one to an anonymous colleague!", {
+      duration: 1800,
+    });
+  }
+
+  return (
+    <div className="mt-3 flex items-center gap-2 pt-2 border-t border-white/5">
+      <button
+        type="button"
+        onClick={onValidate}
+        className={`px-3 py-1 rounded-full text-[11px] font-bold border border-white/15 bg-white/[0.03] text-white/80 hover:bg-white/[0.08] hover:border-white/25 transition-all duration-200 transform ${
+          vPulse ? "scale-110" : "scale-100"
+        }`}
+      >
+        🎯 Validated ({validated})
+      </button>
+      <button
+        type="button"
+        onClick={onPint}
+        className={`relative px-3 py-1 rounded-full text-[11px] font-bold border border-amber-400/40 bg-amber-500/[0.06] text-amber-200 hover:bg-amber-500/[0.14] hover:border-amber-300/60 transition-all duration-200 transform ${
+          pPulse ? "scale-110" : "scale-100"
+        }`}
+      >
+        🍻 Buy a Pint ({pints})
+        {foam.map((id) => (
+          <span
+            key={id}
+            className="pointer-events-none absolute -top-2 left-1/2 -translate-x-1/2 text-sm animate-[foam-float_1.2s_ease-out_forwards]"
+          >
+            🫧
+          </span>
+        ))}
+      </button>
+      <style>{`
+        @keyframes foam-float {
+          0% { opacity: 0; transform: translate(-50%, 0) scale(0.6); }
+          30% { opacity: 1; }
+          100% { opacity: 0; transform: translate(-50%, -28px) scale(1.2); }
+        }
+      `}</style>
+    </div>
+  );
+}
+
 
 type FeedPost = {
   id: string;
@@ -399,9 +473,12 @@ export default function PostsFeed() {
                       <p className="mt-1 text-[12.5px] text-foreground/90 leading-snug">{r.text}</p>
                     </div>
                   ))}
+
+                  <PostActions postId={p.id} />
                 </div>
               </div>
             </li>
+
           ))}
         </ul>
       )}
