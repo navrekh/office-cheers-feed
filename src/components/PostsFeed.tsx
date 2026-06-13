@@ -83,6 +83,7 @@ function PostActions({
     toast("🍺 You just slid a cold one to an anonymous colleague!", {
       duration: 1800,
     });
+    try { window.dispatchEvent(new CustomEvent("drinkedin:pint-tapped")); } catch {}
   }
 
 
