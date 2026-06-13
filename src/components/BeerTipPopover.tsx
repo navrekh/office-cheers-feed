@@ -27,13 +27,11 @@ export default function BeerTipPopover({ authorUserId, authorName }: Props) {
     if (!open || !authorUserId) return;
     let cancelled = false;
     (async () => {
-      const { data } = await (supabase as any)
-        .from("profiles")
-        .select("upi_vpa")
-        .eq("id", authorUserId)
-        .maybeSingle();
+      const { data } = await (supabase as any).rpc("get_user_tip_address", {
+        p_user_id: authorUserId,
+      });
       if (cancelled) return;
-      setVpa(data?.upi_vpa ?? null);
+      setVpa(typeof data === "string" ? data : null);
     })();
     return () => {
       cancelled = true;
