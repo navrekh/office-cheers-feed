@@ -138,14 +138,14 @@ function CamouflageLayer({ onExit }: { onExit: () => void }) {
         {/* Spreadsheet */}
         <section className="bg-white border border-slate-200 rounded-md overflow-hidden">
           <div className="px-4 h-10 flex items-center justify-between border-b border-slate-200 bg-slate-50">
-            <div className="text-[12px] font-bold text-slate-700">Resource Allocation Matrix · Sheet1</div>
+            <div className="text-[12px] font-bold text-slate-700">AWS Cost Optimization Matrix · Sheet1</div>
             <div className="text-[10.5px] text-slate-500 font-mono">42 rows · CSV export ready</div>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-[11.5px] tabular-nums">
               <thead className="bg-slate-100 text-slate-600">
                 <tr>
-                  {["Workload ID","Cost Center","Region","vCPU","Mem (GiB)","Uptime","SLO","Owner"].map((h) => (
+                  {["Instance ID","Cost Center","Region","Allocated vCPU","Mem (GiB)","Uptime","Cost Variance","Owner"].map((h) => (
                     <th key={h} className="text-left font-semibold px-3 py-1.5 border-b border-slate-200">{h}</th>
                   ))}
                 </tr>
