@@ -112,6 +112,12 @@ export default function TrendingEscapeClusters() {
         return { ...c, pct: next };
       })
     );
+    try {
+      const raw = window.localStorage.getItem("drinkedin_leaderboard_scores");
+      const stored = raw ? JSON.parse(raw) : {};
+      stored[companyName] = updatedPct;
+      window.localStorage.setItem("drinkedin_leaderboard_scores", JSON.stringify(stored));
+    } catch {}
     setFlashIdx(idx);
     window.setTimeout(() => setFlashIdx((v) => (v === idx ? null : v)), 700);
 
