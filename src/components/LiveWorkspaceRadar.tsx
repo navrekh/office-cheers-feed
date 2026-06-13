@@ -108,6 +108,30 @@ export function LiveWorkspaceRadar({
   const [serverBlips, setServerBlips] = useState<ScrubbedBlip[]>([]);
   const fetchScrubbedBlips = useServerFn(getScrubbedRadarBlips);
 
+  // Sonar pulse event bridge — fired from composer/rally/share actions
+  const [pulses, setPulses] = useState<number[]>([]);
+  const [whisperActive, setWhisperActive] = useState(false);
+  const whisperTimerRef = useRef<number | null>(null);
+  useEffect(() => {
+    function onPulse() {
+      const id = Date.now() + Math.random();
+      setPulses((prev) => [...prev, id]);
+      window.setTimeout(() => {
+        setPulses((prev) => prev.filter((p) => p !== id));
+      }, 2000);
+      setWhisperActive(true);
+      if (whisperTimerRef.current) window.clearTimeout(whisperTimerRef.current);
+      whisperTimerRef.current = window.setTimeout(() => setWhisperActive(false), 2000);
+    }
+    window.addEventListener("drinkedin:radar-pulse", onPulse);
+    return () => {
+      window.removeEventListener("drinkedin:radar-pulse", onPulse);
+      if (whisperTimerRef.current) window.clearTimeout(whisperTimerRef.current);
+    };
+  }, []);
+
+
+
   useEffect(() => {
     let cancelled = false;
     (async () => {
