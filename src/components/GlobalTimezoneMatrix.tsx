@@ -58,11 +58,13 @@ function localTime(tz: string, now: Date): string {
 }
 
 export default function GlobalTimezoneMatrix() {
-  const [now, setNow] = useState(() => new Date());
+  const [now, setNow] = useState<Date | null>(null);
   useEffect(() => {
+    setNow(new Date());
     const id = setInterval(() => setNow(new Date()), 30_000);
     return () => clearInterval(id);
   }, []);
+
 
   return (
     <div className="bg-[#0d0d0d]/80 backdrop-blur-xl border border-[#1f1f1f] rounded-2xl p-4 shadow-xl">
