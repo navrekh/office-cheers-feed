@@ -58,11 +58,13 @@ function localTime(tz: string, now: Date): string {
 }
 
 export default function GlobalTimezoneMatrix() {
-  const [now, setNow] = useState(() => new Date());
+  const [now, setNow] = useState<Date | null>(null);
   useEffect(() => {
+    setNow(new Date());
     const id = setInterval(() => setNow(new Date()), 30_000);
     return () => clearInterval(id);
   }, []);
+
 
   return (
     <div className="bg-[#0d0d0d]/80 backdrop-blur-xl border border-[#1f1f1f] rounded-2xl p-4 shadow-xl">
@@ -91,7 +93,7 @@ export default function GlobalTimezoneMatrix() {
                   {h.flag} {h.city}
                 </span>
                 <span className="text-[9px] font-mono text-white/50 tabular-nums">
-                  {localTime(h.tz, now)} {h.tzLabel}
+                  {now ? `${localTime(h.tz, now)} ${h.tzLabel}` : `-- ${h.tzLabel}`}
                 </span>
               </div>
               <div className="text-[10px] text-white/60 mt-0.5 leading-snug">

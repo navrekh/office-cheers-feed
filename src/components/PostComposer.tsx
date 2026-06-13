@@ -34,6 +34,19 @@ export default function PostComposer({
   const { user } = useAuth();
   const [body, setBody] = useState("");
   const [mood, setMood] = useState<string | null>(null);
+  useEffect(() => {
+    try {
+      const stored = window.localStorage.getItem("drinkedin_active_mood");
+      if (stored) setMood(stored);
+    } catch {}
+  }, []);
+  const updateMood = (next: string | null) => {
+    setMood(next);
+    try {
+      if (next) window.localStorage.setItem("drinkedin_active_mood", next);
+      else window.localStorage.removeItem("drinkedin_active_mood");
+    } catch {}
+  };
   const [file, setFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [mediaType, setMediaType] = useState<"image" | "video" | null>(null);
@@ -178,7 +191,7 @@ export default function PostComposer({
       if (error) throw error;
 
       setBody("");
-      setMood(null);
+      updateMood(null);
       clearAttachment();
       toast.success("Posted to the breakroom feed.");
       onPosted?.();
@@ -300,7 +313,7 @@ export default function PostComposer({
             <button
               key={m}
               type="button"
-              onClick={() => setMood(active ? null : m)}
+              onClick={() => updateMood(active ? null : m)}
               className={`px-2.5 py-1 rounded-full text-[11px] font-semibold border transition whitespace-nowrap ${
                 active
                   ? "bg-amber-500/10 border-amber-500 text-amber-200 shadow-[0_0_12px_rgba(251,191,36,0.35)]"
