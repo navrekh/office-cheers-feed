@@ -83,6 +83,7 @@ import {
 import { useGeolocation } from "@/hooks/useGeolocation";
 import { getOrCreateSessionId, haversineKm } from "@/lib/geo";
 import { LiveWorkspaceRadar, type ProximityFilter } from "@/components/LiveWorkspaceRadar";
+import WhistleblowerSafeHouse from "@/components/WhistleblowerSafeHouse";
 import TrendingEscapeClusters from "@/components/TrendingEscapeClusters";
 import { WorkplaceSelectorCard } from "@/components/WorkplaceSelectorCard";
 import { ProximityAdDispatcher, dealCoord } from "@/components/ProximityAdDispatcher";
@@ -1720,6 +1721,10 @@ function Index() {
 
         {/* Right sidebar — Ambient Telemetry Rail (sticky) */}
         <aside className="col-span-1 lg:col-span-5 space-y-4 min-w-0 lg:sticky lg:top-20 lg:self-start lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto lg:pr-1">
+          <ErrorBoundary label="SafeHouse" message="Safe-house reloading…">
+            <WhistleblowerSafeHouse />
+          </ErrorBoundary>
+
           <ErrorBoundary label="Radar" message="Radar recalibrating…">
             <div
               className="rounded-2xl p-3 shadow-xl"
