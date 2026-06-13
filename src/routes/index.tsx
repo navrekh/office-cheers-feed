@@ -1424,6 +1424,9 @@ function Index() {
     };
     window.addEventListener("drinkedin:post-reply", onReply);
     return () => window.removeEventListener("drinkedin:post-reply", onReply);
+  }, []);
+
+
 
   // Live personal stats derived from the user's real posts
   useEffect(() => {
