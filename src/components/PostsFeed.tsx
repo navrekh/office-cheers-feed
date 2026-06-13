@@ -131,9 +131,46 @@ function MediaThumb({ path, kind }: { path: string; kind: string | null }) {
   );
 }
 
+const SATURDAY_VIBES = [
+  "Woke up at 8 AM out of pure corporate habit and panicking that I missed a standup call... someone clear my cache 💀",
+  "Currently at a local cafe in Baner working on my side-hustle. The goal is to quit before the Q3 appraisal cycle hits.",
+  "Manager texted 'Hey, quick question when you're free' on a Saturday morning. Leaving that notification on read until Monday 9:01 AM. 📴",
+  "Heading over to Toit / High Spirits later to erase all memory of this week's micro-management.",
+  "On-call rotation is pure pain today. Production server is hanging and the senior dev is completely ghosting.",
+  "Saturday standup energy? None. Saturday side-project energy? Unmatched. 🛠️",
+];
+
+const SAT_PERSONAS = [
+  { name: "Anon_Infosys_Refugee", headline: "Weekend · Pune" },
+  { name: "Capgemini_Ghost", headline: "Weekend · Bangalore" },
+  { name: "Wipro_Survivor", headline: "Weekend · Hyderabad" },
+  { name: "Anon_TCS_Lead", headline: "Weekend · Mumbai" },
+  { name: "Deloitte_Defector", headline: "Weekend · Gurgaon" },
+  { name: "HCL_Zombie", headline: "Weekend · Bangalore" },
+];
+
+function makeSimPost(idx: number, msg?: string): FeedPost {
+  const persona = SAT_PERSONAS[Math.floor(Math.random() * SAT_PERSONAS.length)];
+  const body = msg ?? SATURDAY_VIBES[Math.floor(Math.random() * SATURDAY_VIBES.length)];
+  return {
+    id: `sim-sat-${Date.now()}-${idx}-${Math.random().toString(36).slice(2, 6)}`,
+    author_name: persona.name,
+    author_headline: persona.headline,
+    body_text: body,
+    created_at: new Date(Date.now() - idx * 1000).toISOString(),
+    attached_visual_url: null,
+    media_type: null,
+    tags: null,
+    cheers_count: 0,
+    user_id: null,
+    isUserOwned: false,
+  };
+}
+
 export default function PostsFeed() {
   const { user } = useAuth();
   const [posts, setPosts] = useState<FeedPost[] | null>(null);
+  const [simPosts, setSimPosts] = useState<FeedPost[]>([]);
   const [replies, setReplies] = useState<Record<string, SimReply[]>>({});
   const scheduledRef = useRef<Set<string>>(new Set());
   const mountTimeRef = useRef<number>(Date.now());
