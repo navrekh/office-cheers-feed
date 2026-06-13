@@ -83,6 +83,7 @@ import {
 import { useGeolocation } from "@/hooks/useGeolocation";
 import { getOrCreateSessionId, haversineKm } from "@/lib/geo";
 import { LiveWorkspaceRadar, type ProximityFilter } from "@/components/LiveWorkspaceRadar";
+import WhistleblowerSafeHouse from "@/components/WhistleblowerSafeHouse";
 import TrendingEscapeClusters from "@/components/TrendingEscapeClusters";
 import { WorkplaceSelectorCard } from "@/components/WorkplaceSelectorCard";
 import { ProximityAdDispatcher, dealCoord } from "@/components/ProximityAdDispatcher";
