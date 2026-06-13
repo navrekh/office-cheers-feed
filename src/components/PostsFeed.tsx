@@ -516,6 +516,34 @@ export default function PostsFeed() {
     return () => window.removeEventListener("drinkedin:scroll-to-post", onScrollTo);
   }, []);
 
+  // God-Mode traffic surge injector: prepends synthetic posts dispatched from
+  // the hidden founder telemetry deck. No DB writes; purely client-side stress.
+  useEffect(() => {
+    function onSurge(e: Event) {
+      const detail = (e as CustomEvent).detail as
+        | { id: string; author_name: string; author_headline: string; body_text: string }
+        | undefined;
+      if (!detail) return;
+      const post: FeedPost = {
+        id: detail.id,
+        author_name: detail.author_name,
+        author_headline: detail.author_headline,
+        body_text: detail.body_text,
+        created_at: new Date().toISOString(),
+        attached_visual_url: null,
+        media_type: null,
+        tags: null,
+        cheers_count: 0,
+        user_id: null,
+        isUserOwned: false,
+      };
+      setSimPosts((prev) => [post, ...prev].slice(0, 60));
+    }
+    window.addEventListener("drinkedin:godmode-surge-post", onSurge);
+    return () => window.removeEventListener("drinkedin:godmode-surge-post", onSurge);
+  }, []);
+
+
   // Merge real + simulated weekend posts, sorted newest-first
   const merged: FeedPost[] | null =
     posts === null
