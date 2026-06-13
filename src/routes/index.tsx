@@ -105,6 +105,8 @@ import RoastMyManager from "@/components/RoastMyManager";
 import BreakroomStreak from "@/components/BreakroomStreak";
 import LayoffLeaderboard from "@/components/LayoffLeaderboard";
 import OfficeDramaPolls from "@/components/OfficeDramaPolls";
+import PresenceBar from "@/components/PresenceBar";
+import { useNewPostsNotifier } from "@/lib/presence";
 
 // ---------- Client-side spam guard ----------
 const RATE_KEY = "drinkedin.rate.posts";
@@ -355,6 +357,7 @@ function Index() {
   const picKindRef = useRef<"bar" | "tasting">("bar");
   const [gifPickerOpen, setGifPickerOpen] = useState(false);
   const [view, setView] = useState<ViewKey>("home");
+  useNewPostsNotifier(() => setView("home"));
   const [highlightedId, setHighlightedId] = useState<string | null>(null);
   const [feedLoading, setFeedLoading] = useState(true);
   const [feedError, setFeedError] = useState<string | null>(null);
@@ -1660,6 +1663,9 @@ function Index() {
                   onSaved={() => void refreshProfile()}
                 />
               )}
+
+              {/* Live social presence — anons online + typing indicators */}
+              <PresenceBar />
 
               {/* HERO 1 — Post Composer */}
               <ErrorBoundary label="Composer" message="Composer is reloading…">
