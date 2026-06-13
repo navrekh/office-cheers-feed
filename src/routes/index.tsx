@@ -85,6 +85,7 @@ import { getOrCreateSessionId, haversineKm } from "@/lib/geo";
 import { LiveWorkspaceRadar, type ProximityFilter } from "@/components/LiveWorkspaceRadar";
 import WhistleblowerSafeHouse from "@/components/WhistleblowerSafeHouse";
 import GlobalTimezoneMatrix from "@/components/GlobalTimezoneMatrix";
+import MidnightLeakDigest from "@/components/MidnightLeakDigest";
 import TrendingEscapeClusters from "@/components/TrendingEscapeClusters";
 import { WorkplaceSelectorCard } from "@/components/WorkplaceSelectorCard";
 import { ProximityAdDispatcher, dealCoord } from "@/components/ProximityAdDispatcher";
