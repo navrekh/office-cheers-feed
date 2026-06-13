@@ -1753,8 +1753,8 @@ function Index() {
         </section>
 
 
-        {/* Right sidebar — Ambient Telemetry Rail (sticky) */}
-        <aside className="col-span-1 lg:col-span-5 space-y-4 min-w-0 lg:sticky lg:top-20 lg:self-start lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto lg:pr-1">
+        {/* Right sidebar — slim ambient rail (sticky) */}
+        <aside className="col-span-1 lg:col-span-4 space-y-4 min-w-0 lg:sticky lg:top-20 lg:self-start lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto lg:pr-1">
           <ErrorBoundary label="SafeHouse" message="Safe-house reloading…">
             <WhistleblowerSafeHouse />
           </ErrorBoundary>
@@ -1795,33 +1795,32 @@ function Index() {
             </div>
           </ErrorBoundary>
 
-          <ErrorBoundary label="GlobalTimezoneMatrix">
-            <GlobalTimezoneMatrix />
-          </ErrorBoundary>
-
-          <ErrorBoundary label="MidnightLeakDigest">
-            <MidnightLeakDigest />
-          </ErrorBoundary>
-
-          <ErrorBoundary label="GlobalEscapeSimulator">
-            <GlobalEscapeSimulator />
-          </ErrorBoundary>
-
-          {/* Unified leaderboard panel — Trending Escape Clusters + Desperate Tech Parks */}
-          <div
-            className="rounded-2xl p-4 shadow-xl space-y-4"
-            style={{
-              background: "rgba(13, 13, 13, 0.8)",
-              backdropFilter: "blur(12px)",
-              WebkitBackdropFilter: "blur(12px)",
-              border: "1px solid #1f1f1f",
-            }}
-          >
-            <ErrorBoundary label="Clusters" message="Leaderboard offline — refresh to retry.">
-              <TrendingEscapeClusters />
-            </ErrorBoundary>
-            <BurnoutLeaderboard />
-          </div>
+          {/* 📡 Ambient Telemetry — collapsed to keep rail breathable */}
+          <details className="group rounded-2xl border border-[#1f1f1f] bg-[#0d0d0d]/80 backdrop-blur-md overflow-hidden">
+            <summary className="cursor-pointer list-none px-4 py-3 flex items-center justify-between gap-2 text-[11px] font-bold uppercase tracking-[0.2em] text-fuchsia-300/90 hover:bg-fuchsia-500/5 transition select-none">
+              <span className="flex items-center gap-2">📡 Ambient Telemetry</span>
+              <span className="text-fuchsia-400/70 group-open:rotate-180 transition-transform">▾</span>
+            </summary>
+            <div className="px-3 pb-4 pt-1 space-y-4 border-t border-[#1f1f1f]/80">
+              <ErrorBoundary label="GlobalTimezoneMatrix"><GlobalTimezoneMatrix /></ErrorBoundary>
+              <ErrorBoundary label="MidnightLeakDigest"><MidnightLeakDigest /></ErrorBoundary>
+              <ErrorBoundary label="GlobalEscapeSimulator"><GlobalEscapeSimulator /></ErrorBoundary>
+              <div
+                className="rounded-2xl p-4 shadow-xl space-y-4"
+                style={{
+                  background: "rgba(13, 13, 13, 0.8)",
+                  backdropFilter: "blur(12px)",
+                  WebkitBackdropFilter: "blur(12px)",
+                  border: "1px solid #1f1f1f",
+                }}
+              >
+                <ErrorBoundary label="Clusters" message="Leaderboard offline — refresh to retry.">
+                  <TrendingEscapeClusters />
+                </ErrorBoundary>
+                <BurnoutLeaderboard />
+              </div>
+            </div>
+          </details>
 
 
           <p className="text-[10px] text-muted-foreground/60 px-2 leading-relaxed">
