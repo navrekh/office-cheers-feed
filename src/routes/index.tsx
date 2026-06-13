@@ -3107,6 +3107,35 @@ function NotificationsDrawer({
           </SheetDescription>
         </SheetHeader>
         <div className="mt-4 space-y-4 overflow-y-auto max-h-[calc(100dvh-7rem)] pr-1">
+          {/* Replies to your posts */}
+          {postReplies.length > 0 && (
+            <section className="space-y-2">
+              <h3 className="text-[10px] font-black uppercase tracking-[0.18em] text-amber-300 px-0.5 flex items-center gap-1.5">
+                💬 Replies to Your Posts
+                <span className="text-[9px] font-mono font-bold rounded-full bg-amber-400/20 text-amber-200 px-1.5 py-0.5 border border-amber-400/40">
+                  {postReplies.length}
+                </span>
+              </h3>
+              {postReplies.map((r) => (
+                <button
+                  key={r.id}
+                  type="button"
+                  onClick={() => onPostReplyClick?.(r.postId)}
+                  className="w-full text-left rounded-lg border border-amber-400/25 bg-amber-500/[0.06] p-3 hover:bg-amber-500/[0.12] transition"
+                >
+                  <p className="text-[12.5px] font-semibold text-amber-100 leading-snug">
+                    💬 An anonymous colleague replied to your post
+                  </p>
+                  <p className="text-[11px] text-muted-foreground mt-1 leading-relaxed line-clamp-2">
+                    <span className="font-bold text-cyan-200">{r.persona}</span>
+                    {r.snippet ? ` · on "${r.snippet}${r.snippet.length >= 80 ? "…" : ""}"` : ""}
+                  </p>
+                  <p className="text-[10px] text-muted-foreground mt-1">Just now · tap to jump</p>
+                </button>
+              ))}
+            </section>
+          )}
+
           {/* General platform notifications */}
           <section className="space-y-2.5">
             <h3 className="text-[10px] font-black uppercase tracking-[0.18em] text-muted-foreground px-0.5">
