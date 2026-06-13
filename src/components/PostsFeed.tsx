@@ -550,7 +550,7 @@ export default function PostsFeed() {
     if (new Date().getDay() !== 6) return;
     if (panicActive) return;
     setSimPosts((prev) => {
-      const pinned = prev.filter((p) => p.id === NAVIN_LAUNCH_POST_ID);
+      const pinned = prev.filter((p) => p.id === NAVIN_LAUNCH_POST_ID || p.id.startsWith("global-seed-"));
       return [...pinned, makeSimPost(0), makeSimPost(1), makeSimPost(2)];
     });
     const interval = window.setInterval(() => {
