@@ -1597,14 +1597,14 @@ function Index() {
 
 
       {/* Spacious 2-column social breakroom layout */}
-      <main className="grid grid-cols-1 lg:grid-cols-12 gap-6 max-w-6xl mx-auto p-4">
+      <main className="grid grid-cols-1 lg:grid-cols-12 gap-6 max-w-7xl mx-auto p-4 lg:p-6">
 
         <h1 className="sr-only">
           DrinkedIn — the corporate sanctuary for anonymous coping, viral Broetry, and verified local happy hours
         </h1>
 
         {/* Feed — Social Core */}
-        <section className="col-span-1 lg:col-span-7 space-y-6">
+        <section className="col-span-1 lg:col-span-7 space-y-6 min-w-0">
           {view === "home" && (
             <>
               {/* First-time employees: pick a corporate mask before the feed */}
@@ -1617,8 +1617,17 @@ function Index() {
 
               {/* Card 1 — TODAY'S DESPERATION INDEX (large, first interactive asset) */}
               <ErrorBoundary label="Poll" message="Poll engine is rebooting…">
-                <div id="poll-rail" className="rounded-3xl border border-fuchsia-400/30 bg-gradient-to-br from-zinc-950/80 via-zinc-900/50 to-zinc-950/80 p-3 shadow-[0_20px_60px_-25px_rgba(217,70,239,0.45)]">
-                  <p className="px-2 pt-1 pb-2 text-[10px] uppercase tracking-[0.24em] font-bold text-fuchsia-300/90">
+                <div
+                  id="poll-rail"
+                  className="rounded-2xl p-4 shadow-xl [&_button]:whitespace-normal [&_button]:break-words [&_button]:leading-tight"
+                  style={{
+                    background: "rgba(13, 13, 13, 0.8)",
+                    backdropFilter: "blur(12px)",
+                    WebkitBackdropFilter: "blur(12px)",
+                    border: "1px solid #1f1f1f",
+                  }}
+                >
+                  <p className="px-1 pt-1 pb-3 text-[10px] uppercase tracking-[0.24em] font-bold text-fuchsia-300/90">
                     Today's Desperation Index · 50-Poll Roulette
                   </p>
                   <DesperationPoll
@@ -1632,7 +1641,15 @@ function Index() {
 
               {/* Card 2 — Live Breakroom Chat with capped log height so composer stays above the fold */}
               <ErrorBoundary label="Shoutbox" message="Chat is reconnecting…">
-                <div className="[&_[data-shoutbox-log]]:max-h-[340px] [&_[data-shoutbox-log]]:overflow-y-auto">
+                <div
+                  className="rounded-2xl p-4 shadow-xl [&_[data-shoutbox-log]]:max-h-[300px] [&_[data-shoutbox-log]]:overflow-y-auto"
+                  style={{
+                    background: "rgba(13, 13, 13, 0.8)",
+                    backdropFilter: "blur(12px)",
+                    WebkitBackdropFilter: "blur(12px)",
+                    border: "1px solid #1f1f1f",
+                  }}
+                >
                   <LocalShoutbox requireAuth={requireAuth} variant="hero" />
                 </div>
               </ErrorBoundary>
@@ -1653,10 +1670,18 @@ function Index() {
         </section>
 
 
-        {/* Right sidebar — Visual Companions (sticky) */}
-        <aside className="col-span-1 lg:col-span-5 space-y-4 lg:sticky lg:top-20 lg:self-start lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto lg:pr-1">
+        {/* Right sidebar — Ambient Telemetry Rail (sticky) */}
+        <aside className="col-span-1 lg:col-span-5 space-y-4 min-w-0 lg:sticky lg:top-20 lg:self-start lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto lg:pr-1">
           <ErrorBoundary label="Radar" message="Radar recalibrating…">
-            <div className="rounded-2xl bg-card p-3 shadow-[0_10px_40px_-15px_rgba(0,0,0,0.4)]" style={{ border: "1px solid rgba(255,255,255,0.05)" }}>
+            <div
+              className="rounded-2xl p-3 shadow-xl"
+              style={{
+                background: "rgba(13, 13, 13, 0.8)",
+                backdropFilter: "blur(12px)",
+                WebkitBackdropFilter: "blur(12px)",
+                border: "1px solid #1f1f1f",
+              }}
+            >
               <LiveWorkspaceRadar
                 origin={geoCoords}
                 geoStatus={geoStatus}
@@ -1683,8 +1708,16 @@ function Index() {
             </div>
           </ErrorBoundary>
 
-          {/* Unified leaderboard stack — Trending Escape Clusters + Desperate Tech Parks */}
-          <div className="rounded-2xl border border-white/5 bg-card/40 p-3 space-y-3">
+          {/* Unified leaderboard panel — Trending Escape Clusters + Desperate Tech Parks */}
+          <div
+            className="rounded-2xl p-4 shadow-xl space-y-4"
+            style={{
+              background: "rgba(13, 13, 13, 0.8)",
+              backdropFilter: "blur(12px)",
+              WebkitBackdropFilter: "blur(12px)",
+              border: "1px solid #1f1f1f",
+            }}
+          >
             <ErrorBoundary label="Clusters" message="Leaderboard offline — refresh to retry.">
               <TrendingEscapeClusters />
             </ErrorBoundary>
