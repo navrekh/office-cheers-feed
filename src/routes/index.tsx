@@ -95,6 +95,7 @@ import DesperationPollModal from "@/components/DesperationPollModal";
 import BroetryMemeCard from "@/components/BroetryMemeCard";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import GodModeDeck from "@/components/GodModeDeck";
+import AchievementEngine from "@/components/AchievementEngine";
 
 // ---------- Client-side spam guard ----------
 const RATE_KEY = "drinkedin.rate.posts";
