@@ -34,6 +34,19 @@ export default function PostComposer({
   const { user } = useAuth();
   const [body, setBody] = useState("");
   const [mood, setMood] = useState<string | null>(null);
+  useEffect(() => {
+    try {
+      const stored = window.localStorage.getItem("drinkedin_active_mood");
+      if (stored) setMood(stored);
+    } catch {}
+  }, []);
+  const updateMood = (next: string | null) => {
+    setMood(next);
+    try {
+      if (next) window.localStorage.setItem("drinkedin_active_mood", next);
+      else window.localStorage.removeItem("drinkedin_active_mood");
+    } catch {}
+  };
   const [file, setFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [mediaType, setMediaType] = useState<"image" | "video" | null>(null);
