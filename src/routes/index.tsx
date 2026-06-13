@@ -1682,6 +1682,9 @@ function Index() {
                 })()}
               </ErrorBoundary>
 
+              {/* Floating "+N new sips" pill — only shows when user scrolled past the fold */}
+              <NewSipsPill />
+
               {/* HERO 2 — Live posts feed (the social core) */}
               <ErrorBoundary label="Feed" message="Feed is reconnecting…">
                 <PostsFeed />
