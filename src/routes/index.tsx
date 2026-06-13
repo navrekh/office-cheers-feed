@@ -97,6 +97,7 @@ import ErrorBoundary from "@/components/ErrorBoundary";
 import GodModeDeck from "@/components/GodModeDeck";
 import AchievementEngine from "@/components/AchievementEngine";
 import RumorMillBracket from "@/components/RumorMillBracket";
+import ExcuseFabricator from "@/components/ExcuseFabricator";
 
 // ---------- Client-side spam guard ----------
 const RATE_KEY = "drinkedin.rate.posts";
@@ -1670,6 +1671,11 @@ function Index() {
               {/* Rumor Mill voting bracket — above the live feed */}
               <ErrorBoundary label="RumorMill">
                 <RumorMillBracket />
+              </ErrorBoundary>
+
+              {/* Excuse Fabricator — stacked below the bracket */}
+              <ErrorBoundary label="ExcuseFabricator">
+                <ExcuseFabricator />
               </ErrorBoundary>
 
               {/* Card 0b — Live posts feed */}
