@@ -156,6 +156,7 @@ import BurnoutLeaderboard from "@/components/BurnoutLeaderboard";
 import LocalShoutbox from "@/components/LocalShoutbox";
 import PostComposer from "@/components/PostComposer";
 import PostsFeed from "@/components/PostsFeed";
+import WeekendBoundaryModule from "@/components/WeekendBoundaryModule";
 import ClaimTicketModal from "@/components/ClaimTicketModal";
 import AuthModal from "@/components/AuthModal";
 import MidWeekSurvivalTracker from "@/components/MidWeekSurvivalTracker";
@@ -1619,7 +1620,16 @@ function Index() {
 
               {/* Card 0 — Post Composer (text + image/video + #tag / @mention) */}
               <ErrorBoundary label="Composer" message="Composer is reloading…">
-                <PostComposer requireAuth={requireAuth} />
+                {(() => {
+                  const dow = new Date().getDay();
+                  const isWeekend = dow === 0 || dow === 6;
+                  return (
+                    <div className="space-y-3">
+                      <WeekendBoundaryModule weekend={isWeekend} />
+                      <PostComposer requireAuth={requireAuth} weekend={isWeekend} />
+                    </div>
+                  );
+                })()}
               </ErrorBoundary>
 
               {/* Card 0b — Live posts feed */}

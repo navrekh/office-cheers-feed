@@ -25,9 +25,11 @@ type Suggestion = { kind: "tag" | "mention"; value: string };
 export default function PostComposer({
   requireAuth,
   onPosted,
+  weekend = false,
 }: {
   requireAuth: (reason?: string) => boolean;
   onPosted?: () => void;
+  weekend?: boolean;
 }) {
   const { user } = useAuth();
   const [body, setBody] = useState("");
@@ -275,15 +277,24 @@ export default function PostComposer({
 
       <div className="mt-3 flex items-center gap-2 flex-wrap">
         <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">
-          Current Mood:
+          {weekend ? "Current Mood State (Weekend):" : "Current Mood:"}
         </span>
-        {[
-          "🤯 Burnt Out",
-          "🥱 In a Meeting",
-          "🤫 Stealth PTO",
-          "🔋 1% Battery",
-          "🍻 Ready for Toit",
-        ].map((m) => {
+        {(weekend
+          ? [
+              "🛠️ Side Hustling",
+              "📴 Ghosting Slack",
+              "🍻 Decompressing",
+              "🛌 Over-Sleeping",
+              "🚨 On-Call Hell",
+            ]
+          : [
+              "🤯 Burnt Out",
+              "🥱 In a Meeting",
+              "🤫 Stealth PTO",
+              "🔋 1% Battery",
+              "🍻 Ready for Toit",
+            ]
+        ).map((m) => {
           const active = mood === m;
           return (
             <button
