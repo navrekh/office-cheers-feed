@@ -116,10 +116,10 @@ function CamouflageLayer({ onExit }: { onExit: () => void }) {
 
         {/* KPI tiles */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <KpiTile label="System Pipeline Stability" value="99.83%" trend="+0.04%" />
-          <KpiTile label="P95 Deploy Latency" value="412 ms" trend="-3.1%" />
-          <KpiTile label="Error Budget Remaining" value="86.2%" trend="+1.2%" />
-          <KpiTile label="MTTR (Rolling 30d)" value="14m 22s" trend="-9.4%" />
+          <KpiTile label="Forecasted Spend (Q2)" value="$1.84M" trend="-3.2%" />
+          <KpiTile label="Cost Variance vs Plan" value="-2.8%" trend="-0.6%" />
+          <KpiTile label="Reserved Instance Coverage" value="76.4%" trend="+1.9%" />
+          <KpiTile label="Idle Capacity (vCPU)" value="412" trend="-9.4%" />
         </div>
 
         {/* Graphs */}
