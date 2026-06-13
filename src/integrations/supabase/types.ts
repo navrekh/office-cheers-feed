@@ -550,7 +550,30 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      public_anonymous_confessions: {
+        Row: {
+          body: string | null
+          created_at: string | null
+          handle: string | null
+          hub: string | null
+          id: string | null
+        }
+        Insert: {
+          body?: string | null
+          created_at?: string | null
+          handle?: string | null
+          hub?: string | null
+          id?: string | null
+        }
+        Update: {
+          body?: string | null
+          created_at?: string | null
+          handle?: string | null
+          hub?: string | null
+          id?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       admin_approve_lead: {
@@ -607,6 +630,7 @@ export type Database = {
           total: number
         }[]
       }
+      get_user_tip_address: { Args: { p_user_id: string }; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
