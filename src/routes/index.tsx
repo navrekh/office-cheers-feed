@@ -85,6 +85,7 @@ import { getOrCreateSessionId, haversineKm } from "@/lib/geo";
 import { LiveWorkspaceRadar, type ProximityFilter } from "@/components/LiveWorkspaceRadar";
 import WhistleblowerSafeHouse from "@/components/WhistleblowerSafeHouse";
 import GlobalTimezoneMatrix from "@/components/GlobalTimezoneMatrix";
+import MidnightLeakDigest from "@/components/MidnightLeakDigest";
 import TrendingEscapeClusters from "@/components/TrendingEscapeClusters";
 import { WorkplaceSelectorCard } from "@/components/WorkplaceSelectorCard";
 import { ProximityAdDispatcher, dealCoord } from "@/components/ProximityAdDispatcher";
@@ -1764,6 +1765,10 @@ function Index() {
 
           <ErrorBoundary label="GlobalTimezoneMatrix">
             <GlobalTimezoneMatrix />
+          </ErrorBoundary>
+
+          <ErrorBoundary label="MidnightLeakDigest">
+            <MidnightLeakDigest />
           </ErrorBoundary>
 
           {/* Unified leaderboard panel — Trending Escape Clusters + Desperate Tech Parks */}
