@@ -1643,14 +1643,14 @@ function Index() {
 
 
       {/* Spacious 2-column social breakroom layout */}
-      <main className="grid grid-cols-1 lg:grid-cols-12 gap-6 max-w-7xl mx-auto p-4 lg:p-6">
+      <main className="grid grid-cols-1 lg:grid-cols-12 gap-6 max-w-6xl mx-auto p-4 lg:p-6">
 
         <h1 className="sr-only">
           DrinkedIn — the corporate sanctuary for anonymous coping, viral Broetry, and verified local happy hours
         </h1>
 
-        {/* Feed — Social Core */}
-        <section className="col-span-1 lg:col-span-7 space-y-6 min-w-0">
+        {/* Feed — Social Core (wider, hero column) */}
+        <section className="col-span-1 lg:col-span-8 space-y-5 min-w-0">
           {view === "home" && (
             <>
               {/* First-time employees: pick a corporate mask before the feed */}
@@ -1661,7 +1661,7 @@ function Index() {
                 />
               )}
 
-              {/* Card 0 — Post Composer (text + image/video + #tag / @mention) */}
+              {/* HERO 1 — Post Composer */}
               <ErrorBoundary label="Composer" message="Composer is reloading…">
                 {(() => {
                   const dow = new Date().getDay();
@@ -1675,52 +1675,12 @@ function Index() {
                 })()}
               </ErrorBoundary>
 
-              {/* Rumor Mill voting bracket — above the live feed */}
-              <ErrorBoundary label="RumorMill">
-                <RumorMillBracket />
-              </ErrorBoundary>
-
-              {/* Excuse Fabricator — stacked below the bracket */}
-              <ErrorBoundary label="ExcuseFabricator">
-                <ExcuseFabricator />
-              </ErrorBoundary>
-
-              {/* Burnout telemetry — above the live feed */}
-              <ErrorBoundary label="BurnoutTelemetry">
-                <BurnoutTelemetry />
-              </ErrorBoundary>
-
-              {/* Card 0b — Live posts feed */}
+              {/* HERO 2 — Live posts feed (the social core) */}
               <ErrorBoundary label="Feed" message="Feed is reconnecting…">
                 <PostsFeed />
               </ErrorBoundary>
 
-
-              {/* Card 1 — TODAY'S DESPERATION INDEX (large, first interactive asset) */}
-              <ErrorBoundary label="Poll" message="Poll engine is rebooting…">
-                <div
-                  id="poll-rail"
-                  className="rounded-2xl p-4 shadow-xl [&_button]:whitespace-normal [&_button]:break-words [&_button]:leading-tight"
-                  style={{
-                    background: "rgba(13, 13, 13, 0.8)",
-                    backdropFilter: "blur(12px)",
-                    WebkitBackdropFilter: "blur(12px)",
-                    border: "1px solid #1f1f1f",
-                  }}
-                >
-                  <p className="px-1 pt-1 pb-3 text-[10px] uppercase tracking-[0.24em] font-bold text-fuchsia-300/90">
-                    Today's Desperation Index · 50-Poll Roulette
-                  </p>
-                  <DesperationPoll
-                    onSignUp={(reason) => requireAuth(reason ?? "Drop an anonymous confession — sign in once and you're masked.")}
-                  />
-                </div>
-                <DesperationPollModal
-                  onSignUp={(reason) => requireAuth(reason ?? "Drop an anonymous confession — sign in once and you're masked.")}
-                />
-              </ErrorBoundary>
-
-              {/* Card 2 — Live Breakroom Chat with capped log height so composer stays above the fold */}
+              {/* HERO 3 — Live Breakroom Chat (presence + conversation) */}
               <ErrorBoundary label="Shoutbox" message="Chat is reconnecting…">
                 <div
                   className="rounded-2xl p-4 shadow-xl [&_[data-shoutbox-log]]:max-h-[300px] [&_[data-shoutbox-log]]:overflow-y-auto"
@@ -1735,25 +1695,46 @@ function Index() {
                 </div>
               </ErrorBoundary>
 
-              {/* AI Manager Roast Engine — additive, slots above feedback terminal */}
-              <ErrorBoundary label="RoastEngine">
-                <RoastMyManager />
-              </ErrorBoundary>
+              {/* 🍻 PUB TOOLS — secondary widgets collapsed by default to keep the feed breathing */}
+              <details className="group rounded-2xl border border-[#1f1f1f] bg-[#0d0d0d]/80 backdrop-blur-md overflow-hidden">
+                <summary className="cursor-pointer list-none px-4 py-3 flex items-center justify-between gap-2 text-[12px] font-bold uppercase tracking-[0.2em] text-amber-300/90 hover:bg-amber-500/5 transition select-none">
+                  <span className="flex items-center gap-2">🍻 Pub Tools · Polls, Roasts &amp; Leaderboards</span>
+                  <span className="text-amber-400/70 group-open:rotate-180 transition-transform">▾</span>
+                </summary>
+                <div className="px-3 pb-4 pt-1 space-y-5 border-t border-[#1f1f1f]/80">
+                  <ErrorBoundary label="RumorMill"><RumorMillBracket /></ErrorBoundary>
+                  <ErrorBoundary label="ExcuseFabricator"><ExcuseFabricator /></ErrorBoundary>
+                  <ErrorBoundary label="BurnoutTelemetry"><BurnoutTelemetry /></ErrorBoundary>
+                  <ErrorBoundary label="Poll" message="Poll engine is rebooting…">
+                    <div
+                      id="poll-rail"
+                      className="rounded-2xl p-4 shadow-xl [&_button]:whitespace-normal [&_button]:break-words [&_button]:leading-tight"
+                      style={{
+                        background: "rgba(13, 13, 13, 0.8)",
+                        backdropFilter: "blur(12px)",
+                        WebkitBackdropFilter: "blur(12px)",
+                        border: "1px solid #1f1f1f",
+                      }}
+                    >
+                      <p className="px-1 pt-1 pb-3 text-[10px] uppercase tracking-[0.24em] font-bold text-fuchsia-300/90">
+                        Today's Desperation Index · 50-Poll Roulette
+                      </p>
+                      <DesperationPoll
+                        onSignUp={(reason) => requireAuth(reason ?? "Drop an anonymous confession — sign in once and you're masked.")}
+                      />
+                    </div>
+                  </ErrorBoundary>
+                  <ErrorBoundary label="RoastEngine"><RoastMyManager /></ErrorBoundary>
+                  <ErrorBoundary label="OfficeDramaPolls"><OfficeDramaPolls /></ErrorBoundary>
+                  <ErrorBoundary label="LayoffLeaderboard"><LayoffLeaderboard /></ErrorBoundary>
+                  <ErrorBoundary label="FeedbackTerminal"><AnonymousFeedbackTerminal /></ErrorBoundary>
+                </div>
+              </details>
 
-              {/* Office Drama Live Polls — additive engagement widget */}
-              <ErrorBoundary label="OfficeDramaPolls">
-                <OfficeDramaPolls />
-              </ErrorBoundary>
-
-              {/* Weekly Layoff Leaderboard — additive engagement widget */}
-              <ErrorBoundary label="LayoffLeaderboard">
-                <LayoffLeaderboard />
-              </ErrorBoundary>
-
-              {/* Anonymous feedback terminal — very bottom of left column rail */}
-              <ErrorBoundary label="FeedbackTerminal">
-                <AnonymousFeedbackTerminal />
-              </ErrorBoundary>
+              {/* Poll modal stays globally mounted (was inside the Poll ErrorBoundary before) */}
+              <DesperationPollModal
+                onSignUp={(reason) => requireAuth(reason ?? "Drop an anonymous confession — sign in once and you're masked.")}
+              />
             </>
 
           )}
@@ -1772,8 +1753,8 @@ function Index() {
         </section>
 
 
-        {/* Right sidebar — Ambient Telemetry Rail (sticky) */}
-        <aside className="col-span-1 lg:col-span-5 space-y-4 min-w-0 lg:sticky lg:top-20 lg:self-start lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto lg:pr-1">
+        {/* Right sidebar — slim ambient rail (sticky) */}
+        <aside className="col-span-1 lg:col-span-4 space-y-4 min-w-0 lg:sticky lg:top-20 lg:self-start lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto lg:pr-1">
           <ErrorBoundary label="SafeHouse" message="Safe-house reloading…">
             <WhistleblowerSafeHouse />
           </ErrorBoundary>
@@ -1814,33 +1795,32 @@ function Index() {
             </div>
           </ErrorBoundary>
 
-          <ErrorBoundary label="GlobalTimezoneMatrix">
-            <GlobalTimezoneMatrix />
-          </ErrorBoundary>
-
-          <ErrorBoundary label="MidnightLeakDigest">
-            <MidnightLeakDigest />
-          </ErrorBoundary>
-
-          <ErrorBoundary label="GlobalEscapeSimulator">
-            <GlobalEscapeSimulator />
-          </ErrorBoundary>
-
-          {/* Unified leaderboard panel — Trending Escape Clusters + Desperate Tech Parks */}
-          <div
-            className="rounded-2xl p-4 shadow-xl space-y-4"
-            style={{
-              background: "rgba(13, 13, 13, 0.8)",
-              backdropFilter: "blur(12px)",
-              WebkitBackdropFilter: "blur(12px)",
-              border: "1px solid #1f1f1f",
-            }}
-          >
-            <ErrorBoundary label="Clusters" message="Leaderboard offline — refresh to retry.">
-              <TrendingEscapeClusters />
-            </ErrorBoundary>
-            <BurnoutLeaderboard />
-          </div>
+          {/* 📡 Ambient Telemetry — collapsed to keep rail breathable */}
+          <details className="group rounded-2xl border border-[#1f1f1f] bg-[#0d0d0d]/80 backdrop-blur-md overflow-hidden">
+            <summary className="cursor-pointer list-none px-4 py-3 flex items-center justify-between gap-2 text-[11px] font-bold uppercase tracking-[0.2em] text-fuchsia-300/90 hover:bg-fuchsia-500/5 transition select-none">
+              <span className="flex items-center gap-2">📡 Ambient Telemetry</span>
+              <span className="text-fuchsia-400/70 group-open:rotate-180 transition-transform">▾</span>
+            </summary>
+            <div className="px-3 pb-4 pt-1 space-y-4 border-t border-[#1f1f1f]/80">
+              <ErrorBoundary label="GlobalTimezoneMatrix"><GlobalTimezoneMatrix /></ErrorBoundary>
+              <ErrorBoundary label="MidnightLeakDigest"><MidnightLeakDigest /></ErrorBoundary>
+              <ErrorBoundary label="GlobalEscapeSimulator"><GlobalEscapeSimulator /></ErrorBoundary>
+              <div
+                className="rounded-2xl p-4 shadow-xl space-y-4"
+                style={{
+                  background: "rgba(13, 13, 13, 0.8)",
+                  backdropFilter: "blur(12px)",
+                  WebkitBackdropFilter: "blur(12px)",
+                  border: "1px solid #1f1f1f",
+                }}
+              >
+                <ErrorBoundary label="Clusters" message="Leaderboard offline — refresh to retry.">
+                  <TrendingEscapeClusters />
+                </ErrorBoundary>
+                <BurnoutLeaderboard />
+              </div>
+            </div>
+          </details>
 
 
           <p className="text-[10px] text-muted-foreground/60 px-2 leading-relaxed">
