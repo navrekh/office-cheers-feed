@@ -103,6 +103,8 @@ import BurnoutTelemetry from "@/components/BurnoutTelemetry";
 import AnonymousFeedbackTerminal from "@/components/AnonymousFeedbackTerminal";
 import RoastMyManager from "@/components/RoastMyManager";
 import BreakroomStreak from "@/components/BreakroomStreak";
+import LayoffLeaderboard from "@/components/LayoffLeaderboard";
+import OfficeDramaPolls from "@/components/OfficeDramaPolls";
 
 // ---------- Client-side spam guard ----------
 const RATE_KEY = "drinkedin.rate.posts";
@@ -1736,6 +1738,16 @@ function Index() {
               {/* AI Manager Roast Engine — additive, slots above feedback terminal */}
               <ErrorBoundary label="RoastEngine">
                 <RoastMyManager />
+              </ErrorBoundary>
+
+              {/* Office Drama Live Polls — additive engagement widget */}
+              <ErrorBoundary label="OfficeDramaPolls">
+                <OfficeDramaPolls />
+              </ErrorBoundary>
+
+              {/* Weekly Layoff Leaderboard — additive engagement widget */}
+              <ErrorBoundary label="LayoffLeaderboard">
+                <LayoffLeaderboard />
               </ErrorBoundary>
 
               {/* Anonymous feedback terminal — very bottom of left column rail */}
