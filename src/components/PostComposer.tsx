@@ -294,7 +294,8 @@ export default function PostComposer({
       )}
 
 
-      <div className="mt-3 flex items-center gap-2 flex-wrap">
+      {(focused || body || mood) && (
+      <div className="mt-3 flex items-center gap-2 flex-wrap animate-in fade-in duration-200">
         <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">
           {weekend ? "Current Mood State (Weekend):" : "Current Mood:"}
         </span>
