@@ -1698,7 +1698,7 @@ function Index() {
               )}
 
               {/* ===== PULSE ZONE — composer + feed ===== */}
-              <div className={`${mShow("pulse")} space-y-5`}>
+              <div className={`${mShow("pulse")} space-y-6`}>
                 <PresenceBar />
 
                 <ErrorBoundary label="Composer" message="Composer is reloading…">
