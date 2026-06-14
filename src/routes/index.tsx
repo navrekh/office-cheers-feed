@@ -2179,6 +2179,8 @@ function SubPageShell({
       <div className="space-y-5">{children}</div>
     </div>
   );
+}
+
 
 function HomeSection({
   eyebrow,
