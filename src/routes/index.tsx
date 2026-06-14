@@ -1681,32 +1681,167 @@ function Index() {
                 })()}
               </ErrorBoundary>
 
+              {/* 📊 Pulse check — inline, above the feed */}
+              <HomeSection
+                eyebrow="📊 PULSE CHECK"
+                title="Today's Desperation Poll"
+                blurb="Vote in 2 seconds. See how cooked the rest of the office is."
+              >
+                <ErrorBoundary label="Poll" message="Poll engine is rebooting…">
+                  <DesperationPoll
+                    onSignUp={(reason) => requireAuth(reason ?? "Drop an anonymous confession — sign in once and you're masked.")}
+                  />
+                </ErrorBoundary>
+              </HomeSection>
+
               <NewSipsPill />
 
               {/* Feed */}
-              <ErrorBoundary label="Feed" message="Feed is reconnecting…">
-                <PostsFeed />
-              </ErrorBoundary>
+              <HomeSection
+                eyebrow="🍻 LIVE BREAKROOM"
+                title="Anonymous confessions, hot off the keyboard"
+                blurb="Real takes from real cubicles. Cheers the ones that hurt."
+              >
+                <ErrorBoundary label="Feed" message="Feed is reconnecting…">
+                  <PostsFeed />
+                </ErrorBoundary>
+              </HomeSection>
 
-              {/* Subtle explore strip — discovery without clutter */}
-              <nav className="pt-4 grid grid-cols-2 sm:grid-cols-4 gap-2 text-center">
-                {([
-                  { id: "polls", label: "📊 Polls", sub: "Pulse check" },
-                  { id: "rally", label: "💬 Rally", sub: "Chat & meetups" },
-                  { id: "radar", label: "📡 Radar", sub: "Who's nearby" },
-                  { id: "tools", label: "🍻 Tools", sub: "Roasts & boards" },
-                ] as const).map((t) => (
-                  <button
-                    key={t.id}
-                    type="button"
-                    onClick={() => setView(t.id)}
-                    className="rounded-xl px-3 py-3 border border-neutral-900/60 bg-neutral-950/40 hover:bg-neutral-900/60 hover:border-amber-500/30 transition text-left"
-                  >
-                    <div className="text-sm font-bold text-amber-200/90">{t.label}</div>
-                    <div className="text-[10px] text-neutral-500 mt-0.5">{t.sub}</div>
-                  </button>
-                ))}
-              </nav>
+              {/* 🎭 Roast generator */}
+              <HomeSection
+                eyebrow="🎭 INSTANT REVENGE"
+                title="Roast My Manager"
+                blurb="Type their name. Receive a surgical, HR-unsafe roast."
+              >
+                <ErrorBoundary label="RoastEngine"><RoastMyManager /></ErrorBoundary>
+              </HomeSection>
+
+              {/* 🤥 Excuse fabricator */}
+              <HomeSection
+                eyebrow="🤥 ESCAPE HATCH"
+                title="Excuse Fabricator"
+                blurb="One-click alibi for skipping the 4:45 PM 'quick sync'."
+              >
+                <ErrorBoundary label="ExcuseFabricator"><ExcuseFabricator /></ErrorBoundary>
+              </HomeSection>
+
+              {/* 🔥 Rumor bracket */}
+              <HomeSection
+                eyebrow="🔥 OFFICE GOSSIP"
+                title="Rumor Mill Bracket"
+                blurb="March-madness, but every team is a workplace conspiracy."
+              >
+                <ErrorBoundary label="RumorMill"><RumorMillBracket /></ErrorBoundary>
+              </HomeSection>
+
+              {/* 📡 Radar */}
+              <HomeSection
+                eyebrow="📡 LIVE RADAR"
+                title="Who's escaping work near you"
+                blurb="Anonymous pings from fellow corporate refugees within a few blocks."
+              >
+                <ErrorBoundary label="Radar" message="Radar recalibrating…">
+                  <div className="rounded-2xl p-3 bg-neutral-950/80 border border-neutral-900/60">
+                    <LiveWorkspaceRadar
+                      origin={geoCoords}
+                      geoStatus={geoStatus}
+                      posts={posts.map((p) => ({
+                        id: p.id,
+                        latitude: (p as any).latitude ?? null,
+                        longitude: (p as any).longitude ?? null,
+                        created_at: p.created_at,
+                        author_name: p.author_name,
+                      }))}
+                      merchants={(MERCHANTS[selectedCity] ?? []).map((m) => ({
+                        id: m.id,
+                        name: m.name,
+                        area: m.area,
+                      }))}
+                      proximity={proximity}
+                      onProximityChange={(p) => {
+                        setProximity(p);
+                        import("@/lib/analytics").then((m) =>
+                          m.trackEngagement("radar_proximity_change", { proximity: p })
+                        );
+                      }}
+                    />
+                  </div>
+                </ErrorBoundary>
+              </HomeSection>
+
+              {/* 🤫 Whistleblower */}
+              <HomeSection
+                eyebrow="🤫 STRICTLY OFF THE RECORD"
+                title="Whistleblower Safe-House"
+                blurb="Drop the leak. No names, no IPs, no Slack screenshots traced back."
+              >
+                <ErrorBoundary label="SafeHouse" message="Safe-house reloading…">
+                  <WhistleblowerSafeHouse />
+                </ErrorBoundary>
+              </HomeSection>
+
+              {/* 💬 Rally + chat */}
+              <HomeSection
+                eyebrow="💬 BREAKROOM CHAT"
+                title="Rally & Local Shoutbox"
+                blurb="Coordinate a real-life happy hour. Or just yell into the void."
+              >
+                <ErrorBoundary label="Rally" message="Rally is reconnecting…">
+                  <RallyBoard requireAuth={requireAuth} />
+                </ErrorBoundary>
+                <div className="h-3" />
+                <ErrorBoundary label="Shoutbox" message="Chat is reconnecting…">
+                  <LocalShoutbox requireAuth={requireAuth} variant="hero" />
+                </ErrorBoundary>
+              </HomeSection>
+
+              {/* 📈 Suffering stats */}
+              <HomeSection
+                eyebrow="📈 SUFFERING STATS"
+                title="Burnout Telemetry & Leaderboards"
+                blurb="Live rankings of corporate decay. Are you winning?"
+              >
+                <ErrorBoundary label="BurnoutTelemetry"><BurnoutTelemetry /></ErrorBoundary>
+                <div className="h-3" />
+                <BurnoutLeaderboard />
+                <div className="h-3" />
+                <ErrorBoundary label="LayoffLeaderboard"><LayoffLeaderboard /></ErrorBoundary>
+              </HomeSection>
+
+              {/* 🗳️ Drama polls */}
+              <HomeSection
+                eyebrow="🗳️ MORE BALLOTS"
+                title="Office Drama Polls"
+                blurb="Settle the petty wars. Anonymously, of course."
+              >
+                <ErrorBoundary label="OfficeDramaPolls"><OfficeDramaPolls /></ErrorBoundary>
+              </HomeSection>
+
+              {/* 🌐 Global feel */}
+              <HomeSection
+                eyebrow="🌐 EVERYONE'S COOKED"
+                title="Around the world right now"
+                blurb="Timezones, leaks, escapes, and trending clusters of burnout."
+              >
+                <ErrorBoundary label="GlobalTimezoneMatrix"><GlobalTimezoneMatrix /></ErrorBoundary>
+                <div className="h-3" />
+                <ErrorBoundary label="MidnightLeakDigest"><MidnightLeakDigest /></ErrorBoundary>
+                <div className="h-3" />
+                <ErrorBoundary label="GlobalEscapeSimulator"><GlobalEscapeSimulator /></ErrorBoundary>
+                <div className="h-3" />
+                <ErrorBoundary label="Clusters" message="Leaderboard offline — refresh to retry.">
+                  <TrendingEscapeClusters />
+                </ErrorBoundary>
+              </HomeSection>
+
+              {/* 📨 Feedback */}
+              <HomeSection
+                eyebrow="📨 ANON DROPBOX"
+                title="Anonymous Feedback Terminal"
+                blurb="Tell us what's broken. Or what's funny. We can't see who you are."
+              >
+                <ErrorBoundary label="FeedbackTerminal"><AnonymousFeedbackTerminal /></ErrorBoundary>
+              </HomeSection>
 
               {/* Poll modal stays globally mounted */}
               <DesperationPollModal
@@ -2045,6 +2180,37 @@ function SubPageShell({
     </div>
   );
 }
+
+
+function HomeSection({
+  eyebrow,
+  title,
+  blurb,
+  children,
+}: {
+  eyebrow: string;
+  title: string;
+  blurb?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <section className="rounded-2xl p-5 bg-neutral-950/55 border border-neutral-900/50 backdrop-blur-[14px] space-y-4">
+      <header className="space-y-1">
+        <div className="text-[10px] font-bold tracking-[0.18em] text-amber-300/80">
+          {eyebrow}
+        </div>
+        <h2 className="text-lg sm:text-xl font-black text-foreground leading-tight">
+          {title}
+        </h2>
+        {blurb && (
+          <p className="text-[12px] text-neutral-500 leading-relaxed">{blurb}</p>
+        )}
+      </header>
+      <div className="space-y-3">{children}</div>
+    </section>
+  );
+}
+
 
 function NavItem({
   icon,
