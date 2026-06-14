@@ -359,12 +359,7 @@ function Index() {
   const picKindRef = useRef<"bar" | "tasting">("bar");
   const [gifPickerOpen, setGifPickerOpen] = useState(false);
   const [view, setView] = useState<ViewKey>("home");
-  // Mobile-only sub-tabs inside the Home view to reduce visual clutter on small screens.
-  // Desktop ignores this entirely — everything renders together via `lg:block` overrides.
-  const [mobileHomeTab, setMobileHomeTab] = useState<"pulse" | "rally" | "map">("pulse");
-  const mShow = (tab: "pulse" | "rally" | "map") =>
-    mobileHomeTab === tab ? "" : "hidden lg:block";
-  useNewPostsNotifier(() => { setView("home"); setMobileHomeTab("pulse"); });
+  useNewPostsNotifier(() => { setView("home"); });
   const [highlightedId, setHighlightedId] = useState<string | null>(null);
   const [feedLoading, setFeedLoading] = useState(true);
   const [feedError, setFeedError] = useState<string | null>(null);
