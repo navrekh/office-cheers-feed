@@ -1497,8 +1497,8 @@ function Index() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       {/* Premium permanent TokenLens banner with neon-amber glow */}
-      <div className="tokenlens-banner relative w-full">
-        <div className="mx-auto max-w-7xl px-4 py-2.5 text-center text-[13px] font-medium leading-snug flex items-center justify-center gap-2 flex-wrap">
+      <div className="tokenlens-banner relative w-full opacity-80 hover:opacity-100 transition-opacity">
+        <div className="mx-auto max-w-7xl px-4 py-2 text-center text-[12px] font-medium leading-snug flex items-center justify-center gap-2 flex-wrap">
           <span className="shrink-0">🔥</span>
           <span className="text-foreground/90">
             Running commercial LLMs? TokenLens has caught{" "}
