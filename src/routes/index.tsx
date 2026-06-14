@@ -359,7 +359,12 @@ function Index() {
   const picKindRef = useRef<"bar" | "tasting">("bar");
   const [gifPickerOpen, setGifPickerOpen] = useState(false);
   const [view, setView] = useState<ViewKey>("home");
-  useNewPostsNotifier(() => setView("home"));
+  // Mobile-only sub-tabs inside the Home view to reduce visual clutter on small screens.
+  // Desktop ignores this entirely — everything renders together via `lg:block` overrides.
+  const [mobileHomeTab, setMobileHomeTab] = useState<"pulse" | "rally" | "map">("pulse");
+  const mShow = (tab: "pulse" | "rally" | "map") =>
+    mobileHomeTab === tab ? "" : "hidden lg:block";
+  useNewPostsNotifier(() => { setView("home"); setMobileHomeTab("pulse"); });
   const [highlightedId, setHighlightedId] = useState<string | null>(null);
   const [feedLoading, setFeedLoading] = useState(true);
   const [feedError, setFeedError] = useState<string | null>(null);
@@ -1658,6 +1663,32 @@ function Index() {
         <section className="col-span-1 lg:col-span-8 space-y-5 min-w-0">
           {view === "home" && (
             <>
+              {/* MOBILE-ONLY sub-tabs — focus one zone at a time on small screens */}
+              <div className="lg:hidden sticky top-[56px] z-30 -mx-4 px-4 py-2 bg-black/85 backdrop-blur-xl border-b border-amber-500/20">
+                <div className="grid grid-cols-3 gap-1.5 rounded-xl bg-zinc-950/80 border border-zinc-800/80 p-1">
+                  {([
+                    { id: "pulse", label: "🍻 Pulse", sub: "Feed" },
+                    { id: "rally", label: "💬 Talk", sub: "Chat & Rally" },
+                    { id: "map", label: "📡 Map", sub: "Radar" },
+                  ] as const).map((t) => (
+                    <button
+                      key={t.id}
+                      type="button"
+                      onClick={() => setMobileHomeTab(t.id)}
+                      className={`px-2 py-2 rounded-lg text-[11px] font-extrabold uppercase tracking-wider transition ${
+                        mobileHomeTab === t.id
+                          ? "bg-amber-400 text-black shadow-[0_0_20px_rgba(251,191,36,0.4)]"
+                          : "text-amber-100/70 hover:text-amber-100 hover:bg-white/5"
+                      }`}
+                      aria-pressed={mobileHomeTab === t.id}
+                    >
+                      <div>{t.label}</div>
+                      <div className={`text-[9px] font-medium normal-case tracking-normal mt-0.5 ${mobileHomeTab === t.id ? "text-black/70" : "text-amber-200/40"}`}>{t.sub}</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
               {/* First-time employees: pick a corporate mask before the feed */}
               {user && profile?.role === "employee" && !profile?.declared_company && (
                 <WorkplaceSelectorCard
@@ -1666,49 +1697,50 @@ function Index() {
                 />
               )}
 
-              {/* Live social presence — anons online + typing indicators */}
-              <PresenceBar />
+              {/* ===== PULSE ZONE — composer + feed ===== */}
+              <div className={`${mShow("pulse")} space-y-5`}>
+                <PresenceBar />
 
-              {/* HERO 1 — Post Composer */}
-              <ErrorBoundary label="Composer" message="Composer is reloading…">
-                {(() => {
-                  const dow = new Date().getDay();
-                  const isWeekend = dow === 0 || dow === 6;
-                  return (
-                    <div className="space-y-3">
-                      <WeekendBoundaryModule weekend={isWeekend} />
-                      <PostComposer requireAuth={requireAuth} weekend={isWeekend} />
-                    </div>
-                  );
-                })()}
-              </ErrorBoundary>
+                <ErrorBoundary label="Composer" message="Composer is reloading…">
+                  {(() => {
+                    const dow = new Date().getDay();
+                    const isWeekend = dow === 0 || dow === 6;
+                    return (
+                      <div className="space-y-3">
+                        <WeekendBoundaryModule weekend={isWeekend} />
+                        <PostComposer requireAuth={requireAuth} weekend={isWeekend} />
+                      </div>
+                    );
+                  })()}
+                </ErrorBoundary>
 
-              {/* Floating "+N new sips" pill — only shows when user scrolled past the fold */}
-              <NewSipsPill />
+                <NewSipsPill />
 
-              {/* HERO 2 — Live posts feed (the social core) */}
-              <ErrorBoundary label="Feed" message="Feed is reconnecting…">
-                <PostsFeed />
-              </ErrorBoundary>
+                <ErrorBoundary label="Feed" message="Feed is reconnecting…">
+                  <PostsFeed />
+                </ErrorBoundary>
+              </div>
 
-              {/* HERO 3 — Live Breakroom Chat (presence + conversation) + Rally Board */}
-              <ErrorBoundary label="Shoutbox" message="Chat is reconnecting…">
-                <div
-                  className="rounded-2xl p-4 shadow-xl space-y-4 [&_[data-shoutbox-log]]:max-h-[300px] [&_[data-shoutbox-log]]:overflow-y-auto"
-                  style={{
-                    background: "rgba(13, 13, 13, 0.8)",
-                    backdropFilter: "blur(12px)",
-                    WebkitBackdropFilter: "blur(12px)",
-                    border: "1px solid #1f1f1f",
-                  }}
-                >
-                  <RallyBoard requireAuth={requireAuth} />
-                  <LocalShoutbox requireAuth={requireAuth} variant="hero" />
-                </div>
-              </ErrorBoundary>
+              {/* ===== TALK ZONE — Rally + Shoutbox ===== */}
+              <div className={`${mShow("rally")} space-y-5`}>
+                <ErrorBoundary label="Shoutbox" message="Chat is reconnecting…">
+                  <div
+                    className="rounded-2xl p-4 shadow-xl space-y-4 [&_[data-shoutbox-log]]:max-h-[300px] [&_[data-shoutbox-log]]:overflow-y-auto"
+                    style={{
+                      background: "rgba(13, 13, 13, 0.8)",
+                      backdropFilter: "blur(12px)",
+                      WebkitBackdropFilter: "blur(12px)",
+                      border: "1px solid #1f1f1f",
+                    }}
+                  >
+                    <RallyBoard requireAuth={requireAuth} />
+                    <LocalShoutbox requireAuth={requireAuth} variant="hero" />
+                  </div>
+                </ErrorBoundary>
+              </div>
 
-              {/* 🍻 PUB TOOLS — secondary widgets collapsed by default to keep the feed breathing */}
-              <details className="group rounded-2xl border border-[#1f1f1f] bg-[#0d0d0d]/80 backdrop-blur-md overflow-hidden">
+              {/* ===== PUB TOOLS — always collapsed, lives under Pulse on mobile ===== */}
+              <details className={`${mShow("pulse")} group rounded-2xl border border-[#1f1f1f] bg-[#0d0d0d]/80 backdrop-blur-md overflow-hidden`}>
                 <summary className="cursor-pointer list-none px-4 py-3 flex items-center justify-between gap-2 text-[12px] font-bold uppercase tracking-[0.2em] text-amber-300/90 hover:bg-amber-500/5 transition select-none">
                   <span className="flex items-center gap-2">🍻 Pub Tools · Polls, Roasts &amp; Leaderboards</span>
                   <span className="text-amber-400/70 group-open:rotate-180 transition-transform">▾</span>
@@ -1743,7 +1775,7 @@ function Index() {
                 </div>
               </details>
 
-              {/* Poll modal stays globally mounted (was inside the Poll ErrorBoundary before) */}
+              {/* Poll modal stays globally mounted */}
               <DesperationPollModal
                 onSignUp={(reason) => requireAuth(reason ?? "Drop an anonymous confession — sign in once and you're masked.")}
               />
@@ -1765,8 +1797,8 @@ function Index() {
         </section>
 
 
-        {/* Right sidebar — slim ambient rail (sticky) */}
-        <aside className="col-span-1 lg:col-span-4 space-y-4 min-w-0 lg:sticky lg:top-20 lg:self-start lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto lg:pr-1">
+        {/* Right sidebar — slim ambient rail (sticky on desktop, becomes Map tab on mobile) */}
+        <aside className={`${view === "home" ? mShow("map") : ""} col-span-1 lg:col-span-4 lg:!block space-y-4 min-w-0 lg:sticky lg:top-20 lg:self-start lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto lg:pr-1`}>
           <ErrorBoundary label="SafeHouse" message="Safe-house reloading…">
             <WhistleblowerSafeHouse />
           </ErrorBoundary>
