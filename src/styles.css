@@ -306,7 +306,7 @@
   100% { transform: translateX(-50%); }
 }
 @utility drinkedin-marquee {
-  animation: drinkedin-marquee 38s linear infinite;
+  animation: drinkedin-marquee 90s linear infinite;
   will-change: transform;
 }
 
@@ -315,7 +315,7 @@
   100% { opacity: 1; filter: blur(0); }
 }
 @utility drinkedin-deal-fade {
-  animation: drinkedin-marquee 38s linear infinite, drinkedin-deal-fade 600ms ease-out;
+  animation: drinkedin-marquee 90s linear infinite, drinkedin-deal-fade 600ms ease-out;
 }
 
 @keyframes ad-preview-pulse {
