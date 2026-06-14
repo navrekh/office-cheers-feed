@@ -1697,27 +1697,83 @@ function Index() {
                 />
               )}
 
-              {/* ===== PULSE ZONE — composer + feed ===== */}
-              <div className={`${mShow("pulse")} space-y-6`}>
+              {/* ===== PULSE ZONE — Phase 01 Poll + Phase 02 Composer + Phase 03 Feed ===== */}
+              <div className={`${mShow("pulse")} space-y-8`}>
                 <PresenceBar />
 
+                {/* ───── PHASE 01 · QUICK PULSE CHECK ───── */}
+                <ErrorBoundary label="Poll" message="Poll engine is rebooting…">
+                  <section className="my-8">
+                    <p className="px-1 pb-2 text-[10px] uppercase tracking-[0.28em] font-semibold text-neutral-500/80">
+                      📊 Phase 01 <span className="text-neutral-600">//</span> Quick Pulse Check
+                    </p>
+                    <div
+                      id="poll-rail"
+                      className="rounded-2xl p-6 shadow-sm [&_button]:whitespace-normal [&_button]:break-words [&_button]:leading-tight"
+                      style={{
+                        background: "rgba(10, 10, 10, 0.55)",
+                        backdropFilter: "blur(14px)",
+                        WebkitBackdropFilter: "blur(14px)",
+                        border: "1px solid rgba(31, 31, 31, 0.5)",
+                      }}
+                    >
+                      <p className="px-1 pt-1 pb-3 text-[10px] uppercase tracking-[0.24em] font-bold text-fuchsia-300/90">
+                        Today's Desperation Index · 50-Poll Roulette
+                      </p>
+                      <DesperationPoll
+                        onSignUp={(reason) => requireAuth(reason ?? "Drop an anonymous confession — sign in once and you're masked.")}
+                      />
+                    </div>
+                  </section>
+                </ErrorBoundary>
+
+                {/* ───── PHASE 02 · SHARE ANONYMOUSLY ───── */}
                 <ErrorBoundary label="Composer" message="Composer is reloading…">
                   {(() => {
                     const dow = new Date().getDay();
                     const isWeekend = dow === 0 || dow === 6;
                     return (
-                      <div className="space-y-3">
-                        <WeekendBoundaryModule weekend={isWeekend} />
-                        <PostComposer requireAuth={requireAuth} weekend={isWeekend} />
-                      </div>
+                      <section className="my-8">
+                        <p className="px-1 pb-2 text-[10px] uppercase tracking-[0.28em] font-semibold text-neutral-500/80">
+                          ✍️ Phase 02 <span className="text-neutral-600">//</span> Share Anonymously
+                        </p>
+                        <div
+                          className="rounded-2xl p-6 shadow-sm space-y-3"
+                          style={{
+                            background: "rgba(10, 10, 10, 0.55)",
+                            backdropFilter: "blur(14px)",
+                            WebkitBackdropFilter: "blur(14px)",
+                            border: "1px solid rgba(31, 31, 31, 0.5)",
+                          }}
+                        >
+                          <WeekendBoundaryModule weekend={isWeekend} />
+                          <PostComposer requireAuth={requireAuth} weekend={isWeekend} />
+                        </div>
+                      </section>
                     );
                   })()}
                 </ErrorBoundary>
 
                 <NewSipsPill />
 
+                {/* ───── PHASE 03 · LIVE BREAKROOM TIMELINE ───── */}
                 <ErrorBoundary label="Feed" message="Feed is reconnecting…">
-                  <PostsFeed />
+                  <section className="my-8">
+                    <p className="px-1 pb-2 text-[10px] uppercase tracking-[0.28em] font-semibold text-neutral-500/80">
+                      💬 Phase 03 <span className="text-neutral-600">//</span> Live Breakroom Timeline
+                    </p>
+                    <div
+                      className="rounded-2xl p-6 shadow-sm"
+                      style={{
+                        background: "rgba(10, 10, 10, 0.55)",
+                        backdropFilter: "blur(14px)",
+                        WebkitBackdropFilter: "blur(14px)",
+                        border: "1px solid rgba(31, 31, 31, 0.5)",
+                      }}
+                    >
+                      <PostsFeed />
+                    </div>
+                  </section>
                 </ErrorBoundary>
               </div>
 
@@ -1740,34 +1796,15 @@ function Index() {
               </div>
 
               {/* ===== PUB TOOLS — always collapsed, lives under Pulse on mobile ===== */}
-              <details className={`${mShow("pulse")} group rounded-2xl border border-[#1f1f1f] bg-[#0d0d0d]/80 backdrop-blur-md overflow-hidden`}>
+              <details className={`${mShow("pulse")} group rounded-2xl border border-neutral-900/70 bg-neutral-950/70 backdrop-blur-md overflow-hidden`}>
                 <summary className="cursor-pointer list-none px-4 py-3 flex items-center justify-between gap-2 text-[12px] font-bold uppercase tracking-[0.2em] text-amber-300/90 hover:bg-amber-500/5 transition select-none">
-                  <span className="flex items-center gap-2">🍻 Pub Tools · Polls, Roasts &amp; Leaderboards</span>
+                  <span className="flex items-center gap-2">🍻 Pub Tools · Roasts &amp; Leaderboards</span>
                   <span className="text-amber-400/70 group-open:rotate-180 transition-transform">▾</span>
                 </summary>
-                <div className="px-3 pb-4 pt-1 space-y-5 border-t border-[#1f1f1f]/80">
+                <div className="px-3 pb-4 pt-1 space-y-5 border-t border-neutral-900/70">
                   <ErrorBoundary label="RumorMill"><RumorMillBracket /></ErrorBoundary>
                   <ErrorBoundary label="ExcuseFabricator"><ExcuseFabricator /></ErrorBoundary>
                   <ErrorBoundary label="BurnoutTelemetry"><BurnoutTelemetry /></ErrorBoundary>
-                  <ErrorBoundary label="Poll" message="Poll engine is rebooting…">
-                    <div
-                      id="poll-rail"
-                      className="rounded-2xl p-4 shadow-xl [&_button]:whitespace-normal [&_button]:break-words [&_button]:leading-tight"
-                      style={{
-                        background: "rgba(13, 13, 13, 0.4)",
-                        backdropFilter: "blur(14px)",
-                        WebkitBackdropFilter: "blur(14px)",
-                        border: "1px solid rgba(31, 31, 31, 0.5)",
-                      }}
-                    >
-                      <p className="px-1 pt-1 pb-3 text-[10px] uppercase tracking-[0.24em] font-bold text-fuchsia-300/90">
-                        Today's Desperation Index · 50-Poll Roulette
-                      </p>
-                      <DesperationPoll
-                        onSignUp={(reason) => requireAuth(reason ?? "Drop an anonymous confession — sign in once and you're masked.")}
-                      />
-                    </div>
-                  </ErrorBoundary>
                   <ErrorBoundary label="RoastEngine"><RoastMyManager /></ErrorBoundary>
                   <ErrorBoundary label="OfficeDramaPolls"><OfficeDramaPolls /></ErrorBoundary>
                   <ErrorBoundary label="LayoffLeaderboard"><LayoffLeaderboard /></ErrorBoundary>
@@ -1805,13 +1842,7 @@ function Index() {
 
           <ErrorBoundary label="Radar" message="Radar recalibrating…">
             <div
-              className="rounded-2xl p-3 shadow-xl"
-              style={{
-                background: "rgba(13, 13, 13, 0.4)",
-                backdropFilter: "blur(14px)",
-                WebkitBackdropFilter: "blur(14px)",
-                border: "1px solid rgba(31, 31, 31, 0.5)",
-              }}
+              className="rounded-2xl p-3 shadow-sm bg-neutral-950/80 border border-neutral-900/60"
             >
               <LiveWorkspaceRadar
                 origin={geoCoords}
@@ -1840,12 +1871,12 @@ function Index() {
           </ErrorBoundary>
 
           {/* 📡 Ambient Telemetry — collapsed to keep rail breathable */}
-          <details className="group rounded-2xl border border-[#1f1f1f] bg-[#0d0d0d]/80 backdrop-blur-md overflow-hidden">
-            <summary className="cursor-pointer list-none px-4 py-3 flex items-center justify-between gap-2 text-[11px] font-bold uppercase tracking-[0.2em] text-fuchsia-300/90 hover:bg-fuchsia-500/5 transition select-none">
+          <details className="group rounded-2xl border border-neutral-900/60 bg-neutral-950/80 overflow-hidden">
+            <summary className="cursor-pointer list-none px-4 py-3 flex items-center justify-between gap-2 text-[11px] font-bold uppercase tracking-[0.2em] text-fuchsia-300/80 hover:bg-fuchsia-500/5 transition select-none">
               <span className="flex items-center gap-2">📡 Ambient Telemetry</span>
-              <span className="text-fuchsia-400/70 group-open:rotate-180 transition-transform">▾</span>
+              <span className="text-fuchsia-400/60 group-open:rotate-180 transition-transform">▾</span>
             </summary>
-            <div className="px-3 pb-4 pt-1 space-y-4 border-t border-[#1f1f1f]/80">
+            <div className="px-3 pb-4 pt-1 space-y-4 border-t border-neutral-900/60">
               <ErrorBoundary label="GlobalTimezoneMatrix"><GlobalTimezoneMatrix /></ErrorBoundary>
               <ErrorBoundary label="MidnightLeakDigest"><MidnightLeakDigest /></ErrorBoundary>
               <ErrorBoundary label="GlobalEscapeSimulator"><GlobalEscapeSimulator /></ErrorBoundary>

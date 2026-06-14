@@ -54,6 +54,7 @@ export default function PostComposer({
   const [submitting, setSubmitting] = useState(false);
   const [popover, setPopover] = useState<Suggestion[] | null>(null);
   const [popoverTrigger, setPopoverTrigger] = useState<"#" | "@" | null>(null);
+  const [focused, setFocused] = useState(false);
   const taRef = useRef<HTMLTextAreaElement>(null);
   const imgInputRef = useRef<HTMLInputElement>(null);
   const vidInputRef = useRef<HTMLInputElement>(null);
@@ -230,7 +231,9 @@ export default function PostComposer({
           ref={taRef}
           value={body}
           onChange={handleBodyChange}
-          rows={3}
+          onFocus={() => setFocused(true)}
+          onBlur={() => { if (!body && !mood) setFocused(false); }}
+          rows={focused || body ? 3 : 2}
           placeholder="Type your confession… use #TCS, #Capgemini, or @SprintZombie to tag."
           className="w-full resize-none rounded-xl border border-white/10 bg-zinc-950/60 px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/60 focus:border-amber-400/40 focus:outline-none focus:ring-1 focus:ring-amber-400/20 leading-snug whitespace-normal break-words"
         />
@@ -291,7 +294,8 @@ export default function PostComposer({
       )}
 
 
-      <div className="mt-3 flex items-center gap-2 flex-wrap">
+      {(focused || body || mood) && (
+      <div className="mt-3 flex items-center gap-2 flex-wrap animate-in fade-in duration-200">
         <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">
           {weekend ? "Current Mood State (Weekend):" : "Current Mood:"}
         </span>
@@ -328,6 +332,7 @@ export default function PostComposer({
           );
         })}
       </div>
+      )}
 
       <div className="mt-3 flex items-center justify-between gap-2 flex-wrap">
         <div className="flex items-center gap-1.5">

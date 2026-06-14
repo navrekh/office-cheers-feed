@@ -80,7 +80,7 @@ export default function HappyHourTicker() {
         >
           🗳️ Unlock
         </button>
-        <span className={`shrink-0 text-[10px] font-black uppercase tracking-widest text-amber-300/90 ${top?.urgency_level === 3 ? "animate-soft-breathe" : ""}`}>
+        <span className="shrink-0 text-[10px] font-black uppercase tracking-widest text-amber-300/80">
           {top?.urgency_level === 3 ? "🚨 URGENT" : "LIVE"}
         </span>
         <div

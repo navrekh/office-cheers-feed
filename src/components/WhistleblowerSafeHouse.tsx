@@ -31,11 +31,7 @@ export default function WhistleblowerSafeHouse() {
   return (
     <>
       <div
-        className="relative rounded-2xl p-4 shadow-xl overflow-hidden bg-gradient-to-br from-[#0c0c0c] to-[#161224]"
-        style={{
-          backdropFilter: "blur(12px)",
-          WebkitBackdropFilter: "blur(12px)",
-        }}
+        className="relative rounded-2xl p-4 shadow-sm overflow-hidden bg-neutral-950/80 border border-neutral-900/60"
       >
         {/* Animated glow border */}
         <div
