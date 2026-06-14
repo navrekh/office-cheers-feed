@@ -340,25 +340,25 @@ export function LiveWorkspaceRadar({
       {/* Sonar Canvas */}
       <div className="relative mx-auto my-2 aspect-square w-[78%] max-w-[320px]">
         {/* Outer ring */}
-        <div className="absolute inset-0 rounded-full border border-emerald-400/30 bg-[radial-gradient(circle,rgba(16,185,129,0.10),rgba(0,0,0,0.6)_70%)]" />
+        <div className="absolute inset-0 rounded-full border border-emerald-400/15 bg-[radial-gradient(circle,rgba(16,185,129,0.05),rgba(0,0,0,0.6)_70%)]" />
         {/* Concentric range rings */}
-        <div className="absolute inset-[12%] rounded-full border border-emerald-400/15" />
-        <div className="absolute inset-[28%] rounded-full border border-emerald-400/15" />
-        <div className="absolute inset-[44%] rounded-full border border-emerald-400/20" />
+        <div className="absolute inset-[12%] rounded-full border border-emerald-400/8" />
+        <div className="absolute inset-[28%] rounded-full border border-emerald-400/8" />
+        <div className="absolute inset-[44%] rounded-full border border-emerald-400/10" />
         {/* Crosshairs */}
-        <div className="absolute inset-x-0 top-1/2 h-px bg-emerald-400/15" />
-        <div className="absolute inset-y-0 left-1/2 w-px bg-emerald-400/15" />
+        <div className="absolute inset-x-0 top-1/2 h-px bg-emerald-400/8" />
+        <div className="absolute inset-y-0 left-1/2 w-px bg-emerald-400/8" />
 
         {/* Rotating sonar sweep */}
         <div
-          className="pointer-events-none absolute inset-0 rounded-full overflow-hidden"
+          className="pointer-events-none absolute inset-0 rounded-full overflow-hidden opacity-60"
           aria-hidden
         >
           <div
             className="absolute inset-0 origin-center"
             style={{
               background:
-                "conic-gradient(from 0deg, rgba(16,185,129,0) 0deg, rgba(16,185,129,0) 300deg, rgba(16,185,129,0.55) 355deg, rgba(110,231,183,0.85) 360deg, rgba(16,185,129,0) 360deg)",
+                "conic-gradient(from 0deg, rgba(16,185,129,0) 0deg, rgba(16,185,129,0) 300deg, rgba(16,185,129,0.3) 355deg, rgba(110,231,183,0.5) 360deg, rgba(16,185,129,0) 360deg)",
               animation: "spin 3.5s linear infinite",
               maskImage: "radial-gradient(circle, black 70%, transparent 72%)",
               WebkitMaskImage: "radial-gradient(circle, black 70%, transparent 72%)",

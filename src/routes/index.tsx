@@ -1497,8 +1497,8 @@ function Index() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       {/* Premium permanent TokenLens banner with neon-amber glow */}
-      <div className="tokenlens-banner relative w-full">
-        <div className="mx-auto max-w-7xl px-4 py-2.5 text-center text-[13px] font-medium leading-snug flex items-center justify-center gap-2 flex-wrap">
+      <div className="tokenlens-banner relative w-full opacity-80 hover:opacity-100 transition-opacity">
+        <div className="mx-auto max-w-7xl px-4 py-2 text-center text-[12px] font-medium leading-snug flex items-center justify-center gap-2 flex-wrap">
           <span className="shrink-0">🔥</span>
           <span className="text-foreground/90">
             Running commercial LLMs? TokenLens has caught{" "}
@@ -1660,7 +1660,7 @@ function Index() {
         </h1>
 
         {/* Feed — Social Core (wider, hero column) */}
-        <section className="col-span-1 lg:col-span-8 space-y-5 min-w-0">
+        <section className="col-span-1 lg:col-span-8 space-y-8 min-w-0">
           {view === "home" && (
             <>
               {/* MOBILE-ONLY sub-tabs — focus one zone at a time on small screens */}
@@ -1698,7 +1698,7 @@ function Index() {
               )}
 
               {/* ===== PULSE ZONE — composer + feed ===== */}
-              <div className={`${mShow("pulse")} space-y-5`}>
+              <div className={`${mShow("pulse")} space-y-6`}>
                 <PresenceBar />
 
                 <ErrorBoundary label="Composer" message="Composer is reloading…">
@@ -1722,15 +1722,15 @@ function Index() {
               </div>
 
               {/* ===== TALK ZONE — Rally + Shoutbox ===== */}
-              <div className={`${mShow("rally")} space-y-5`}>
+              <div className={`${mShow("rally")} space-y-6`}>
                 <ErrorBoundary label="Shoutbox" message="Chat is reconnecting…">
                   <div
                     className="rounded-2xl p-4 shadow-xl space-y-4 [&_[data-shoutbox-log]]:max-h-[300px] [&_[data-shoutbox-log]]:overflow-y-auto"
                     style={{
-                      background: "rgba(13, 13, 13, 0.8)",
-                      backdropFilter: "blur(12px)",
-                      WebkitBackdropFilter: "blur(12px)",
-                      border: "1px solid #1f1f1f",
+                      background: "rgba(13, 13, 13, 0.4)",
+                      backdropFilter: "blur(14px)",
+                      WebkitBackdropFilter: "blur(14px)",
+                      border: "1px solid rgba(31, 31, 31, 0.5)",
                     }}
                   >
                     <RallyBoard requireAuth={requireAuth} />
@@ -1754,10 +1754,10 @@ function Index() {
                       id="poll-rail"
                       className="rounded-2xl p-4 shadow-xl [&_button]:whitespace-normal [&_button]:break-words [&_button]:leading-tight"
                       style={{
-                        background: "rgba(13, 13, 13, 0.8)",
-                        backdropFilter: "blur(12px)",
-                        WebkitBackdropFilter: "blur(12px)",
-                        border: "1px solid #1f1f1f",
+                        background: "rgba(13, 13, 13, 0.4)",
+                        backdropFilter: "blur(14px)",
+                        WebkitBackdropFilter: "blur(14px)",
+                        border: "1px solid rgba(31, 31, 31, 0.5)",
                       }}
                     >
                       <p className="px-1 pt-1 pb-3 text-[10px] uppercase tracking-[0.24em] font-bold text-fuchsia-300/90">
@@ -1798,7 +1798,7 @@ function Index() {
 
 
         {/* Right sidebar — slim ambient rail (sticky on desktop, becomes Map tab on mobile) */}
-        <aside className={`${view === "home" ? mShow("map") : ""} col-span-1 lg:col-span-4 lg:!block space-y-4 min-w-0 lg:sticky lg:top-20 lg:self-start lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto lg:pr-1`}>
+        <aside className={`${view === "home" ? mShow("map") : ""} col-span-1 lg:col-span-4 lg:!block space-y-6 min-w-0 lg:sticky lg:top-20 lg:self-start lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto lg:pr-1`}>
           <ErrorBoundary label="SafeHouse" message="Safe-house reloading…">
             <WhistleblowerSafeHouse />
           </ErrorBoundary>
@@ -1807,10 +1807,10 @@ function Index() {
             <div
               className="rounded-2xl p-3 shadow-xl"
               style={{
-                background: "rgba(13, 13, 13, 0.8)",
-                backdropFilter: "blur(12px)",
-                WebkitBackdropFilter: "blur(12px)",
-                border: "1px solid #1f1f1f",
+                background: "rgba(13, 13, 13, 0.4)",
+                backdropFilter: "blur(14px)",
+                WebkitBackdropFilter: "blur(14px)",
+                border: "1px solid rgba(31, 31, 31, 0.5)",
               }}
             >
               <LiveWorkspaceRadar
@@ -1852,10 +1852,10 @@ function Index() {
               <div
                 className="rounded-2xl p-4 shadow-xl space-y-4"
                 style={{
-                  background: "rgba(13, 13, 13, 0.8)",
-                  backdropFilter: "blur(12px)",
-                  WebkitBackdropFilter: "blur(12px)",
-                  border: "1px solid #1f1f1f",
+                  background: "rgba(13, 13, 13, 0.4)",
+                  backdropFilter: "blur(14px)",
+                  WebkitBackdropFilter: "blur(14px)",
+                  border: "1px solid rgba(31, 31, 31, 0.5)",
                 }}
               >
                 <ErrorBoundary label="Clusters" message="Leaderboard offline — refresh to retry.">

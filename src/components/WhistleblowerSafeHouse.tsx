@@ -58,13 +58,13 @@ export default function WhistleblowerSafeHouse() {
             Unlock the off-the-record intel layer used by senior devs going stealth.
           </p>
 
-          <ul className="space-y-1.5 mb-3.5">
+          <ul className="space-y-3 mb-4">
             {FEATURES.map((f) => (
               <li
                 key={f}
-                className="flex items-start gap-2 text-[11.5px] leading-snug text-foreground/85"
+                className="flex items-start gap-2.5 text-[11.5px] leading-relaxed text-foreground/85 py-0.5"
               >
-                <Lock className="size-3 mt-0.5 shrink-0 text-amber-300" />
+                <Lock className="size-3 mt-1 shrink-0 text-amber-300" />
                 <span className="whitespace-normal break-words">🔒 {f}</span>
               </li>
             ))}
