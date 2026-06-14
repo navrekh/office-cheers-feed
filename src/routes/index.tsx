@@ -1842,13 +1842,7 @@ function Index() {
 
           <ErrorBoundary label="Radar" message="Radar recalibrating…">
             <div
-              className="rounded-2xl p-3 shadow-xl"
-              style={{
-                background: "rgba(13, 13, 13, 0.4)",
-                backdropFilter: "blur(14px)",
-                WebkitBackdropFilter: "blur(14px)",
-                border: "1px solid rgba(31, 31, 31, 0.5)",
-              }}
+              className="rounded-2xl p-3 shadow-sm bg-neutral-950/80 border border-neutral-900/60"
             >
               <LiveWorkspaceRadar
                 origin={geoCoords}
