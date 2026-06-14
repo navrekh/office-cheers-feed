@@ -306,7 +306,7 @@ function initials(name: string) {
     .toUpperCase();
 }
 
-type ViewKey = "home" | "barhop" | "pubs" | "messages" | "notifications";
+type ViewKey = "home" | "barhop" | "pubs" | "messages" | "notifications" | "rally" | "radar" | "polls" | "tools";
 
 const PENDING_DRAFT_KEY = "drinkedin.pendingDraft.v1";
 type PendingDraft = {
