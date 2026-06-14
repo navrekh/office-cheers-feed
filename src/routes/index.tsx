@@ -306,7 +306,7 @@ function initials(name: string) {
     .toUpperCase();
 }
 
-type ViewKey = "home" | "barhop" | "pubs" | "messages" | "notifications";
+type ViewKey = "home" | "barhop" | "pubs" | "messages" | "notifications" | "rally" | "radar" | "polls" | "tools";
 
 const PENDING_DRAFT_KEY = "drinkedin.pendingDraft.v1";
 type PendingDraft = {
@@ -359,12 +359,7 @@ function Index() {
   const picKindRef = useRef<"bar" | "tasting">("bar");
   const [gifPickerOpen, setGifPickerOpen] = useState(false);
   const [view, setView] = useState<ViewKey>("home");
-  // Mobile-only sub-tabs inside the Home view to reduce visual clutter on small screens.
-  // Desktop ignores this entirely — everything renders together via `lg:block` overrides.
-  const [mobileHomeTab, setMobileHomeTab] = useState<"pulse" | "rally" | "map">("pulse");
-  const mShow = (tab: "pulse" | "rally" | "map") =>
-    mobileHomeTab === tab ? "" : "hidden lg:block";
-  useNewPostsNotifier(() => { setView("home"); setMobileHomeTab("pulse"); });
+  useNewPostsNotifier(() => { setView("home"); });
   const [highlightedId, setHighlightedId] = useState<string | null>(null);
   const [feedLoading, setFeedLoading] = useState(true);
   const [feedError, setFeedError] = useState<string | null>(null);
@@ -1652,43 +1647,16 @@ function Index() {
       <EmergencyDealOverlay />
 
 
-      {/* Spacious 2-column social breakroom layout */}
-      <main className="grid grid-cols-1 lg:grid-cols-12 gap-6 max-w-6xl mx-auto p-4 lg:p-6">
+      {/* Simplified single-column layout — feed-first */}
+      <main className="max-w-2xl mx-auto p-4 lg:p-6">
 
         <h1 className="sr-only">
           DrinkedIn — the corporate sanctuary for anonymous coping, viral Broetry, and verified local happy hours
         </h1>
 
-        {/* Feed — Social Core (wider, hero column) */}
-        <section className="col-span-1 lg:col-span-8 space-y-8 min-w-0">
+        <section className="space-y-6 min-w-0">
           {view === "home" && (
             <>
-              {/* MOBILE-ONLY sub-tabs — focus one zone at a time on small screens */}
-              <div className="lg:hidden sticky top-[56px] z-30 -mx-4 px-4 py-2 bg-black/85 backdrop-blur-xl border-b border-amber-500/20">
-                <div className="grid grid-cols-3 gap-1.5 rounded-xl bg-zinc-950/80 border border-zinc-800/80 p-1">
-                  {([
-                    { id: "pulse", label: "🍻 Pulse", sub: "Feed" },
-                    { id: "rally", label: "💬 Talk", sub: "Chat & Rally" },
-                    { id: "map", label: "📡 Map", sub: "Radar" },
-                  ] as const).map((t) => (
-                    <button
-                      key={t.id}
-                      type="button"
-                      onClick={() => setMobileHomeTab(t.id)}
-                      className={`px-2 py-2 rounded-lg text-[11px] font-extrabold uppercase tracking-wider transition ${
-                        mobileHomeTab === t.id
-                          ? "bg-amber-400 text-black shadow-[0_0_20px_rgba(251,191,36,0.4)]"
-                          : "text-amber-100/70 hover:text-amber-100 hover:bg-white/5"
-                      }`}
-                      aria-pressed={mobileHomeTab === t.id}
-                    >
-                      <div>{t.label}</div>
-                      <div className={`text-[9px] font-medium normal-case tracking-normal mt-0.5 ${mobileHomeTab === t.id ? "text-black/70" : "text-amber-200/40"}`}>{t.sub}</div>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
               {/* First-time employees: pick a corporate mask before the feed */}
               {user && profile?.role === "employee" && !profile?.declared_company && (
                 <WorkplaceSelectorCard
@@ -1697,127 +1665,129 @@ function Index() {
                 />
               )}
 
-              {/* ===== PULSE ZONE — Phase 01 Poll + Phase 02 Composer + Phase 03 Feed ===== */}
-              <div className={`${mShow("pulse")} space-y-8`}>
-                <PresenceBar />
+              <PresenceBar />
 
-                {/* ───── PHASE 01 · QUICK PULSE CHECK ───── */}
-                <ErrorBoundary label="Poll" message="Poll engine is rebooting…">
-                  <section className="my-8">
-                    <p className="px-1 pb-2 text-[10px] uppercase tracking-[0.28em] font-semibold text-neutral-500/80">
-                      📊 Phase 01 <span className="text-neutral-600">//</span> Quick Pulse Check
-                    </p>
-                    <div
-                      id="poll-rail"
-                      className="rounded-2xl p-6 shadow-sm [&_button]:whitespace-normal [&_button]:break-words [&_button]:leading-tight"
-                      style={{
-                        background: "rgba(10, 10, 10, 0.55)",
-                        backdropFilter: "blur(14px)",
-                        WebkitBackdropFilter: "blur(14px)",
-                        border: "1px solid rgba(31, 31, 31, 0.5)",
-                      }}
-                    >
-                      <p className="px-1 pt-1 pb-3 text-[10px] uppercase tracking-[0.24em] font-bold text-fuchsia-300/90">
-                        Today's Desperation Index · 50-Poll Roulette
-                      </p>
-                      <DesperationPoll
-                        onSignUp={(reason) => requireAuth(reason ?? "Drop an anonymous confession — sign in once and you're masked.")}
-                      />
+              {/* Composer — the one primary action */}
+              <ErrorBoundary label="Composer" message="Composer is reloading…">
+                {(() => {
+                  const dow = new Date().getDay();
+                  const isWeekend = dow === 0 || dow === 6;
+                  return (
+                    <div className="rounded-2xl p-5 bg-neutral-950/55 border border-neutral-900/50 backdrop-blur-[14px] space-y-3">
+                      <WeekendBoundaryModule weekend={isWeekend} />
+                      <PostComposer requireAuth={requireAuth} weekend={isWeekend} />
                     </div>
-                  </section>
-                </ErrorBoundary>
+                  );
+                })()}
+              </ErrorBoundary>
 
-                {/* ───── PHASE 02 · SHARE ANONYMOUSLY ───── */}
-                <ErrorBoundary label="Composer" message="Composer is reloading…">
-                  {(() => {
-                    const dow = new Date().getDay();
-                    const isWeekend = dow === 0 || dow === 6;
-                    return (
-                      <section className="my-8">
-                        <p className="px-1 pb-2 text-[10px] uppercase tracking-[0.28em] font-semibold text-neutral-500/80">
-                          ✍️ Phase 02 <span className="text-neutral-600">//</span> Share Anonymously
-                        </p>
-                        <div
-                          className="rounded-2xl p-6 shadow-sm space-y-3"
-                          style={{
-                            background: "rgba(10, 10, 10, 0.55)",
-                            backdropFilter: "blur(14px)",
-                            WebkitBackdropFilter: "blur(14px)",
-                            border: "1px solid rgba(31, 31, 31, 0.5)",
-                          }}
-                        >
-                          <WeekendBoundaryModule weekend={isWeekend} />
-                          <PostComposer requireAuth={requireAuth} weekend={isWeekend} />
-                        </div>
-                      </section>
-                    );
-                  })()}
-                </ErrorBoundary>
+              <NewSipsPill />
 
-                <NewSipsPill />
+              {/* Feed */}
+              <ErrorBoundary label="Feed" message="Feed is reconnecting…">
+                <PostsFeed />
+              </ErrorBoundary>
 
-                {/* ───── PHASE 03 · LIVE BREAKROOM TIMELINE ───── */}
-                <ErrorBoundary label="Feed" message="Feed is reconnecting…">
-                  <section className="my-8">
-                    <p className="px-1 pb-2 text-[10px] uppercase tracking-[0.28em] font-semibold text-neutral-500/80">
-                      💬 Phase 03 <span className="text-neutral-600">//</span> Live Breakroom Timeline
-                    </p>
-                    <div
-                      className="rounded-2xl p-6 shadow-sm"
-                      style={{
-                        background: "rgba(10, 10, 10, 0.55)",
-                        backdropFilter: "blur(14px)",
-                        WebkitBackdropFilter: "blur(14px)",
-                        border: "1px solid rgba(31, 31, 31, 0.5)",
-                      }}
-                    >
-                      <PostsFeed />
-                    </div>
-                  </section>
-                </ErrorBoundary>
-              </div>
-
-              {/* ===== TALK ZONE — Rally + Shoutbox ===== */}
-              <div className={`${mShow("rally")} space-y-6`}>
-                <ErrorBoundary label="Shoutbox" message="Chat is reconnecting…">
-                  <div
-                    className="rounded-2xl p-4 shadow-xl space-y-4 [&_[data-shoutbox-log]]:max-h-[300px] [&_[data-shoutbox-log]]:overflow-y-auto"
-                    style={{
-                      background: "rgba(13, 13, 13, 0.4)",
-                      backdropFilter: "blur(14px)",
-                      WebkitBackdropFilter: "blur(14px)",
-                      border: "1px solid rgba(31, 31, 31, 0.5)",
-                    }}
+              {/* Subtle explore strip — discovery without clutter */}
+              <nav className="pt-4 grid grid-cols-2 sm:grid-cols-4 gap-2 text-center">
+                {([
+                  { id: "polls", label: "📊 Polls", sub: "Pulse check" },
+                  { id: "rally", label: "💬 Rally", sub: "Chat & meetups" },
+                  { id: "radar", label: "📡 Radar", sub: "Who's nearby" },
+                  { id: "tools", label: "🍻 Tools", sub: "Roasts & boards" },
+                ] as const).map((t) => (
+                  <button
+                    key={t.id}
+                    type="button"
+                    onClick={() => setView(t.id)}
+                    className="rounded-xl px-3 py-3 border border-neutral-900/60 bg-neutral-950/40 hover:bg-neutral-900/60 hover:border-amber-500/30 transition text-left"
                   >
-                    <RallyBoard requireAuth={requireAuth} />
-                    <LocalShoutbox requireAuth={requireAuth} variant="hero" />
-                  </div>
-                </ErrorBoundary>
-              </div>
-
-              {/* ===== PUB TOOLS — always collapsed, lives under Pulse on mobile ===== */}
-              <details className={`${mShow("pulse")} group rounded-2xl border border-neutral-900/70 bg-neutral-950/70 backdrop-blur-md overflow-hidden`}>
-                <summary className="cursor-pointer list-none px-4 py-3 flex items-center justify-between gap-2 text-[12px] font-bold uppercase tracking-[0.2em] text-amber-300/90 hover:bg-amber-500/5 transition select-none">
-                  <span className="flex items-center gap-2">🍻 Pub Tools · Roasts &amp; Leaderboards</span>
-                  <span className="text-amber-400/70 group-open:rotate-180 transition-transform">▾</span>
-                </summary>
-                <div className="px-3 pb-4 pt-1 space-y-5 border-t border-neutral-900/70">
-                  <ErrorBoundary label="RumorMill"><RumorMillBracket /></ErrorBoundary>
-                  <ErrorBoundary label="ExcuseFabricator"><ExcuseFabricator /></ErrorBoundary>
-                  <ErrorBoundary label="BurnoutTelemetry"><BurnoutTelemetry /></ErrorBoundary>
-                  <ErrorBoundary label="RoastEngine"><RoastMyManager /></ErrorBoundary>
-                  <ErrorBoundary label="OfficeDramaPolls"><OfficeDramaPolls /></ErrorBoundary>
-                  <ErrorBoundary label="LayoffLeaderboard"><LayoffLeaderboard /></ErrorBoundary>
-                  <ErrorBoundary label="FeedbackTerminal"><AnonymousFeedbackTerminal /></ErrorBoundary>
-                </div>
-              </details>
+                    <div className="text-sm font-bold text-amber-200/90">{t.label}</div>
+                    <div className="text-[10px] text-neutral-500 mt-0.5">{t.sub}</div>
+                  </button>
+                ))}
+              </nav>
 
               {/* Poll modal stays globally mounted */}
               <DesperationPollModal
                 onSignUp={(reason) => requireAuth(reason ?? "Drop an anonymous confession — sign in once and you're masked.")}
               />
             </>
+          )}
 
+          {view === "polls" && (
+            <SubPageShell title="📊 Quick Pulse Check" subtitle="Today's Desperation Index · 50-Poll Roulette" onBack={() => setView("home")}>
+              <ErrorBoundary label="Poll" message="Poll engine is rebooting…">
+                <DesperationPoll
+                  onSignUp={(reason) => requireAuth(reason ?? "Drop an anonymous confession — sign in once and you're masked.")}
+                />
+              </ErrorBoundary>
+            </SubPageShell>
+          )}
+
+          {view === "rally" && (
+            <SubPageShell title="💬 Rally & Shoutbox" subtitle="Chat with the breakroom in real time" onBack={() => setView("home")}>
+              <ErrorBoundary label="Rally" message="Rally is reconnecting…">
+                <RallyBoard requireAuth={requireAuth} />
+              </ErrorBoundary>
+              <ErrorBoundary label="Shoutbox" message="Chat is reconnecting…">
+                <LocalShoutbox requireAuth={requireAuth} variant="hero" />
+              </ErrorBoundary>
+            </SubPageShell>
+          )}
+
+          {view === "radar" && (
+            <SubPageShell title="📡 Live Workspace Radar" subtitle="Who's escaping nearby right now" onBack={() => setView("home")}>
+              <ErrorBoundary label="Radar" message="Radar recalibrating…">
+                <div className="rounded-2xl p-3 bg-neutral-950/80 border border-neutral-900/60">
+                  <LiveWorkspaceRadar
+                    origin={geoCoords}
+                    geoStatus={geoStatus}
+                    posts={posts.map((p) => ({
+                      id: p.id,
+                      latitude: (p as any).latitude ?? null,
+                      longitude: (p as any).longitude ?? null,
+                      created_at: p.created_at,
+                      author_name: p.author_name,
+                    }))}
+                    merchants={(MERCHANTS[selectedCity] ?? []).map((m) => ({
+                      id: m.id,
+                      name: m.name,
+                      area: m.area,
+                    }))}
+                    proximity={proximity}
+                    onProximityChange={(p) => {
+                      setProximity(p);
+                      import("@/lib/analytics").then((m) =>
+                        m.trackEngagement("radar_proximity_change", { proximity: p })
+                      );
+                    }}
+                  />
+                </div>
+              </ErrorBoundary>
+              <ErrorBoundary label="SafeHouse" message="Safe-house reloading…">
+                <WhistleblowerSafeHouse />
+              </ErrorBoundary>
+              <ErrorBoundary label="GlobalTimezoneMatrix"><GlobalTimezoneMatrix /></ErrorBoundary>
+              <ErrorBoundary label="MidnightLeakDigest"><MidnightLeakDigest /></ErrorBoundary>
+              <ErrorBoundary label="GlobalEscapeSimulator"><GlobalEscapeSimulator /></ErrorBoundary>
+              <ErrorBoundary label="Clusters" message="Leaderboard offline — refresh to retry.">
+                <TrendingEscapeClusters />
+              </ErrorBoundary>
+              <BurnoutLeaderboard />
+            </SubPageShell>
+          )}
+
+          {view === "tools" && (
+            <SubPageShell title="🍻 Pub Tools" subtitle="Roasts, leaderboards & gimmicks" onBack={() => setView("home")}>
+              <ErrorBoundary label="RumorMill"><RumorMillBracket /></ErrorBoundary>
+              <ErrorBoundary label="ExcuseFabricator"><ExcuseFabricator /></ErrorBoundary>
+              <ErrorBoundary label="BurnoutTelemetry"><BurnoutTelemetry /></ErrorBoundary>
+              <ErrorBoundary label="RoastEngine"><RoastMyManager /></ErrorBoundary>
+              <ErrorBoundary label="OfficeDramaPolls"><OfficeDramaPolls /></ErrorBoundary>
+              <ErrorBoundary label="LayoffLeaderboard"><LayoffLeaderboard /></ErrorBoundary>
+              <ErrorBoundary label="FeedbackTerminal"><AnonymousFeedbackTerminal /></ErrorBoundary>
+            </SubPageShell>
           )}
 
           {view === "pubs" && (
@@ -1831,80 +1801,15 @@ function Index() {
           {view === "barhop" && <BarHopView />}
           {view === "messages" && <ComingSoonView title="Messages" emoji="📬" copy="Your DMs are too embarrassing. We're protecting you from yourself." />}
           {view === "notifications" && <NotificationsView />}
-        </section>
 
-
-        {/* Right sidebar — slim ambient rail (sticky on desktop, becomes Map tab on mobile) */}
-        <aside className={`${view === "home" ? mShow("map") : ""} col-span-1 lg:col-span-4 lg:!block space-y-6 min-w-0 lg:sticky lg:top-20 lg:self-start lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto lg:pr-1`}>
-          <ErrorBoundary label="SafeHouse" message="Safe-house reloading…">
-            <WhistleblowerSafeHouse />
-          </ErrorBoundary>
-
-          <ErrorBoundary label="Radar" message="Radar recalibrating…">
-            <div
-              className="rounded-2xl p-3 shadow-sm bg-neutral-950/80 border border-neutral-900/60"
-            >
-              <LiveWorkspaceRadar
-                origin={geoCoords}
-                geoStatus={geoStatus}
-                posts={posts.map((p) => ({
-                  id: p.id,
-                  latitude: (p as any).latitude ?? null,
-                  longitude: (p as any).longitude ?? null,
-                  created_at: p.created_at,
-                  author_name: p.author_name,
-                }))}
-                merchants={(MERCHANTS[selectedCity] ?? []).map((m) => ({
-                  id: m.id,
-                  name: m.name,
-                  area: m.area,
-                }))}
-                proximity={proximity}
-                onProximityChange={(p) => {
-                  setProximity(p);
-                  import("@/lib/analytics").then((m) =>
-                    m.trackEngagement("radar_proximity_change", { proximity: p })
-                  );
-                }}
-              />
-            </div>
-          </ErrorBoundary>
-
-          {/* 📡 Ambient Telemetry — collapsed to keep rail breathable */}
-          <details className="group rounded-2xl border border-neutral-900/60 bg-neutral-950/80 overflow-hidden">
-            <summary className="cursor-pointer list-none px-4 py-3 flex items-center justify-between gap-2 text-[11px] font-bold uppercase tracking-[0.2em] text-fuchsia-300/80 hover:bg-fuchsia-500/5 transition select-none">
-              <span className="flex items-center gap-2">📡 Ambient Telemetry</span>
-              <span className="text-fuchsia-400/60 group-open:rotate-180 transition-transform">▾</span>
-            </summary>
-            <div className="px-3 pb-4 pt-1 space-y-4 border-t border-neutral-900/60">
-              <ErrorBoundary label="GlobalTimezoneMatrix"><GlobalTimezoneMatrix /></ErrorBoundary>
-              <ErrorBoundary label="MidnightLeakDigest"><MidnightLeakDigest /></ErrorBoundary>
-              <ErrorBoundary label="GlobalEscapeSimulator"><GlobalEscapeSimulator /></ErrorBoundary>
-              <div
-                className="rounded-2xl p-4 shadow-xl space-y-4"
-                style={{
-                  background: "rgba(13, 13, 13, 0.4)",
-                  backdropFilter: "blur(14px)",
-                  WebkitBackdropFilter: "blur(14px)",
-                  border: "1px solid rgba(31, 31, 31, 0.5)",
-                }}
-              >
-                <ErrorBoundary label="Clusters" message="Leaderboard offline — refresh to retry.">
-                  <TrendingEscapeClusters />
-                </ErrorBoundary>
-                <BurnoutLeaderboard />
-              </div>
-            </div>
-          </details>
-
-
-          <p className="text-[10px] text-muted-foreground/60 px-2 leading-relaxed">
+          <p className="text-[10px] text-muted-foreground/60 px-2 leading-relaxed pt-6 text-center">
             DrinkedIn © 2026 · A parody. Please drink responsibly.
             <br />
-            About · Accessibility · Privacy & Pints · Ad Choices
+            About · Accessibility · Privacy &amp; Pints · Ad Choices
           </p>
-        </aside>
+        </section>
       </main>
+
 
       <RecentEscapesTicker />
 
@@ -2106,6 +2011,37 @@ function Index() {
           Disclaimer: DrinkedIn.me is an independent, satirical parody platform and social commentary engine exploring global tech culture. All company names, metrics, and references listed herein are purely fictional user-generated aggregations or parodies. This platform is not affiliated with, endorsed by, or associated with Tata Consultancy Services (TCS), Infosys, Capgemini, Cognizant, or any other corporation mentioned.
         </p>
       </footer>
+    </div>
+  );
+}
+
+function SubPageShell({
+  title,
+  subtitle,
+  onBack,
+  children,
+}: {
+  title: string;
+  subtitle?: string;
+  onBack: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="space-y-5">
+      <div className="flex items-center justify-between gap-3">
+        <button
+          type="button"
+          onClick={onBack}
+          className="text-[12px] font-semibold text-amber-300/90 hover:text-amber-200 transition"
+        >
+          ← Back to feed
+        </button>
+      </div>
+      <header className="space-y-1">
+        <h2 className="text-xl font-black text-foreground">{title}</h2>
+        {subtitle && <p className="text-[12px] text-neutral-500">{subtitle}</p>}
+      </header>
+      <div className="space-y-5">{children}</div>
     </div>
   );
 }
