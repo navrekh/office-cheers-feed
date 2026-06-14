@@ -1722,15 +1722,15 @@ function Index() {
               </div>
 
               {/* ===== TALK ZONE — Rally + Shoutbox ===== */}
-              <div className={`${mShow("rally")} space-y-5`}>
+              <div className={`${mShow("rally")} space-y-6`}>
                 <ErrorBoundary label="Shoutbox" message="Chat is reconnecting…">
                   <div
                     className="rounded-2xl p-4 shadow-xl space-y-4 [&_[data-shoutbox-log]]:max-h-[300px] [&_[data-shoutbox-log]]:overflow-y-auto"
                     style={{
-                      background: "rgba(13, 13, 13, 0.8)",
-                      backdropFilter: "blur(12px)",
-                      WebkitBackdropFilter: "blur(12px)",
-                      border: "1px solid #1f1f1f",
+                      background: "rgba(13, 13, 13, 0.4)",
+                      backdropFilter: "blur(14px)",
+                      WebkitBackdropFilter: "blur(14px)",
+                      border: "1px solid rgba(31, 31, 31, 0.5)",
                     }}
                   >
                     <RallyBoard requireAuth={requireAuth} />
