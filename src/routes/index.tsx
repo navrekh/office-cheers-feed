@@ -1798,7 +1798,7 @@ function Index() {
 
 
         {/* Right sidebar — slim ambient rail (sticky on desktop, becomes Map tab on mobile) */}
-        <aside className={`${view === "home" ? mShow("map") : ""} col-span-1 lg:col-span-4 lg:!block space-y-4 min-w-0 lg:sticky lg:top-20 lg:self-start lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto lg:pr-1`}>
+        <aside className={`${view === "home" ? mShow("map") : ""} col-span-1 lg:col-span-4 lg:!block space-y-6 min-w-0 lg:sticky lg:top-20 lg:self-start lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto lg:pr-1`}>
           <ErrorBoundary label="SafeHouse" message="Safe-house reloading…">
             <WhistleblowerSafeHouse />
           </ErrorBoundary>
@@ -1807,10 +1807,10 @@ function Index() {
             <div
               className="rounded-2xl p-3 shadow-xl"
               style={{
-                background: "rgba(13, 13, 13, 0.8)",
-                backdropFilter: "blur(12px)",
-                WebkitBackdropFilter: "blur(12px)",
-                border: "1px solid #1f1f1f",
+                background: "rgba(13, 13, 13, 0.4)",
+                backdropFilter: "blur(14px)",
+                WebkitBackdropFilter: "blur(14px)",
+                border: "1px solid rgba(31, 31, 31, 0.5)",
               }}
             >
               <LiveWorkspaceRadar
