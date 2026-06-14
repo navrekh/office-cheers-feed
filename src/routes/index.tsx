@@ -1871,12 +1871,12 @@ function Index() {
           </ErrorBoundary>
 
           {/* 📡 Ambient Telemetry — collapsed to keep rail breathable */}
-          <details className="group rounded-2xl border border-[#1f1f1f] bg-[#0d0d0d]/80 backdrop-blur-md overflow-hidden">
-            <summary className="cursor-pointer list-none px-4 py-3 flex items-center justify-between gap-2 text-[11px] font-bold uppercase tracking-[0.2em] text-fuchsia-300/90 hover:bg-fuchsia-500/5 transition select-none">
+          <details className="group rounded-2xl border border-neutral-900/60 bg-neutral-950/80 overflow-hidden">
+            <summary className="cursor-pointer list-none px-4 py-3 flex items-center justify-between gap-2 text-[11px] font-bold uppercase tracking-[0.2em] text-fuchsia-300/80 hover:bg-fuchsia-500/5 transition select-none">
               <span className="flex items-center gap-2">📡 Ambient Telemetry</span>
-              <span className="text-fuchsia-400/70 group-open:rotate-180 transition-transform">▾</span>
+              <span className="text-fuchsia-400/60 group-open:rotate-180 transition-transform">▾</span>
             </summary>
-            <div className="px-3 pb-4 pt-1 space-y-4 border-t border-[#1f1f1f]/80">
+            <div className="px-3 pb-4 pt-1 space-y-4 border-t border-neutral-900/60">
               <ErrorBoundary label="GlobalTimezoneMatrix"><GlobalTimezoneMatrix /></ErrorBoundary>
               <ErrorBoundary label="MidnightLeakDigest"><MidnightLeakDigest /></ErrorBoundary>
               <ErrorBoundary label="GlobalEscapeSimulator"><GlobalEscapeSimulator /></ErrorBoundary>
