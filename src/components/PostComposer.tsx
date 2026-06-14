@@ -55,6 +55,7 @@ export default function PostComposer({
   const [popover, setPopover] = useState<Suggestion[] | null>(null);
   const [popoverTrigger, setPopoverTrigger] = useState<"#" | "@" | null>(null);
   const [focused, setFocused] = useState(false);
+  const taRef = useRef<HTMLTextAreaElement>(null);
   const imgInputRef = useRef<HTMLInputElement>(null);
   const vidInputRef = useRef<HTMLInputElement>(null);
 
