@@ -1797,8 +1797,8 @@ function Index() {
         </section>
 
 
-        {/* Right sidebar — slim ambient rail (sticky) */}
-        <aside className="col-span-1 lg:col-span-4 space-y-4 min-w-0 lg:sticky lg:top-20 lg:self-start lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto lg:pr-1">
+        {/* Right sidebar — slim ambient rail (sticky on desktop, becomes Map tab on mobile) */}
+        <aside className={`${view === "home" ? mShow("map") : ""} col-span-1 lg:col-span-4 lg:!block space-y-4 min-w-0 lg:sticky lg:top-20 lg:self-start lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto lg:pr-1`}>
           <ErrorBoundary label="SafeHouse" message="Safe-house reloading…">
             <WhistleblowerSafeHouse />
           </ErrorBoundary>
