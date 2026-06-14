@@ -1660,7 +1660,7 @@ function Index() {
         </h1>
 
         {/* Feed — Social Core (wider, hero column) */}
-        <section className="col-span-1 lg:col-span-8 space-y-5 min-w-0">
+        <section className="col-span-1 lg:col-span-8 space-y-8 min-w-0">
           {view === "home" && (
             <>
               {/* MOBILE-ONLY sub-tabs — focus one zone at a time on small screens */}
