@@ -2179,7 +2179,36 @@ function SubPageShell({
       <div className="space-y-5">{children}</div>
     </div>
   );
+
+function HomeSection({
+  eyebrow,
+  title,
+  blurb,
+  children,
+}: {
+  eyebrow: string;
+  title: string;
+  blurb?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <section className="rounded-2xl p-5 bg-neutral-950/55 border border-neutral-900/50 backdrop-blur-[14px] space-y-4">
+      <header className="space-y-1">
+        <div className="text-[10px] font-bold tracking-[0.18em] text-amber-300/80">
+          {eyebrow}
+        </div>
+        <h2 className="text-lg sm:text-xl font-black text-foreground leading-tight">
+          {title}
+        </h2>
+        {blurb && (
+          <p className="text-[12px] text-neutral-500 leading-relaxed">{blurb}</p>
+        )}
+      </header>
+      <div className="space-y-3">{children}</div>
+    </section>
+  );
 }
+
 
 function NavItem({
   icon,
