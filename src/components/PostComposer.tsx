@@ -231,7 +231,9 @@ export default function PostComposer({
           ref={taRef}
           value={body}
           onChange={handleBodyChange}
-          rows={3}
+          onFocus={() => setFocused(true)}
+          onBlur={() => { if (!body && !mood) setFocused(false); }}
+          rows={focused || body ? 3 : 2}
           placeholder="Type your confession… use #TCS, #Capgemini, or @SprintZombie to tag."
           className="w-full resize-none rounded-xl border border-white/10 bg-zinc-950/60 px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/60 focus:border-amber-400/40 focus:outline-none focus:ring-1 focus:ring-amber-400/20 leading-snug whitespace-normal break-words"
         />
