@@ -1669,46 +1669,56 @@ function Index() {
 
               <PresenceBar />
 
-              {/* Compact action strip: composer + poll side-by-side so the feed stays above the fold */}
-              <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-                <div className="md:col-span-3">
-                  <ErrorBoundary label="Composer" message="Composer is reloading…">
-                    {(() => {
-                      const dow = new Date().getDay();
-                      const isWeekend = dow === 0 || dow === 6;
-                      return (
-                        <div className="rounded-2xl p-4 bg-neutral-950/55 border border-neutral-900/50 backdrop-blur-[14px] space-y-3 h-full">
-                          <WeekendBoundaryModule weekend={isWeekend} />
-                          <PostComposer requireAuth={requireAuth} weekend={isWeekend} />
-                        </div>
-                      );
-                    })()}
-                  </ErrorBoundary>
-                </div>
-                <div className="md:col-span-2">
-                  <ErrorBoundary label="Poll" message="Poll engine is rebooting…">
-                    <div className="rounded-2xl p-4 bg-neutral-950/55 border border-neutral-900/50 backdrop-blur-[14px] h-full">
-                      <div className="text-[10px] font-bold tracking-[0.18em] text-amber-300/80 mb-2">📊 PULSE CHECK</div>
-                      <DesperationPoll
-                        onSignUp={(reason) => requireAuth(reason ?? "Drop an anonymous confession — sign in once and you're masked.")}
-                      />
+              {/* Facebook-style compact composer — single bar, click to expand */}
+              <ErrorBoundary label="Composer" message="Composer is reloading…">
+                {(() => {
+                  const dow = new Date().getDay();
+                  const isWeekend = dow === 0 || dow === 6;
+                  return (
+                    <div className="rounded-2xl p-3 bg-neutral-950/70 border border-neutral-800/70 backdrop-blur-[14px] space-y-2">
+                      <WeekendBoundaryModule weekend={isWeekend} />
+                      <PostComposer requireAuth={requireAuth} weekend={isWeekend} />
                     </div>
-                  </ErrorBoundary>
-                </div>
-              </div>
+                  );
+                })()}
+              </ErrorBoundary>
 
               <NewSipsPill />
 
-              {/* Feed — now the dominant section right after the hero */}
+              {/* FEED — the primary surface, immediately under the composer like LinkedIn/Facebook */}
+              <section className="rounded-2xl bg-neutral-950/40 border border-neutral-900/50 backdrop-blur-[14px] overflow-hidden">
+                <header className="flex items-center justify-between px-4 py-2.5 border-b border-neutral-900/60 bg-neutral-950/60">
+                  <div className="flex items-center gap-2">
+                    <span className="size-2 rounded-full bg-emerald-400 animate-pulse" />
+                    <h2 className="text-sm font-bold tracking-wide text-foreground uppercase">
+                      🍻 Live Breakroom Feed
+                    </h2>
+                  </div>
+                  <span className="text-[10px] font-bold tracking-[0.18em] text-amber-300/80">
+                    LIVE · ANON
+                  </span>
+                </header>
+                <div className="p-3 sm:p-4">
+                  <ErrorBoundary label="Feed" message="Feed is reconnecting…">
+                    <PostsFeed />
+                  </ErrorBoundary>
+                </div>
+              </section>
+
+              {/* Pulse check now AFTER the feed so the feed dominates the fold */}
               <HomeSection
-                eyebrow="🍻 LIVE BREAKROOM — START HERE"
-                title="Anonymous confessions, hot off the keyboard"
-                blurb="Real takes from real cubicles. Cheers the ones that hurt. Everything else lives below ↓"
+                eyebrow="📊 PULSE CHECK"
+                title="Today's Desperation Poll"
+                blurb="Vote in 2 seconds. See how cooked the rest of the office is."
               >
-                <ErrorBoundary label="Feed" message="Feed is reconnecting…">
-                  <PostsFeed />
+                <ErrorBoundary label="Poll" message="Poll engine is rebooting…">
+                  <DesperationPoll
+                    onSignUp={(reason) => requireAuth(reason ?? "Drop an anonymous confession — sign in once and you're masked.")}
+                  />
                 </ErrorBoundary>
               </HomeSection>
+
+
 
 
               {/* 🎭 Roast generator */}
