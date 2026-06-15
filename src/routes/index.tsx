@@ -1665,6 +1665,8 @@ function Index() {
                 />
               )}
 
+              <DossierHero />
+
               <PresenceBar />
 
               {/* Composer — the one primary action */}
