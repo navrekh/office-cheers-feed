@@ -1669,45 +1669,47 @@ function Index() {
 
               <PresenceBar />
 
-              {/* Composer — the one primary action */}
-              <ErrorBoundary label="Composer" message="Composer is reloading…">
-                {(() => {
-                  const dow = new Date().getDay();
-                  const isWeekend = dow === 0 || dow === 6;
-                  return (
-                    <div className="rounded-2xl p-5 bg-neutral-950/55 border border-neutral-900/50 backdrop-blur-[14px] space-y-3">
-                      <WeekendBoundaryModule weekend={isWeekend} />
-                      <PostComposer requireAuth={requireAuth} weekend={isWeekend} />
+              {/* Compact action strip: composer + poll side-by-side so the feed stays above the fold */}
+              <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+                <div className="md:col-span-3">
+                  <ErrorBoundary label="Composer" message="Composer is reloading…">
+                    {(() => {
+                      const dow = new Date().getDay();
+                      const isWeekend = dow === 0 || dow === 6;
+                      return (
+                        <div className="rounded-2xl p-4 bg-neutral-950/55 border border-neutral-900/50 backdrop-blur-[14px] space-y-3 h-full">
+                          <WeekendBoundaryModule weekend={isWeekend} />
+                          <PostComposer requireAuth={requireAuth} weekend={isWeekend} />
+                        </div>
+                      );
+                    })()}
+                  </ErrorBoundary>
+                </div>
+                <div className="md:col-span-2">
+                  <ErrorBoundary label="Poll" message="Poll engine is rebooting…">
+                    <div className="rounded-2xl p-4 bg-neutral-950/55 border border-neutral-900/50 backdrop-blur-[14px] h-full">
+                      <div className="text-[10px] font-bold tracking-[0.18em] text-amber-300/80 mb-2">📊 PULSE CHECK</div>
+                      <DesperationPoll
+                        onSignUp={(reason) => requireAuth(reason ?? "Drop an anonymous confession — sign in once and you're masked.")}
+                      />
                     </div>
-                  );
-                })()}
-              </ErrorBoundary>
-
-              {/* 📊 Pulse check — inline, above the feed */}
-              <HomeSection
-                eyebrow="📊 PULSE CHECK"
-                title="Today's Desperation Poll"
-                blurb="Vote in 2 seconds. See how cooked the rest of the office is."
-              >
-                <ErrorBoundary label="Poll" message="Poll engine is rebooting…">
-                  <DesperationPoll
-                    onSignUp={(reason) => requireAuth(reason ?? "Drop an anonymous confession — sign in once and you're masked.")}
-                  />
-                </ErrorBoundary>
-              </HomeSection>
+                  </ErrorBoundary>
+                </div>
+              </div>
 
               <NewSipsPill />
 
-              {/* Feed */}
+              {/* Feed — now the dominant section right after the hero */}
               <HomeSection
-                eyebrow="🍻 LIVE BREAKROOM"
+                eyebrow="🍻 LIVE BREAKROOM — START HERE"
                 title="Anonymous confessions, hot off the keyboard"
-                blurb="Real takes from real cubicles. Cheers the ones that hurt."
+                blurb="Real takes from real cubicles. Cheers the ones that hurt. Everything else lives below ↓"
               >
                 <ErrorBoundary label="Feed" message="Feed is reconnecting…">
                   <PostsFeed />
                 </ErrorBoundary>
               </HomeSection>
+
 
               {/* 🎭 Roast generator */}
               <HomeSection
