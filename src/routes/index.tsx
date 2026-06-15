@@ -2251,6 +2251,66 @@ function hashStr(s: string) {
   return h;
 }
 
+function DossierHero() {
+  return (
+    <section
+      className="relative bg-[#e3dac9] text-stone-900 p-6 md:p-10 shadow-[0_35px_60px_-15px_rgba(0,0,0,0.9)] border-b-4 border-r-4 border-stone-400/80 -rotate-[0.6deg]"
+      style={{ fontFamily: "'Special Elite', 'Courier Prime', monospace" }}
+    >
+      <div className="pointer-events-none absolute top-10 right-10 w-40 h-40 rounded-full bg-amber-900/10 blur-3xl" />
+      <div className="pointer-events-none absolute -left-1 top-0 bottom-0 w-1 bg-black/5" />
+      <div className="absolute -top-2 left-10 w-4 h-4 rounded-full bg-red-600 shadow-inner ring-2 ring-red-900" />
+      <div className="absolute -top-2 right-10 w-4 h-4 rounded-full bg-red-600 shadow-inner ring-2 ring-red-900" />
+
+      <div className="flex items-start justify-between gap-4">
+        <div className="border-4 border-red-800/80 px-3 py-1.5 -rotate-3">
+          <div className="text-3xl md:text-4xl font-bold text-red-800 uppercase tracking-tighter mix-blend-multiply">
+            DrinkedIn
+          </div>
+        </div>
+        <div
+          className="text-stone-500 text-[10px] text-right leading-tight uppercase"
+          style={{ fontFamily: "'Courier Prime', monospace" }}
+        >
+          STATUS: UNEMPLOYABLE
+          <br />
+          SESSION: ANONYMOUS
+          <br />
+          CLEARANCE: BREAKROOM
+        </div>
+      </div>
+
+      <h2
+        className="mt-6 text-2xl md:text-3xl font-bold text-stone-900 uppercase leading-tight"
+        style={{ fontFamily: "'Permanent Marker', cursive" }}
+      >
+        The anti-LinkedIn dossier.
+        <br />
+        <span className="text-red-800">Quit posing. Start posting.</span>
+      </h2>
+
+      <p
+        className="mt-3 text-[13px] md:text-[14px] text-stone-700 max-w-xl leading-relaxed"
+        style={{ fontFamily: "'Courier Prime', monospace" }}
+      >
+        Anonymous confessions, live desperation polls, manager roasts, escape
+        excuses, rumor brackets, and a panic button for when the boss walks
+        past. Strictly off the record.
+      </p>
+
+      <div className="mt-5 flex flex-wrap gap-2 text-[10px] uppercase tracking-widest text-stone-600" style={{ fontFamily: "'Courier Prime', monospace" }}>
+        <span className="px-2 py-1 border border-stone-500/60 border-dashed">📊 Pulse Poll</span>
+        <span className="px-2 py-1 border border-stone-500/60 border-dashed">🍻 Live Feed</span>
+        <span className="px-2 py-1 border border-stone-500/60 border-dashed">🎭 Roast Engine</span>
+        <span className="px-2 py-1 border border-stone-500/60 border-dashed">🤥 Excuse Forge</span>
+        <span className="px-2 py-1 border border-stone-500/60 border-dashed">🤫 Whistleblower</span>
+        <span className="px-2 py-1 border border-stone-500/60 border-dashed">📡 Live Radar</span>
+      </div>
+    </section>
+  );
+}
+
+
 
 
 function NavItem({
