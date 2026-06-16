@@ -410,7 +410,7 @@ function makeNavinLaunchPost(): FeedPost {
     attached_visual_url: null,
     media_type: null,
     tags: null,
-    cheers_count: 142,
+    cheers_count: 0,
     user_id: null,
     isUserOwned: true,
   };
