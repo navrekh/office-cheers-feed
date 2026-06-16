@@ -361,33 +361,66 @@ function MediaThumb({ path, kind }: { path: string; kind: string | null }) {
   );
 }
 
-const SATURDAY_VIBES = [
-  "Woke up at 8 AM out of pure corporate habit and panicking that I missed a standup call... someone clear my cache 💀",
-  "Currently at a local cafe in Baner working on my side-hustle. The goal is to quit before the Q3 appraisal cycle hits.",
-  "Manager texted 'Hey, quick question when you're free' on a Saturday morning. Leaving that notification on read until Monday 9:01 AM. 📴",
-  "Heading over to Toit / High Spirits later to erase all memory of this week's micro-management.",
-  "On-call rotation is pure pain today. Production server is hanging and the senior dev is completely ghosting.",
-  "Saturday standup energy? None. Saturday side-project energy? Unmatched. 🛠️",
+const FEED_VIBES = [
+  "Manager just scheduled a 'quick sync' at 6:45 PM. I've already opened LinkedIn in a private tab. 🪦",
+  "Currently in a 12-person standup where 11 people are on mute and 1 person is sharing the wrong screen.",
+  "Stand-up update: yesterday I attended meetings, today I will attend meetings, blockers: meetings.",
+  "Boss called my Jira ticket 'low effort.' Bro, you assigned it to me at 4:59 PM on Friday. 🙃",
+  "Just got the 'we value your feedback' Google Form right after layoffs were announced. The audacity.",
+  "Production is down. The senior dev is 'in a meeting.' The on-call doc is from 2019. We are so cooked. 🔥",
+  "HR sent a wellness survey. Question 1: 'How supported do you feel?' My answer crashed the form.",
+  "Got promoted to 'Senior' which apparently means same salary, more meetings, and a fancier Slack title.",
+  "Refactored a 4-year-old microservice today. Found a TODO from someone who quit in 2021. Legend.",
+  "VP just used 'synergy' and 'circle back' in the same sentence. I felt my soul leave my body.",
+  "Skip-level 1:1 went well — by which I mean I said nothing real and smiled for 30 minutes.",
+  "Currently writing a self-appraisal for someone who took credit for all my work. Award-winning fiction. 🏆",
+  "Got an 'urgent' Slack at 11pm. Replied at 9:01am Monday. Boundaries are a side-hustle now.",
+  "Side project hit ₹40k MRR this month. Day job hit me with a 'partial meets expectations' rating. 🚀",
+  "Watched a 90-min All Hands where the CEO said 'family' 14 times and 'cost optimization' 9 times.",
+  "Three months into the new job and I still don't know what my team ships. Nobody else does either.",
+  "Just blocked my own manager's calendar for 'deep work.' It's a nap. 💤",
+  "Got Slack-cancelled for using a 🫠 emoji in #general. The corporate vibe police are real.",
+  "Recruiter pinged me about a 'rocket-ship startup.' Looked them up — 4 employees and a Notion page.",
+  "Took a half-day to interview elsewhere. Manager assumed I was sick and sent a get-well GIF. Felt feral.",
+  "Pair-programmed with the architect. He renamed two variables in 90 minutes and called it leverage.",
+  "QA filed a P0 because a button is 2px off-center on a Samsung from 2017. Closing as 'won't fix.'",
+  "Got asked to 'wear many hats' which I now realize is corporate for 'three jobs, one paycheck.' 🎩",
+  "Reading my own code from 6 months ago and wondering who hurt me.",
+  "Standup ran 47 minutes. The actual blocker was 'we don't know what we're building.' Nobody said it.",
+  "Currently at a cafe in Indiranagar pretending to take a customer call. It's a Duolingo session. 🦉",
 ];
 
-const SAT_PERSONAS = [
-  { name: "Anon_Infosys_Refugee", headline: "Weekend · Pune" },
-  { name: "Capgemini_Ghost", headline: "Weekend · Bangalore" },
-  { name: "Wipro_Survivor", headline: "Weekend · Hyderabad" },
-  { name: "Anon_TCS_Lead", headline: "Weekend · Mumbai" },
-  { name: "Deloitte_Defector", headline: "Weekend · Gurgaon" },
-  { name: "HCL_Zombie", headline: "Weekend · Bangalore" },
+const FEED_PERSONAS = [
+  { name: "Anon_Infosys_Refugee", headline: "Pune · Sprint 47 Survivor" },
+  { name: "Capgemini_Ghost", headline: "Bangalore · On-Call Martyr" },
+  { name: "Wipro_Survivor", headline: "Hyderabad · Jira Ticket Champion" },
+  { name: "Anon_TCS_Lead", headline: "Mumbai · Legacy Cobol Whisperer" },
+  { name: "Deloitte_Defector", headline: "Gurgaon · Deck Aesthetic Lead" },
+  { name: "HCL_Zombie", headline: "Bangalore · Standup Survivor" },
+  { name: "Anon_Meta_E5", headline: "Bangalore · RSU Handcuff Prisoner" },
+  { name: "SFO_Stripe_PM", headline: "San Francisco · Roadmap Negotiator" },
+  { name: "Berlin_Unicorn_Dev", headline: "Berlin · Agile Refugee" },
+  { name: "NYC_Fintech_Sec", headline: "New York · Slide-Deck Architect" },
+  { name: "Austin_Tesla_Dev", headline: "Austin · Production Firefighter" },
+  { name: "London_Quant_Lead", headline: "London · Compliance Hostage" },
+  { name: "Toronto_AWS_SDE", headline: "Toronto · Mute-Button Veteran" },
+  { name: "Anon_Flipkart_PM", headline: "Bangalore · OKR Negotiator" },
+  { name: "Anon_Zomato_Eng", headline: "Gurgaon · Hotfix Specialist" },
+  { name: "Stealth_SaaS_Founder", headline: "Remote · Refactoring Fugitive" },
 ];
 
 function makeSimPost(idx: number, msg?: string): FeedPost {
-  const persona = SAT_PERSONAS[Math.floor(Math.random() * SAT_PERSONAS.length)];
-  const body = msg ?? SATURDAY_VIBES[Math.floor(Math.random() * SATURDAY_VIBES.length)];
+  const persona = FEED_PERSONAS[Math.floor(Math.random() * FEED_PERSONAS.length)];
+  const body = msg ?? FEED_VIBES[Math.floor(Math.random() * FEED_VIBES.length)];
+  // Spread timestamps from ~30s to ~12min ago so the feed feels like a live stream
+  // rather than a synchronized batch drop.
+  const offsetMs = 30_000 + Math.floor(Math.random() * 11 * 60_000);
   return {
-    id: `sim-sat-${Date.now()}-${idx}-${Math.random().toString(36).slice(2, 6)}`,
+    id: `sim-${Date.now()}-${idx}-${Math.random().toString(36).slice(2, 7)}`,
     author_name: persona.name,
     author_headline: persona.headline,
     body_text: body,
-    created_at: new Date(Date.now() - idx * 1000).toISOString(),
+    created_at: new Date(Date.now() - offsetMs).toISOString(),
     attached_visual_url: null,
     media_type: null,
     tags: null,
@@ -397,24 +430,6 @@ function makeSimPost(idx: number, msg?: string): FeedPost {
   };
 }
 
-const NAVIN_LAUNCH_POST_ID = "navin-launch-post-1";
-
-function makeNavinLaunchPost(): FeedPost {
-  return {
-    id: NAVIN_LAUNCH_POST_ID,
-    author_name: "Anon_Founder (You)",
-    author_headline: "Just now",
-    body_text:
-      "Happy weekend everyone! DrinkedIn is officially live. Drop your tech park telemetry below. 🍻🔥",
-    created_at: new Date().toISOString(),
-    attached_visual_url: null,
-    media_type: null,
-    tags: null,
-    cheers_count: 0,
-    user_id: null,
-    isUserOwned: true,
-  };
-}
 
 type GlobalSeed = {
   id: string;
