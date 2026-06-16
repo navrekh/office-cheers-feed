@@ -559,60 +559,20 @@ export default function PostsFeed() {
     };
   }, [load]);
 
-  // Saturday Vibe Matrix: seed 3 weekend persona posts on mount, then append
-  // 1 fresh weekend message every 90s to keep the feed organically alive.
+  // Live feed sim: refresh sim posts on mount and append a fresh persona drop
+  // every ~25s so the timeline always feels like users are actively posting.
   useEffect(() => {
-    if (new Date().getDay() !== 6) return;
     if (panicActive) return;
-    setSimPosts((prev) => {
-      const pinned = prev.filter((p) => p.id === NAVIN_LAUNCH_POST_ID || p.id.startsWith("global-seed-"));
-      return [...pinned, makeSimPost(0), makeSimPost(1), makeSimPost(2)];
-    });
     const interval = window.setInterval(() => {
       setSimPosts((prev) => {
-        const pinned = prev.filter((p) => p.id === NAVIN_LAUNCH_POST_ID || p.id.startsWith("global-seed-"));
-        const others = prev.filter((p) => p.id !== NAVIN_LAUNCH_POST_ID && !p.id.startsWith("global-seed-"));
-        return [...pinned, makeSimPost(others.length), ...others].slice(0, 18);
+        const seeds = prev.filter((p) => p.id.startsWith("global-seed-"));
+        const others = prev.filter((p) => !p.id.startsWith("global-seed-"));
+        return [makeSimPost(others.length), ...others, ...seeds].slice(0, 30);
       });
-    }, 90_000);
+    }, 25_000);
     return () => window.clearInterval(interval);
   }, [panicActive]);
 
-  // Force the AI persona reply engine to fire 5s after mount against the
-  // hardcoded launch post — guarantees a fresh notification bell ping on
-  // every single page load without relying on the user posting anything.
-  useEffect(() => {
-    if (panicActive) return;
-    const t = window.setTimeout(() => {
-      const persona = "Pune_Tech_Park_Lead";
-      const text =
-        "Huge milestone! Already dropped my burnout metric on the sidebar grid. Let's run it up! 🚀";
-      const reply: SimReply = {
-        id: `${NAVIN_LAUNCH_POST_ID}-launch-${Date.now()}`,
-        persona,
-        text,
-        ts: Date.now(),
-      };
-      setReplies((prev) => ({
-        ...prev,
-        [NAVIN_LAUNCH_POST_ID]: [...(prev[NAVIN_LAUNCH_POST_ID] ?? []), reply],
-      }));
-      try {
-        window.dispatchEvent(
-          new CustomEvent("drinkedin:post-reply", {
-            detail: {
-              postId: NAVIN_LAUNCH_POST_ID,
-              persona,
-              text,
-              snippet: "your weekend status update",
-            },
-          })
-        );
-        window.dispatchEvent(new CustomEvent("drinkedin:ai-chat-message"));
-      } catch {}
-    }, 5_000);
-    return () => window.clearTimeout(t);
-  }, [panicActive]);
 
 
 
