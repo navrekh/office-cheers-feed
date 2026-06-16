@@ -410,7 +410,7 @@ function makeNavinLaunchPost(): FeedPost {
     attached_visual_url: null,
     media_type: null,
     tags: null,
-    cheers_count: 142,
+    cheers_count: 0,
     user_id: null,
     isUserOwned: true,
   };
@@ -500,12 +500,11 @@ export default function PostsFeed() {
   const scheduledRef = useRef<Set<string>>(new Set());
   const mountTimeRef = useRef<number>(Date.now());
 
-  // Seed persisted validation/pint counts for the hardcoded launch post so the
-  // PostActions row hydrates to 142 / 38 on first paint (and on every reload
-  // unless the visitor has actively tapped the buttons since).
+  // User-owned posts (including the pinned launch post) start at absolute zero
+  // — they must not inherit the background simulation weights.
   useEffect(() => {
     const existing = readCounts()[NAVIN_LAUNCH_POST_ID];
-    if (!existing) writeCounts(NAVIN_LAUNCH_POST_ID, 142, 38);
+    if (!existing) writeCounts(NAVIN_LAUNCH_POST_ID, 0, 0);
   }, []);
 
 
