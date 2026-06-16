@@ -510,17 +510,15 @@ export default function PostsFeed() {
   const { user } = useAuth();
   const panicActive = usePanicState();
   const [posts, setPosts] = useState<FeedPost[] | null>(null);
-  const [simPosts, setSimPosts] = useState<FeedPost[]>(() => [makeNavinLaunchPost(), ...makeGlobalSeedPosts()]);
+  const [simPosts, setSimPosts] = useState<FeedPost[]>(() => {
+    const seeds = makeGlobalSeedPosts();
+    const fresh = Array.from({ length: 6 }, (_, i) => makeSimPost(i));
+    return [...fresh, ...seeds];
+  });
   const [replies, setReplies] = useState<Record<string, SimReply[]>>({});
   const scheduledRef = useRef<Set<string>>(new Set());
   const mountTimeRef = useRef<number>(Date.now());
 
-  // User-owned posts (including the pinned launch post) start at absolute zero
-  // — they must not inherit the background simulation weights.
-  useEffect(() => {
-    const existing = readCounts()[NAVIN_LAUNCH_POST_ID];
-    if (!existing) writeCounts(NAVIN_LAUNCH_POST_ID, 0, 0);
-  }, []);
 
 
   const load = useCallback(async () => {
