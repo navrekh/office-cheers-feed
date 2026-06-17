@@ -103,18 +103,23 @@ function PostActions({
   function onShare() {
     const mood = detectMood(bodyText);
     const truncated =
-      bodyText.length > 80 ? bodyText.slice(0, 80) : bodyText;
+      bodyText.length > 120 ? bodyText.slice(0, 120) + "…" : bodyText;
+    // Per-post link gives each share its own crawlable landing page with
+    // rich unfurls in WhatsApp / Slack / LinkedIn.
+    const isSim = postId.startsWith("sim-") || postId.startsWith("seed-") || postId.startsWith("global-");
+    const shareUrl = isSim
+      ? "https://drinkedin.me/"
+      : `https://drinkedin.me/p/${postId}`;
     const payload =
-      `🚨 DRINKEDIN LEAK: An anonymous ${authorName} just dropped a confession from the tech park breakroom...\n\n` +
-      `Mood: ${mood}\n` +
-      `Status: "${truncated}..."\n\n` +
-      `Read the full unfiltered timeline and check your company's real-time checkout velocity here: https://drinkedin.me`;
+      `🚨 DRINKEDIN LEAK from ${authorName}\n\n` +
+      `Mood: ${mood}  "${truncated}"\n\n` +
+      `Roast + reply → ${shareUrl}`;
 
     const done = () => {
       setCopied(true);
       window.setTimeout(() => setCopied(false), 1500);
       toast(
-        "🔗 Leak packaged! Go drop it into your private company WhatsApp group chat or Slack thread to rally your team.",
+        "🔗 Leak copied — paste it into your team WhatsApp / Slack thread.",
         { duration: 2600 }
       );
       try { window.dispatchEvent(new CustomEvent("drinkedin:radar-pulse")); } catch {}
@@ -122,7 +127,6 @@ function PostActions({
 
     try {
       navigator.clipboard.writeText(payload).then(done).catch(() => {
-        // Fallback
         const ta = document.createElement("textarea");
         ta.value = payload;
         document.body.appendChild(ta);

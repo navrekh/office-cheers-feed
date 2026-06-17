@@ -2005,6 +2005,8 @@ function Index() {
         open={authModalOpen}
         onOpenChange={setAuthModalOpen}
         reason={authReason}
+        defaultIntent="employee"
+        compact
       />
 
       <Dialog open={profileOpen} onOpenChange={setProfileOpen}>

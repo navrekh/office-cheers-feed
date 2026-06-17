@@ -13,6 +13,7 @@ import { Route as MerchantDashboardRouteImport } from './routes/merchant-dashboa
 import { Route as HqAdminRouteImport } from './routes/hq-admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as TrackTicketRouteImport } from './routes/track.$ticket'
+import { Route as PPostIdRouteImport } from './routes/p.$postId'
 import { Route as ApiPublicWebhooksRazorpayRouteImport } from './routes/api/public/webhooks/razorpay'
 
 const MerchantDashboardRoute = MerchantDashboardRouteImport.update({
@@ -35,6 +36,11 @@ const TrackTicketRoute = TrackTicketRouteImport.update({
   path: '/track/$ticket',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PPostIdRoute = PPostIdRouteImport.update({
+  id: '/p/$postId',
+  path: '/p/$postId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicWebhooksRazorpayRoute =
   ApiPublicWebhooksRazorpayRouteImport.update({
     id: '/api/public/webhooks/razorpay',
@@ -46,6 +52,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/hq-admin': typeof HqAdminRoute
   '/merchant-dashboard': typeof MerchantDashboardRoute
+  '/p/$postId': typeof PPostIdRoute
   '/track/$ticket': typeof TrackTicketRoute
   '/api/public/webhooks/razorpay': typeof ApiPublicWebhooksRazorpayRoute
 }
@@ -53,6 +60,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/hq-admin': typeof HqAdminRoute
   '/merchant-dashboard': typeof MerchantDashboardRoute
+  '/p/$postId': typeof PPostIdRoute
   '/track/$ticket': typeof TrackTicketRoute
   '/api/public/webhooks/razorpay': typeof ApiPublicWebhooksRazorpayRoute
 }
@@ -61,6 +69,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/hq-admin': typeof HqAdminRoute
   '/merchant-dashboard': typeof MerchantDashboardRoute
+  '/p/$postId': typeof PPostIdRoute
   '/track/$ticket': typeof TrackTicketRoute
   '/api/public/webhooks/razorpay': typeof ApiPublicWebhooksRazorpayRoute
 }
@@ -70,6 +79,7 @@ export interface FileRouteTypes {
     | '/'
     | '/hq-admin'
     | '/merchant-dashboard'
+    | '/p/$postId'
     | '/track/$ticket'
     | '/api/public/webhooks/razorpay'
   fileRoutesByTo: FileRoutesByTo
@@ -77,6 +87,7 @@ export interface FileRouteTypes {
     | '/'
     | '/hq-admin'
     | '/merchant-dashboard'
+    | '/p/$postId'
     | '/track/$ticket'
     | '/api/public/webhooks/razorpay'
   id:
@@ -84,6 +95,7 @@ export interface FileRouteTypes {
     | '/'
     | '/hq-admin'
     | '/merchant-dashboard'
+    | '/p/$postId'
     | '/track/$ticket'
     | '/api/public/webhooks/razorpay'
   fileRoutesById: FileRoutesById
@@ -92,6 +104,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   HqAdminRoute: typeof HqAdminRoute
   MerchantDashboardRoute: typeof MerchantDashboardRoute
+  PPostIdRoute: typeof PPostIdRoute
   TrackTicketRoute: typeof TrackTicketRoute
   ApiPublicWebhooksRazorpayRoute: typeof ApiPublicWebhooksRazorpayRoute
 }
@@ -126,6 +139,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TrackTicketRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/p/$postId': {
+      id: '/p/$postId'
+      path: '/p/$postId'
+      fullPath: '/p/$postId'
+      preLoaderRoute: typeof PPostIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/webhooks/razorpay': {
       id: '/api/public/webhooks/razorpay'
       path: '/api/public/webhooks/razorpay'
@@ -140,19 +160,10 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   HqAdminRoute: HqAdminRoute,
   MerchantDashboardRoute: MerchantDashboardRoute,
+  PPostIdRoute: PPostIdRoute,
   TrackTicketRoute: TrackTicketRoute,
   ApiPublicWebhooksRazorpayRoute: ApiPublicWebhooksRazorpayRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
