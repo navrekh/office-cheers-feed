@@ -11,7 +11,7 @@ export const TOKENLENS_URL = "https://tokenlens.co.in/" as const;
 export const SITE = {
   name: "DrinkedIn",
   url: SITE_URL,
-  shareUrl: (postId: string) => `${SITE_URL}/?post=${postId}`,
+  shareUrl: (postId: string) => `${SITE_URL}/p/${postId}`,
   trackUrl: (ticket: string) => `${SITE_URL}/track/${ticket}`,
 } as const;
 
