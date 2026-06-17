@@ -134,14 +134,18 @@ export default function AuthModal({ open, onOpenChange, reason, defaultIntent, c
             </span>
             {intent ? (
               <>
-                <button
-                  onClick={() => setIntent(null)}
-                  className="text-muted-foreground hover:text-foreground transition"
-                  aria-label="Back"
-                >
-                  <ArrowLeft className="size-4" />
-                </button>
-                {intent === "employee" ? "Corporate Employee 👔" : "Pub & Restaurant Owner 🍻"}
+                {!compact && (
+                  <button
+                    onClick={() => setIntent(null)}
+                    className="text-muted-foreground hover:text-foreground transition"
+                    aria-label="Back"
+                  >
+                    <ArrowLeft className="size-4" />
+                  </button>
+                )}
+                {compact
+                  ? "Grab your anonymous mask 🎭"
+                  : intent === "employee" ? "Corporate Employee 👔" : "Pub & Restaurant Owner 🍻"}
               </>
             ) : (
               <>Pick your entrance 🍻</>
