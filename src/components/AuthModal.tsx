@@ -16,13 +16,16 @@ type Props = {
   onOpenChange: (v: boolean) => void;
   reason?: string;
   defaultIntent?: Intent;
+  /** Skip the employee/merchant picker and go straight to Google + email. */
+  compact?: boolean;
 };
 
 const LIVE_SIGNUPS = 42 + Math.floor(((Date.now() / 3_600_000) % 23));
 
-export default function AuthModal({ open, onOpenChange, reason, defaultIntent }: Props) {
+export default function AuthModal({ open, onOpenChange, reason, defaultIntent, compact }: Props) {
   const navigate = useNavigate();
-  const [intent, setIntent] = useState<Intent | null>(defaultIntent ?? null);
+  const initialIntent: Intent | null = compact ? (defaultIntent ?? "employee") : (defaultIntent ?? null);
+  const [intent, setIntent] = useState<Intent | null>(initialIntent);
   const [mode, setMode] = useState<Mode>("signup");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -31,8 +34,8 @@ export default function AuthModal({ open, onOpenChange, reason, defaultIntent }:
   const [googleBusy, setGoogleBusy] = useState(false);
 
   useEffect(() => {
-    if (open) setIntent(defaultIntent ?? null);
-  }, [open, defaultIntent]);
+    if (open) setIntent(compact ? (defaultIntent ?? "employee") : (defaultIntent ?? null));
+  }, [open, defaultIntent, compact]);
 
   async function finalizeIntent(currentIntent: Intent) {
     if (currentIntent === "merchant") {
