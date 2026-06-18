@@ -464,6 +464,39 @@ export type Database = {
         }
         Relationships: []
       }
+      profile_testimonials: {
+        Row: {
+          author_id: string | null
+          body: string
+          created_at: string
+          id: string
+          owner_id: string
+          pinned: boolean
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          author_id?: string | null
+          body: string
+          created_at?: string
+          id?: string
+          owner_id: string
+          pinned?: boolean
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          author_id?: string | null
+          body?: string
+          created_at?: string
+          id?: string
+          owner_id?: string
+          pinned?: boolean
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -737,6 +770,15 @@ export type Database = {
           total: number
         }[]
       }
+      get_profile_testimonials: {
+        Args: { p_handle: string }
+        Returns: {
+          body: string
+          created_at: string
+          id: string
+          pinned: boolean
+        }[]
+      }
       get_public_profile: {
         Args: { p_handle: string }
         Returns: {
@@ -767,6 +809,10 @@ export type Database = {
       increment_cheers: { Args: { post_id: string }; Returns: number }
       increment_heading_there: { Args: { p_deal_id: string }; Returns: number }
       report_post: { Args: { p_post_id: string }; Returns: undefined }
+      submit_testimonial: {
+        Args: { p_body: string; p_handle: string }
+        Returns: string
+      }
       submit_venue_vibe: {
         Args: {
           p_crowd: number

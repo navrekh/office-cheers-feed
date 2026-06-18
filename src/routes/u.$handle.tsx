@@ -3,6 +3,7 @@ import { QRCodeCanvas } from "qrcode.react";
 import { ArrowLeft, Linkedin, Github, Twitter, Globe, Share2, Download } from "lucide-react";
 import { toast } from "sonner";
 import { getPublicProfile, type PublicProfile } from "@/lib/profiles.functions";
+import { PublicTestimonials } from "@/components/PublicTestimonials";
 import { SITE_URL } from "@/config";
 
 export const Route = createFileRoute("/u/$handle")({
@@ -164,6 +165,8 @@ function ProfileView() {
             </div>
           </div>
         </div>
+
+        <PublicTestimonials handle={profile.handle} ownerName={name} />
 
         <div className="mt-6 text-center text-xs text-white/50">
           Want your own? <Link to="/profile" className="text-amber-400 hover:underline">Claim your @handle</Link>
