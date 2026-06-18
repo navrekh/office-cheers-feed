@@ -2353,11 +2353,13 @@ function NavItem({
   return (
     <button
       onClick={onClick}
-      className={`relative flex flex-col items-center justify-center px-3 py-1 min-w-[64px] text-[11px] transition-colors ${
+      className={`relative flex flex-col items-center justify-center px-2 sm:px-3 py-1 min-w-[44px] sm:min-w-[64px] text-[11px] transition-colors ${
         active
           ? "text-foreground border-b-2 border-primary -mb-px"
           : "text-muted-foreground hover:text-foreground"
       }`}
+      aria-label={label}
+      title={label}
     >
       <div className="relative">
         {icon}
@@ -2370,10 +2372,11 @@ function NavItem({
           </span>
         ) : null}
       </div>
-      <span className="mt-0.5 block">{label}</span>
+      <span className="mt-0.5 hidden sm:block">{label}</span>
     </button>
   );
 }
+
 
 function ComposerChip({ icon, label }: { icon: React.ReactNode; label: string }) {
   return (
