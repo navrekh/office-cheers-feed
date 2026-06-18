@@ -26,6 +26,7 @@ import { useAuth } from "@/lib/useAuth";
 import AuthModal from "@/components/AuthModal";
 import { TestimonialsAdmin } from "@/components/TestimonialsAdmin";
 import { PushNotificationButton } from "@/components/PushNotificationButton";
+import { AvatarUpload } from "@/components/AvatarUpload";
 import { SurvivalMetrics } from "@/components/SurvivalMetrics";
 import { SITE_URL } from "@/config";
 
@@ -402,11 +403,19 @@ function ProfileEditor() {
                 </div>
               </Field>
 
+              <Field label="Profile photo" hint="Shown on your Spy Dossier and badge.">
+                <AvatarUpload
+                  userId={user.id}
+                  value={form.avatar_url ?? ""}
+                  onChange={(url) => setField("avatar_url", url)}
+                />
+              </Field>
+
               <div className="grid gap-4 sm:grid-cols-2">
                 <Field label="Display name">
                   <Text value={form.display_name ?? ""} onChange={(v) => setField("display_name", v)} placeholder="What you go by IRL" max={60} />
                 </Field>
-                <Field label="Avatar URL">
+                <Field label="Avatar URL (advanced)" hint="Auto-filled from upload. Paste a hosted URL only if you'd rather skip the upload.">
                   <Text value={form.avatar_url ?? ""} onChange={(v) => setField("avatar_url", v)} placeholder="https://..." />
                 </Field>
               </div>
