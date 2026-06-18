@@ -127,6 +127,11 @@ function ProfileView() {
             </div>
           </div>
 
+          <div className="mt-6">
+            <SurvivalMetrics handle={profile.handle} />
+          </div>
+
+
           {availableSocials.length > 0 && (
             <div className="mt-6 grid grid-cols-2 sm:grid-cols-3 gap-2">
               {availableSocials.map(({ key, label, Icon, color }) => (
