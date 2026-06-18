@@ -303,6 +303,9 @@ function ProfileEditor() {
             {/* INTERCEPTION LOG */}
             <InterceptionLog seed={user.id} handle={form.handle || ""} />
 
+            {/* TESTIMONIALS ADMIN */}
+            <TestimonialsAdmin ownerId={user.id} />
+
             {/* EDITOR */}
             <form onSubmit={save} className="mt-8 space-y-5 rounded-xl border border-amber-500/15 bg-zinc-900/40 p-5 sm:p-6">
               <h2 className="text-[11px] font-bold uppercase tracking-[0.25em] text-amber-400">
