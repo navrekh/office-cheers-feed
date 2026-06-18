@@ -521,20 +521,13 @@ function rng(seed: number) {
 }
 
 function formatCorpTimestamp(d: Date): string {
-  // Render in IST regardless of viewer timezone
-  const ist = new Date(d.getTime() + (5.5 * 60 - d.getTimezoneOffset()) * 60_000);
-  const hh = String(ist.getHours()).padStart(2, "0");
-  const mm = String(ist.getMinutes()).padStart(2, "0");
-  const now = new Date();
-  const nowIst = new Date(now.getTime() + (5.5 * 60 - now.getTimezoneOffset()) * 60_000);
-  const sameDay = ist.toDateString() === nowIst.toDateString();
-  const yest = new Date(nowIst); yest.setDate(yest.getDate() - 1);
-  const isYest = ist.toDateString() === yest.toDateString();
-  if (sameDay) return `Today, ${hh}:${mm} IST`;
-  if (isYest) return `Yesterday, ${hh}:${mm} IST`;
-  const day = String(ist.getDate()).padStart(2, "0");
-  const mon = ist.toLocaleString("en-US", { month: "short" });
-  return `${day} ${mon}, ${hh}:${mm} IST`;
+  // Relative tracking design — works for any viewer timezone
+  const mins = Math.max(1, Math.round((Date.now() - d.getTime()) / 60_000));
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  const days = Math.floor(hrs / 24);
+  return `${days}d ago`;
 }
 
 function InterceptionLog({ seed, handle }: { seed: string; handle: string }) {
