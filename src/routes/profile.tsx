@@ -25,6 +25,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/useAuth";
 import AuthModal from "@/components/AuthModal";
 import { TestimonialsAdmin } from "@/components/TestimonialsAdmin";
+import { PushNotificationButton } from "@/components/PushNotificationButton";
 import { SurvivalMetrics } from "@/components/SurvivalMetrics";
 import { SITE_URL } from "@/config";
 
@@ -370,6 +371,11 @@ function ProfileEditor() {
                 ▮▮▮ Property of nobody · If found, scan to return ▮▮▮
               </div>
             </section>
+
+            {/* PUSH NOTIFICATIONS OPT-IN */}
+            <div className="mb-4">
+              <PushNotificationButton />
+            </div>
 
             {/* INTERCEPTION LOG */}
             <InterceptionLog seed={user.id} handle={form.handle || ""} />

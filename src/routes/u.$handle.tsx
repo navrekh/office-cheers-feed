@@ -1,8 +1,11 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import { useEffect } from "react";
+import { useServerFn } from "@tanstack/react-start";
 import { QRCodeCanvas } from "qrcode.react";
 import { ArrowLeft, Linkedin, Github, Twitter, Globe, Share2, Download, Copy } from "lucide-react";
 import { toast } from "sonner";
 import { getPublicProfile, type PublicProfile } from "@/lib/profiles.functions";
+import { recordProfileVisit } from "@/lib/push.functions";
 import { PublicTestimonials } from "@/components/PublicTestimonials";
 import { SurvivalMetrics } from "@/components/SurvivalMetrics";
 import { SITE_URL } from "@/config";
@@ -68,6 +71,18 @@ function ProfileView() {
   const params = Route.useParams();
   const profileUrl = `${SITE_URL}/u/${params.handle}`;
   const name = profile.display_name || `@${profile.handle}`;
+  const recordVisit = useServerFn(recordProfileVisit);
+
+  // Fire one visit record per page mount. Server dedupes within 1h per visitor.
+  useEffect(() => {
+    const via = typeof window !== "undefined" && window.location.search.includes("via=qr")
+      ? "qr"
+      : "web";
+    recordVisit({ data: { handle: params.handle, via } }).catch((e) => {
+      console.warn("[recordProfileVisit] skipped:", e?.message);
+    });
+  }, [params.handle, recordVisit]);
+
 
   function share() {
     const text = `Check out ${name} on DrinkedIn → ${profileUrl}`;
