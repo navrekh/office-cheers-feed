@@ -625,7 +625,7 @@ export default function PostsFeed() {
   const [posts, setPosts] = useState<FeedPost[] | null>(null);
   const [simPosts, setSimPosts] = useState<FeedPost[]>(() => {
     const seeds = makeGlobalSeedPosts();
-    const fresh = Array.from({ length: 6 }, (_, i) => makeSimPost(i));
+    const fresh = Array.from({ length: 14 }, (_, i) => makeSimPost(i));
     return [...fresh, ...seeds];
   });
   const [replies, setReplies] = useState<Record<string, SimReply[]>>({});
