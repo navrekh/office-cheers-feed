@@ -586,41 +586,33 @@ function InterceptionLog({ seed, handle }: { seed: string; handle: string }) {
         </p>
       </div>
 
-      {/* Table */}
-      <div className="mt-3 overflow-x-auto px-2 pb-4 sm:px-3">
-        <table className="w-full min-w-[640px] border-collapse text-left font-mono text-[11px]">
-          <thead>
-            <tr className="text-[9px] uppercase tracking-[0.25em] text-amber-400/70">
-              <th className="border-b border-amber-500/15 px-3 py-2 font-semibold">#</th>
-              <th className="border-b border-amber-500/15 px-3 py-2 font-semibold">Interceptor</th>
-              <th className="border-b border-amber-500/15 px-3 py-2 font-semibold">Network Vector</th>
-              <th className="border-b border-amber-500/15 px-3 py-2 font-semibold">Telemetry Logged</th>
-              <th className="border-b border-amber-500/15 px-3 py-2 text-right font-semibold">Timestamp</th>
-            </tr>
-          </thead>
-          <tbody>
-            {entries.map((e, i) => (
-              <tr key={i} className="group transition hover:bg-amber-500/[0.04]">
-                <td className="border-b border-amber-500/10 px-3 py-2 text-amber-400/40 tabular-nums">
+      {/* Stacked card list — readable at every width, no horizontal scroll */}
+      <ul className="divide-y divide-amber-500/10 px-3 pb-3 pt-1 sm:px-4">
+        {entries.map((e, i) => (
+          <li key={i} className="group py-3 transition hover:bg-amber-500/[0.03]">
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex min-w-0 items-center gap-2">
+                <span className="grid h-5 w-5 shrink-0 place-items-center rounded border border-amber-500/20 bg-black/50 font-mono text-[9px] text-amber-400/60 tabular-nums">
                   {String(i + 1).padStart(2, "0")}
-                </td>
-                <td className="border-b border-amber-500/10 px-3 py-2">
-                  <span className="font-bold text-amber-200">{e.handle}</span>
-                </td>
-                <td className="border-b border-amber-500/10 px-3 py-2 text-zinc-400">
-                  <span className="text-emerald-400/70">◉ </span>{e.vector}
-                </td>
-                <td className="border-b border-amber-500/10 px-3 py-2 text-zinc-300">
-                  {e.telemetry}
-                </td>
-                <td className="border-b border-amber-500/10 px-3 py-2 text-right text-amber-400/70 tabular-nums">
-                  {formatCorpTimestamp(e.when)}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+                </span>
+                <span className="truncate font-mono text-[12px] font-bold text-amber-200">
+                  {e.handle}
+                </span>
+              </div>
+              <span className="shrink-0 font-mono text-[10px] uppercase tracking-widest text-amber-400/70 tabular-nums">
+                {formatCorpTimestamp(e.when)}
+              </span>
+            </div>
+            <div className="mt-1.5 pl-7 font-mono text-[11px] leading-relaxed text-zinc-400">
+              <span className="text-emerald-400/70">◉ </span>
+              {e.vector}
+            </div>
+            <div className="mt-1 pl-7 font-mono text-[11px] leading-relaxed text-zinc-300">
+              <span className="text-amber-400/50">›</span> {e.telemetry}
+            </div>
+          </li>
+        ))}
+      </ul>
 
       <div className="border-t border-amber-500/10 bg-black/40 px-4 py-2 text-[9px] uppercase tracking-[0.3em] text-amber-400/50">
         ▮ Identity Firewall: ACTIVE · No real PII captured · Confessions never linked to badge ▮
