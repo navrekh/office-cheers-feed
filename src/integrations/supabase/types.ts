@@ -464,6 +464,30 @@ export type Database = {
         }
         Relationships: []
       }
+      profile_metric_votes: {
+        Row: {
+          created_at: string
+          id: string
+          metric: string
+          owner_id: string
+          voter_key: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          metric: string
+          owner_id: string
+          voter_key: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          metric?: string
+          owner_id?: string
+          voter_key?: string
+        }
+        Relationships: []
+      }
       profile_testimonials: {
         Row: {
           author_id: string | null
@@ -731,6 +755,15 @@ export type Database = {
         }
         Returns: boolean
       }
+      cast_metric_vote: {
+        Args: { p_handle: string; p_metric: string; p_session: string }
+        Returns: {
+          already_voted: boolean
+          cooked: number
+          ninja: number
+          slippery: number
+        }[]
+      }
       cast_poll_vote: {
         Args: { p_choice: string; p_hub: string }
         Returns: {
@@ -768,6 +801,14 @@ export type Database = {
           danger: number
           thread: number
           total: number
+        }[]
+      }
+      get_profile_metrics: {
+        Args: { p_handle: string }
+        Returns: {
+          cooked: number
+          ninja: number
+          slippery: number
         }[]
       }
       get_profile_testimonials: {

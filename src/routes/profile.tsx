@@ -22,6 +22,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/useAuth";
 import AuthModal from "@/components/AuthModal";
 import { TestimonialsAdmin } from "@/components/TestimonialsAdmin";
+import { SurvivalMetrics } from "@/components/SurvivalMetrics";
 import { SITE_URL } from "@/config";
 
 export const Route = createFileRoute("/profile")({
@@ -267,6 +268,12 @@ function ProfileEditor() {
                     <Stat icon={<Beer className="h-3 w-3" />} label="Pints" value={metrics.pints} />
                     <Stat label="Drops" value={metrics.posts} />
                   </dl>
+
+                  {handleValid && (
+                    <div className="mt-4">
+                      <SurvivalMetrics handle={form.handle!} readOnly compact />
+                    </div>
+                  )}
 
                   <div className="mt-5 grid grid-cols-2 gap-x-4 gap-y-1 border-t border-amber-500/15 pt-4 text-[11px]">
                     <KV k="Badge #" v={badgeId} />

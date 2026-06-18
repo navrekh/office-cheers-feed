@@ -4,6 +4,7 @@ import { ArrowLeft, Linkedin, Github, Twitter, Globe, Share2, Download } from "l
 import { toast } from "sonner";
 import { getPublicProfile, type PublicProfile } from "@/lib/profiles.functions";
 import { PublicTestimonials } from "@/components/PublicTestimonials";
+import { SurvivalMetrics } from "@/components/SurvivalMetrics";
 import { SITE_URL } from "@/config";
 
 export const Route = createFileRoute("/u/$handle")({
@@ -125,6 +126,11 @@ function ProfileView() {
               {profile.bio && <p className="mt-3 text-sm text-white/80 whitespace-pre-wrap">{profile.bio}</p>}
             </div>
           </div>
+
+          <div className="mt-6">
+            <SurvivalMetrics handle={profile.handle} />
+          </div>
+
 
           {availableSocials.length > 0 && (
             <div className="mt-6 grid grid-cols-2 sm:grid-cols-3 gap-2">
