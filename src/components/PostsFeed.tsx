@@ -676,14 +676,27 @@ export default function PostsFeed() {
   // every ~25s so the timeline always feels like users are actively posting.
   useEffect(() => {
     if (panicActive) return;
-    const interval = window.setInterval(() => {
+    let cancelled = false;
+    let timer: number | undefined;
+    const tick = () => {
+      if (cancelled) return;
+      // Occasionally drop 1–3 posts at once so the feed feels bursty,
+      // like a real room where multiple people chime in.
+      const burst = Math.random() < 0.25 ? randInt(2, 3) : 1;
       setSimPosts((prev) => {
         const seeds = prev.filter((p) => p.id.startsWith("global-seed-"));
         const others = prev.filter((p) => !p.id.startsWith("global-seed-"));
-        return [makeSimPost(others.length), ...others, ...seeds].slice(0, 30);
+        const fresh = Array.from({ length: burst }, (_, i) => makeSimPost(others.length + i));
+        return [...fresh, ...others, ...seeds].slice(0, 50);
       });
-    }, 25_000);
-    return () => window.clearInterval(interval);
+      schedule();
+    };
+    const schedule = () => {
+      const delay = 6_000 + Math.floor(Math.random() * 9_000); // 6–15s
+      timer = window.setTimeout(tick, delay);
+    };
+    schedule();
+    return () => { cancelled = true; if (timer) window.clearTimeout(timer); };
   }, [panicActive]);
 
 
