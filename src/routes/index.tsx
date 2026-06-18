@@ -2110,7 +2110,7 @@ function Index() {
                   onClick={() => setProfileOpen(false)}
                   className="mt-4 w-full inline-flex items-center justify-center gap-2 rounded-md px-3 py-2 text-[12px] font-semibold text-amber-950 bg-amber-500 hover:bg-amber-400 transition"
                 >
-                  ✨ Edit my profile &amp; QR
+                  🪪 Open My Badge &amp; see who visited
                 </Link>
                 <button
                   type="button"
