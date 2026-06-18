@@ -1629,6 +1629,11 @@ function Index() {
               toast("🔔 Tech park alerts cleared! You are fully caught up with the pod.");
             }} />
             <NavItem
+              icon={<QrCode className="size-5" />}
+              label="Scan"
+              onClick={() => setScannerOpen(true)}
+            />
+            <NavItem
               icon={<span className="text-base leading-none">🪪</span>}
               label="My Badge"
               onClick={() => {
@@ -1665,6 +1670,7 @@ function Index() {
 
       <EmergencyDealOverlay />
       <FirstRunCoachmark />
+      <QrScannerModal open={scannerOpen} onClose={() => setScannerOpen(false)} />
 
 
       {/* Simplified single-column layout — feed-first */}
