@@ -8,7 +8,7 @@ const SAMPLE_DOSSIERS = [
   { handle: "midnight_qa",    emoji: "🦉", line: "Bug-free since 11 PM. Whiskey-positive.", tag: "SAMPLE" },
 ];
 
-export function LandingHero({ onSignIn }: { onSignIn: (reason: string) => void }) {
+export function LandingHero({ onSignIn, onDecode }: { onSignIn: (reason: string) => void; onDecode: () => void }) {
   const [active, setActive] = useState(247);
 
   // Lightweight "live" counter so the page feels alive on day one
@@ -44,9 +44,9 @@ export function LandingHero({ onSignIn }: { onSignIn: (reason: string) => void }
         <ActionCard
           icon={<QrCode className="size-5" />}
           title="Decode a dossier"
-          body="Scan a badge or search a handle"
+          body="Scan a badge with your camera"
           accent="amber"
-          onClick={() => onSignIn("Sign in to decode a dossier.")}
+          onClick={onDecode}
         />
         <ActionCard
           icon={<Share2 className="size-5" />}

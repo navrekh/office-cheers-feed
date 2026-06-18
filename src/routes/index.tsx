@@ -70,6 +70,7 @@ import {
   Navigation,
   ShieldCheck,
   Users as UsersIcon,
+  QrCode,
 } from "lucide-react";
 import {
   CITIES,
@@ -92,6 +93,7 @@ import { WorkplaceSelectorCard } from "@/components/WorkplaceSelectorCard";
 import { VisitorTeaser } from "@/components/VisitorTeaser";
 import { FirstRunCoachmark } from "@/components/FirstRunCoachmark";
 import { LandingHero } from "@/components/LandingHero";
+import { QrScannerModal } from "@/components/QrScannerModal";
 import { ProximityAdDispatcher, dealCoord } from "@/components/ProximityAdDispatcher";
 import { useMerchantDeals, type MerchantDeal } from "@/lib/useMerchantDeals";
 import DesperationPoll from "@/components/DesperationPoll";
@@ -393,6 +395,7 @@ function Index() {
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authReason, setAuthReason] = useState<string | undefined>(undefined);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [scannerOpen, setScannerOpen] = useState(false);
   function requireAuth(reason?: string): boolean {
     if (user) return true;
     setAuthReason(reason);
@@ -1626,6 +1629,11 @@ function Index() {
               toast("🔔 Tech park alerts cleared! You are fully caught up with the pod.");
             }} />
             <NavItem
+              icon={<QrCode className="size-5" />}
+              label="Scan"
+              onClick={() => setScannerOpen(true)}
+            />
+            <NavItem
               icon={<span className="text-base leading-none">🪪</span>}
               label="My Badge"
               onClick={() => {
@@ -1662,6 +1670,7 @@ function Index() {
 
       <EmergencyDealOverlay />
       <FirstRunCoachmark />
+      <QrScannerModal open={scannerOpen} onClose={() => setScannerOpen(false)} />
 
 
       {/* Simplified single-column layout — feed-first */}
@@ -1694,6 +1703,7 @@ function Index() {
                     setAuthReason(reason);
                     setAuthModalOpen(true);
                   }}
+                  onDecode={() => setScannerOpen(true)}
                 />
               )}
 
