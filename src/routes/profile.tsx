@@ -16,6 +16,9 @@ import {
   CheckCircle2,
   Eye,
   Radio,
+  Share2,
+  Copy,
+
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
