@@ -82,7 +82,7 @@ export function QrScannerModal({ open, onClose }: { open: boolean; onClose: () =
               .catch(() => {})
               .finally(() => {
                 toast.success(`Decoded @${handle} — opening dossier…`);
-                navigate({ to: "/u/$handle", params: { handle } });
+                navigate({ to: "/u/$handle", params: { handle }, search: { via: "qr" } as any });
                 onClose();
               });
           },
