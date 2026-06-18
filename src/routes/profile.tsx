@@ -14,6 +14,8 @@ import {
   Shield,
   Beer,
   CheckCircle2,
+  Eye,
+  Radio,
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -436,5 +438,131 @@ function KV({ k, v, ok }: { k: string; v: string; ok?: boolean }) {
       <span className="text-[10px] uppercase tracking-widest text-amber-400/50">{k}</span>
       <span className={`truncate font-mono tabular-nums ${ok ? "text-emerald-400" : "text-amber-200"}`}>{v}</span>
     </div>
+  );
+}
+
+// ---------- Interception Log (private, mock-but-stable per user) ----------
+
+const SPY_HANDLES = [
+  "Anon_HR_Lurker", "Quiet_Quitter_Sam", "Burnt_Toast_PM", "Slack_DM_Therapist",
+  "OKR_Ghost_Q4", "Cubicle_Confessor", "Layoff_Lottery_22", "Caffeinated_TL_88",
+  "TownHall_Survivor", "Notion_Doc_Hoarder", "Friday_Deploy_Diva", "Mute_Button_MVP",
+  "ExFAANG_Now_Indie", "Sprint_Goal_Skeptic", "WFH_Pajama_Lead", "Bench_Warmer_Bro",
+  "Pantry_Coffee_Critic", "Calendar_Tetris_Pro", "Rohan_Ex_Unicorn", "Aisha_From_BKC",
+  "Ahmed_From_DIFC", "Yuki_Shibuya_Dev", "Lena_Aus_Berlin", "Diya_From_Powai",
+];
+
+const ORIGINS = [
+  "Routed via Whitefield Cluster, BLR",
+  "IP matches Major Banking ISP proxy, BKC",
+  "Egress: Gurgaon Cyber Hub VPN exit",
+  "TOR relay → exit in Hyderabad HITEC",
+  "Corporate WiFi: Powai Tech Park",
+  "5G handoff near DLF Cyber City",
+  "Egress: Bellandur SEZ uplink",
+  "Mobile data — Mumbai Western Line",
+  "VPN exit: Singapore (SG-DC3)",
+  "ISP proxy — Dubai DIFC tower",
+  "Office subnet 10.42.x — Whitefield",
+  "Corp gateway: Big4 Consulting LLP",
+];
+
+const ACTIVITIES = [
+  "Inspected 3 manager burns",
+  "Logged 2 Pints validations",
+  "Tribunal-voted on 1 post",
+  "Lingered 47s on your dossier",
+  "Re-scanned your badge QR twice",
+  "Followed deep-link from /p/burns",
+  "Hovered LinkedIn but didn't click",
+  "Validated 4 of your drops",
+  "Cheers'd you 3× this week",
+  "Opened your portfolio in new tab",
+  "Bounced off the pintbox",
+  "Saved your handle to clipboard",
+];
+
+function hashSeed(s: string): number {
+  let h = 2166136261 >>> 0;
+  for (let i = 0; i < s.length; i++) h = Math.imul(h ^ s.charCodeAt(i), 16777619) >>> 0;
+  return h >>> 0;
+}
+function rng(seed: number) {
+  let s = seed || 1;
+  return () => {
+    s = (s * 1664525 + 1013904223) >>> 0;
+    return s / 0xffffffff;
+  };
+}
+function pick<T>(arr: T[], r: () => number): T {
+  return arr[Math.floor(r() * arr.length)];
+}
+function relTime(minsAgo: number): string {
+  if (minsAgo < 1) return "just now";
+  if (minsAgo < 60) return `${minsAgo}m ago`;
+  const h = Math.floor(minsAgo / 60);
+  if (h < 24) return `${h}h ago`;
+  const d = Math.floor(h / 24);
+  return `${d}d ago`;
+}
+
+function InterceptionLog({ seed, handle }: { seed: string; handle: string }) {
+  // Re-seed every ~15 min so the list feels alive without thrashing
+  const bucket = Math.floor(Date.now() / (15 * 60 * 1000));
+  const entries = useMemo(() => {
+    const r = rng(hashSeed(`${seed}|${bucket}`));
+    return Array.from({ length: 5 }).map((_, i) => {
+      const handleIdx = Math.floor(r() * SPY_HANDLES.length);
+      const originIdx = Math.floor(r() * ORIGINS.length);
+      const actIdx = Math.floor(r() * ACTIVITIES.length);
+      const mins = Math.floor(r() * (i === 0 ? 12 : 60 * 18)) + (i === 0 ? 0 : 3);
+      return {
+        handle: SPY_HANDLES[handleIdx],
+        origin: ORIGINS[originIdx],
+        activity: ACTIVITIES[actIdx],
+        mins,
+      };
+    }).sort((a, b) => a.mins - b.mins);
+  }, [seed, bucket]);
+
+  return (
+    <section className="mt-8 rounded-xl border border-amber-500/20 bg-zinc-900/40 p-5 sm:p-6">
+      <div className="flex items-center justify-between gap-3">
+        <h2 className="inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.25em] text-amber-400">
+          <Eye className="h-3.5 w-3.5" />
+          System Security · Recent Profile Interceptions
+        </h2>
+        <span className="inline-flex items-center gap-1.5 text-[10px] uppercase tracking-widest text-emerald-400/80">
+          <Radio className="h-3 w-3 animate-pulse" /> live
+        </span>
+      </div>
+      <p className="mt-1 text-[11px] text-zinc-500">
+        Last 5 anonymous entities that pinged your node{handle ? <> at <span className="text-amber-300">@{handle}</span></> : null}. Visible only to you.
+      </p>
+
+      <ul className="mt-4 divide-y divide-amber-500/10 rounded-md border border-amber-500/15 bg-black/40">
+        {entries.map((e, i) => (
+          <li key={i} className="grid gap-1 px-3 py-2.5 sm:grid-cols-[1fr,auto]">
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-baseline gap-x-2">
+                <span className="truncate font-mono text-sm font-bold text-amber-200">{e.handle}</span>
+                <span className="text-[10px] uppercase tracking-widest text-amber-400/60">↳ intercepted</span>
+              </div>
+              <div className="mt-0.5 truncate text-[11px] text-zinc-400">
+                <span className="text-emerald-400/80">◉</span> {e.origin}
+              </div>
+              <div className="truncate text-[11px] text-zinc-500">→ {e.activity}</div>
+            </div>
+            <div className="text-right text-[10px] uppercase tracking-widest text-amber-400/60 sm:self-center">
+              {relTime(e.mins)}
+            </div>
+          </li>
+        ))}
+      </ul>
+
+      <p className="mt-3 text-[10px] uppercase tracking-[0.2em] text-zinc-500">
+        ⚠ Simulated forensic feed · No real PII collected · Confessions remain unlinked
+      </p>
+    </section>
   );
 }
