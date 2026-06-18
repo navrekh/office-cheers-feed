@@ -2353,7 +2353,7 @@ function NavItem({
           </span>
         ) : null}
       </div>
-      <span className="mt-0.5 hidden sm:block">{label}</span>
+      <span className="mt-0.5 block">{label}</span>
     </button>
   );
 }
