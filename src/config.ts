@@ -13,6 +13,7 @@ export const SITE = {
   url: SITE_URL,
   shareUrl: (postId: string) => `${SITE_URL}/p/${postId}`,
   trackUrl: (ticket: string) => `${SITE_URL}/track/${ticket}`,
+  profileUrl: (handle: string) => `${SITE_URL}/u/${handle}`,
 } as const;
 
 export const TOKENLENS = {
