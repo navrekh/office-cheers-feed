@@ -521,6 +521,36 @@ export type Database = {
         }
         Relationships: []
       }
+      profile_visits: {
+        Row: {
+          created_at: string
+          id: string
+          owner_id: string
+          via: string
+          visitor_handle: string | null
+          visitor_id: string | null
+          visitor_session: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          owner_id: string
+          via?: string
+          visitor_handle?: string | null
+          visitor_id?: string | null
+          visitor_session?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          owner_id?: string
+          via?: string
+          visitor_handle?: string | null
+          visitor_id?: string | null
+          visitor_session?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -602,6 +632,39 @@ export type Database = {
           verified_hub_city?: string | null
           website_url?: string | null
           whatsapp_number?: string | null
+        }
+        Relationships: []
+      }
+      push_subscriptions: {
+        Row: {
+          auth: string
+          created_at: string
+          endpoint: string
+          id: string
+          last_seen_at: string
+          p256dh: string
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          auth: string
+          created_at?: string
+          endpoint: string
+          id?: string
+          last_seen_at?: string
+          p256dh: string
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          auth?: string
+          created_at?: string
+          endpoint?: string
+          id?: string
+          last_seen_at?: string
+          p256dh?: string
+          user_agent?: string | null
+          user_id?: string
         }
         Relationships: []
       }
@@ -839,6 +902,15 @@ export type Database = {
           website_url: string
         }[]
       }
+      get_recent_visits: {
+        Args: { p_limit?: number }
+        Returns: {
+          created_at: string
+          id: string
+          via: string
+          visitor_handle: string
+        }[]
+      }
       get_user_tip_address: { Args: { p_user_id: string }; Returns: string }
       has_role: {
         Args: {
@@ -849,6 +921,15 @@ export type Database = {
       }
       increment_cheers: { Args: { post_id: string }; Returns: number }
       increment_heading_there: { Args: { p_deal_id: string }; Returns: number }
+      record_profile_visit: {
+        Args: { p_handle: string; p_via?: string }
+        Returns: {
+          is_new: boolean
+          owner_display: string
+          owner_id: string
+          visitor_handle: string
+        }[]
+      }
       report_post: { Args: { p_post_id: string }; Returns: undefined }
       submit_testimonial: {
         Args: { p_body: string; p_handle: string }
