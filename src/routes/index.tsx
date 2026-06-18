@@ -70,6 +70,7 @@ import {
   Navigation,
   ShieldCheck,
   Users as UsersIcon,
+  QrCode,
 } from "lucide-react";
 import {
   CITIES,
