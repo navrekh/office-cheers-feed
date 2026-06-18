@@ -89,6 +89,7 @@ import MidnightLeakDigest from "@/components/MidnightLeakDigest";
 import GlobalEscapeSimulator from "@/components/GlobalEscapeSimulator";
 import TrendingEscapeClusters from "@/components/TrendingEscapeClusters";
 import { WorkplaceSelectorCard } from "@/components/WorkplaceSelectorCard";
+import { VisitorTeaser } from "@/components/VisitorTeaser";
 import { ProximityAdDispatcher, dealCoord } from "@/components/ProximityAdDispatcher";
 import { useMerchantDeals, type MerchantDeal } from "@/lib/useMerchantDeals";
 import DesperationPoll from "@/components/DesperationPoll";
