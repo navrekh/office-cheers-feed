@@ -22,6 +22,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/useAuth";
 import AuthModal from "@/components/AuthModal";
 import { TestimonialsAdmin } from "@/components/TestimonialsAdmin";
+import { SurvivalMetrics } from "@/components/SurvivalMetrics";
 import { SITE_URL } from "@/config";
 
 export const Route = createFileRoute("/profile")({
