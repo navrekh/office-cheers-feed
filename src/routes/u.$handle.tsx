@@ -166,6 +166,8 @@ function ProfileView() {
           </div>
         </div>
 
+        <PublicTestimonials handle={profile.handle} ownerName={name} />
+
         <div className="mt-6 text-center text-xs text-white/50">
           Want your own? <Link to="/profile" className="text-amber-400 hover:underline">Claim your @handle</Link>
         </div>
