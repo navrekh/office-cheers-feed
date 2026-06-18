@@ -1661,6 +1661,7 @@ function Index() {
       </header>
 
       <EmergencyDealOverlay />
+      <FirstRunCoachmark />
 
 
       {/* Simplified single-column layout — feed-first */}
