@@ -90,6 +90,8 @@ import GlobalEscapeSimulator from "@/components/GlobalEscapeSimulator";
 import TrendingEscapeClusters from "@/components/TrendingEscapeClusters";
 import { WorkplaceSelectorCard } from "@/components/WorkplaceSelectorCard";
 import { VisitorTeaser } from "@/components/VisitorTeaser";
+import { FirstRunCoachmark } from "@/components/FirstRunCoachmark";
+import { LandingHero } from "@/components/LandingHero";
 import { ProximityAdDispatcher, dealCoord } from "@/components/ProximityAdDispatcher";
 import { useMerchantDeals, type MerchantDeal } from "@/lib/useMerchantDeals";
 import DesperationPoll from "@/components/DesperationPoll";
@@ -1679,10 +1681,20 @@ function Index() {
                 />
               )}
 
-              <DossierHero />
-
-              {/* HIGH-CURIOSITY HOOK: who decoded your dossier — only for signed-in users */}
-              {user && <VisitorTeaser userId={user.id} />}
+              {user ? (
+                <>
+                  <DossierHero />
+                  {/* HIGH-CURIOSITY HOOK: who decoded your dossier */}
+                  <VisitorTeaser userId={user.id} />
+                </>
+              ) : (
+                <LandingHero
+                  onSignIn={(reason) => {
+                    setAuthReason(reason);
+                    setAuthModalOpen(true);
+                  }}
+                />
+              )}
 
               <PresenceBar />
 
