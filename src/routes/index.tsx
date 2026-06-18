@@ -1623,6 +1623,19 @@ function Index() {
               setNotifOpen((o) => !o);
               toast("🔔 Tech park alerts cleared! You are fully caught up with the pod.");
             }} />
+            <NavItem
+              icon={<span className="text-base leading-none">🪪</span>}
+              label="My Badge"
+              onClick={() => {
+                if (!user) {
+                  setAuthReason("Sign in to open your Spy ID Badge.");
+                  setAuthModalOpen(true);
+                  return;
+                }
+                navigate({ to: "/profile" });
+              }}
+            />
+
 
             <button
               type="button"
