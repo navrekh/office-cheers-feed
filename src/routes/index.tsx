@@ -89,6 +89,7 @@ import MidnightLeakDigest from "@/components/MidnightLeakDigest";
 import GlobalEscapeSimulator from "@/components/GlobalEscapeSimulator";
 import TrendingEscapeClusters from "@/components/TrendingEscapeClusters";
 import { WorkplaceSelectorCard } from "@/components/WorkplaceSelectorCard";
+import { VisitorTeaser } from "@/components/VisitorTeaser";
 import { ProximityAdDispatcher, dealCoord } from "@/components/ProximityAdDispatcher";
 import { useMerchantDeals, type MerchantDeal } from "@/lib/useMerchantDeals";
 import DesperationPoll from "@/components/DesperationPoll";
@@ -1622,6 +1623,19 @@ function Index() {
               setNotifOpen((o) => !o);
               toast("🔔 Tech park alerts cleared! You are fully caught up with the pod.");
             }} />
+            <NavItem
+              icon={<span className="text-base leading-none">🪪</span>}
+              label="My Badge"
+              onClick={() => {
+                if (!user) {
+                  setAuthReason("Sign in to open your Spy ID Badge.");
+                  setAuthModalOpen(true);
+                  return;
+                }
+                navigate({ to: "/profile" });
+              }}
+            />
+
 
             <button
               type="button"
@@ -1666,6 +1680,9 @@ function Index() {
               )}
 
               <DossierHero />
+
+              {/* HIGH-CURIOSITY HOOK: who decoded your dossier — only for signed-in users */}
+              {user && <VisitorTeaser userId={user.id} />}
 
               <PresenceBar />
 
@@ -2106,7 +2123,7 @@ function Index() {
                   onClick={() => setProfileOpen(false)}
                   className="mt-4 w-full inline-flex items-center justify-center gap-2 rounded-md px-3 py-2 text-[12px] font-semibold text-amber-950 bg-amber-500 hover:bg-amber-400 transition"
                 >
-                  ✨ Edit my profile &amp; QR
+                  🪪 Open My Badge &amp; see who visited
                 </Link>
                 <button
                   type="button"
