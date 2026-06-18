@@ -62,6 +62,45 @@ function PostActions({
     }
   }, [postId]);
 
+  // Live fluctuation: simulate other anonymous users validating / buying
+  // pints on background posts so counters tick up organically and the feed
+  // feels like a busy room. User-owned posts are excluded so the user sees
+  // their own real engagement only.
+  useEffect(() => {
+    if (isUserOwned) return;
+    let cancelled = false;
+    let timer: number | undefined;
+    const schedule = () => {
+      const delay = 4_000 + Math.floor(Math.random() * 9_000); // 4–13s
+      timer = window.setTimeout(tick, delay);
+    };
+    const tick = () => {
+      if (cancelled) return;
+      if (Math.random() < 0.55) { schedule(); return; }
+      if (Math.random() < 0.78) {
+        const bump = randInt(1, 3);
+        setValidated((n) => {
+          const next = n + bump;
+          setPints((pp) => { writeCounts(postId, next, pp); return pp; });
+          return next;
+        });
+        setVPulse(true);
+        window.setTimeout(() => setVPulse(false), 220);
+      } else {
+        setPints((n) => {
+          const next = n + 1;
+          setValidated((vv) => { writeCounts(postId, vv, next); return vv; });
+          return next;
+        });
+        setPPulse(true);
+        window.setTimeout(() => setPPulse(false), 220);
+      }
+      schedule();
+    };
+    schedule();
+    return () => { cancelled = true; if (timer) window.clearTimeout(timer); };
+  }, [postId, isUserOwned]);
+
   function onValidate() {
     setValidated((n) => {
       const next = n + 1;
