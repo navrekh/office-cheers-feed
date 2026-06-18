@@ -1703,6 +1703,7 @@ function Index() {
                     setAuthReason(reason);
                     setAuthModalOpen(true);
                   }}
+                  onDecode={() => setScannerOpen(true)}
                 />
               )}
 
