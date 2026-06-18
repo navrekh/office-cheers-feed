@@ -1,6 +1,6 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { QRCodeCanvas } from "qrcode.react";
-import { ArrowLeft, Linkedin, Instagram, Facebook, Github, Twitter, Globe, Share2, Download } from "lucide-react";
+import { ArrowLeft, Linkedin, Github, Twitter, Globe, Share2, Download } from "lucide-react";
 import { toast } from "sonner";
 import { getPublicProfile, type PublicProfile } from "@/lib/profiles.functions";
 import { SITE_URL } from "@/config";
@@ -56,11 +56,9 @@ export const Route = createFileRoute("/u/$handle")({
 
 const SOCIALS: Array<{ key: keyof PublicProfile; label: string; Icon: typeof Linkedin; color: string }> = [
   { key: "linkedin_url", label: "LinkedIn", Icon: Linkedin, color: "bg-[#0a66c2]" },
-  { key: "instagram_url", label: "Instagram", Icon: Instagram, color: "bg-gradient-to-tr from-yellow-500 via-pink-500 to-purple-600" },
-  { key: "twitter_url", label: "X / Twitter", Icon: Twitter, color: "bg-black border border-white/20" },
   { key: "github_url", label: "GitHub", Icon: Github, color: "bg-zinc-800" },
-  { key: "facebook_url", label: "Facebook", Icon: Facebook, color: "bg-[#1877f2]" },
-  { key: "website_url", label: "Website", Icon: Globe, color: "bg-emerald-600" },
+  { key: "twitter_url", label: "X / Twitter", Icon: Twitter, color: "bg-black border border-white/20" },
+  { key: "website_url", label: "Portfolio", Icon: Globe, color: "bg-emerald-600" },
 ];
 
 function ProfileView() {
