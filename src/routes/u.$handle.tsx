@@ -1,6 +1,6 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { QRCodeCanvas } from "qrcode.react";
-import { ArrowLeft, Linkedin, Github, Twitter, Globe, Share2, Download } from "lucide-react";
+import { ArrowLeft, Linkedin, Github, Twitter, Globe, Share2, Download, Copy } from "lucide-react";
 import { toast } from "sonner";
 import { getPublicProfile, type PublicProfile } from "@/lib/profiles.functions";
 import { PublicTestimonials } from "@/components/PublicTestimonials";
@@ -98,12 +98,27 @@ function ProfileView() {
           <Link to="/" className="inline-flex items-center gap-2 text-sm text-white/70 hover:text-white">
             <ArrowLeft className="h-4 w-4" /> Back
           </Link>
-          <button
-            onClick={share}
-            className="inline-flex items-center gap-2 rounded-md bg-amber-500 px-3 py-1.5 text-xs font-bold text-amber-950 hover:bg-amber-400"
-          >
-            <Share2 className="h-3.5 w-3.5" /> Share
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => {
+                navigator.clipboard.writeText(profileUrl).then(
+                  () => toast.success("Link copied"),
+                  () => toast.error("Copy failed"),
+                );
+              }}
+              className="inline-flex items-center gap-1.5 rounded-md border border-white/15 bg-white/5 px-2.5 py-1.5 text-xs font-semibold text-white/80 hover:bg-white/10"
+              title="Copy profile link"
+            >
+              <Copy className="h-3.5 w-3.5" /> Copy
+            </button>
+            <button
+              onClick={share}
+              className="inline-flex items-center gap-2 rounded-md bg-amber-500 px-3 py-1.5 text-xs font-bold text-amber-950 hover:bg-amber-400"
+            >
+              <Share2 className="h-3.5 w-3.5" /> Share
+            </button>
+          </div>
+
         </div>
       </header>
 

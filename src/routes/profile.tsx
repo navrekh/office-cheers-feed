@@ -16,6 +16,9 @@ import {
   CheckCircle2,
   Eye,
   Radio,
+  Share2,
+  Copy,
+
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -183,6 +186,46 @@ function ProfileEditor() {
     a.click();
   }
 
+  async function shareBadge() {
+    if (!previewUrl) {
+      toast.error("Claim a handle first to get a shareable link");
+      return;
+    }
+    const shareData = {
+      title: `${form.display_name || "@" + form.handle} · DrinkedIn Spy ID`,
+      text: "Scan my Corporate Spy ID Badge on DrinkedIn 🍻",
+      url: previewUrl,
+    };
+    try {
+      if (typeof navigator !== "undefined" && (navigator as any).share) {
+        await (navigator as any).share(shareData);
+        return;
+      }
+    } catch {
+      // user cancelled or share unsupported — fall through to copy
+    }
+    try {
+      await navigator.clipboard.writeText(previewUrl);
+      toast.success("Public badge link copied");
+    } catch {
+      toast.error("Couldn't share — copy failed");
+    }
+  }
+
+  async function copyLink() {
+    if (!previewUrl) {
+      toast.error("Claim a handle first");
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(previewUrl);
+      toast.success("Link copied");
+    } catch {
+      toast.error("Copy failed");
+    }
+  }
+
+
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100 font-mono">
       {/* CRT scanlines */}
@@ -292,14 +335,35 @@ function ProfileEditor() {
                       includeMargin={false}
                     />
                   </div>
-                  <button
-                    onClick={downloadQR}
-                    disabled={!handleValid}
-                    className="inline-flex items-center gap-1.5 rounded-md border border-amber-500/30 bg-amber-500/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest text-amber-300 hover:bg-amber-500/20 disabled:opacity-40"
-                  >
-                    <Download className="h-3 w-3" /> PNG
-                  </button>
+                  <p className="max-w-[160px] text-center text-[9px] uppercase tracking-[0.18em] text-amber-400/60">
+                    Scan to open public badge
+                  </p>
+                  <div className="flex flex-wrap items-center justify-center gap-1.5">
+                    <button
+                      onClick={shareBadge}
+                      disabled={!handleValid}
+                      className="inline-flex items-center gap-1.5 rounded-md border border-amber-500/40 bg-amber-500/20 px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest text-amber-200 hover:bg-amber-500/30 disabled:opacity-40"
+                    >
+                      <Share2 className="h-3 w-3" /> Share
+                    </button>
+                    <button
+                      onClick={copyLink}
+                      disabled={!handleValid}
+                      className="inline-flex items-center gap-1.5 rounded-md border border-amber-500/30 bg-amber-500/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest text-amber-300 hover:bg-amber-500/20 disabled:opacity-40"
+                      title="Copy public link"
+                    >
+                      <Copy className="h-3 w-3" /> Link
+                    </button>
+                    <button
+                      onClick={downloadQR}
+                      disabled={!handleValid}
+                      className="inline-flex items-center gap-1.5 rounded-md border border-amber-500/30 bg-amber-500/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest text-amber-300 hover:bg-amber-500/20 disabled:opacity-40"
+                    >
+                      <Download className="h-3 w-3" /> PNG
+                    </button>
+                  </div>
                 </div>
+
               </div>
 
               <div className="border-t border-amber-500/15 bg-black/40 px-6 py-2 text-[9px] uppercase tracking-[0.3em] text-amber-400/50 sm:px-8">
