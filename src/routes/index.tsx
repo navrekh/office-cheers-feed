@@ -1668,6 +1668,9 @@ function Index() {
 
               <DossierHero />
 
+              {/* HIGH-CURIOSITY HOOK: who decoded your dossier — only for signed-in users */}
+              {user && <VisitorTeaser userId={user.id} />}
+
               <PresenceBar />
 
               {/* Facebook-style compact composer — single bar, click to expand */}
