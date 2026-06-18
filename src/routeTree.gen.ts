@@ -9,13 +9,20 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as MerchantDashboardRouteImport } from './routes/merchant-dashboard'
 import { Route as HqAdminRouteImport } from './routes/hq-admin'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as UHandleRouteImport } from './routes/u.$handle'
 import { Route as TrackTicketRouteImport } from './routes/track.$ticket'
 import { Route as PPostIdRouteImport } from './routes/p.$postId'
 import { Route as ApiPublicWebhooksRazorpayRouteImport } from './routes/api/public/webhooks/razorpay'
 
+const ProfileRoute = ProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const MerchantDashboardRoute = MerchantDashboardRouteImport.update({
   id: '/merchant-dashboard',
   path: '/merchant-dashboard',
@@ -29,6 +36,11 @@ const HqAdminRoute = HqAdminRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const UHandleRoute = UHandleRouteImport.update({
+  id: '/u/$handle',
+  path: '/u/$handle',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TrackTicketRoute = TrackTicketRouteImport.update({
@@ -52,16 +64,20 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/hq-admin': typeof HqAdminRoute
   '/merchant-dashboard': typeof MerchantDashboardRoute
+  '/profile': typeof ProfileRoute
   '/p/$postId': typeof PPostIdRoute
   '/track/$ticket': typeof TrackTicketRoute
+  '/u/$handle': typeof UHandleRoute
   '/api/public/webhooks/razorpay': typeof ApiPublicWebhooksRazorpayRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/hq-admin': typeof HqAdminRoute
   '/merchant-dashboard': typeof MerchantDashboardRoute
+  '/profile': typeof ProfileRoute
   '/p/$postId': typeof PPostIdRoute
   '/track/$ticket': typeof TrackTicketRoute
+  '/u/$handle': typeof UHandleRoute
   '/api/public/webhooks/razorpay': typeof ApiPublicWebhooksRazorpayRoute
 }
 export interface FileRoutesById {
@@ -69,8 +85,10 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/hq-admin': typeof HqAdminRoute
   '/merchant-dashboard': typeof MerchantDashboardRoute
+  '/profile': typeof ProfileRoute
   '/p/$postId': typeof PPostIdRoute
   '/track/$ticket': typeof TrackTicketRoute
+  '/u/$handle': typeof UHandleRoute
   '/api/public/webhooks/razorpay': typeof ApiPublicWebhooksRazorpayRoute
 }
 export interface FileRouteTypes {
@@ -79,24 +97,30 @@ export interface FileRouteTypes {
     | '/'
     | '/hq-admin'
     | '/merchant-dashboard'
+    | '/profile'
     | '/p/$postId'
     | '/track/$ticket'
+    | '/u/$handle'
     | '/api/public/webhooks/razorpay'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/hq-admin'
     | '/merchant-dashboard'
+    | '/profile'
     | '/p/$postId'
     | '/track/$ticket'
+    | '/u/$handle'
     | '/api/public/webhooks/razorpay'
   id:
     | '__root__'
     | '/'
     | '/hq-admin'
     | '/merchant-dashboard'
+    | '/profile'
     | '/p/$postId'
     | '/track/$ticket'
+    | '/u/$handle'
     | '/api/public/webhooks/razorpay'
   fileRoutesById: FileRoutesById
 }
@@ -104,13 +128,22 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   HqAdminRoute: typeof HqAdminRoute
   MerchantDashboardRoute: typeof MerchantDashboardRoute
+  ProfileRoute: typeof ProfileRoute
   PPostIdRoute: typeof PPostIdRoute
   TrackTicketRoute: typeof TrackTicketRoute
+  UHandleRoute: typeof UHandleRoute
   ApiPublicWebhooksRazorpayRoute: typeof ApiPublicWebhooksRazorpayRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/profile': {
+      id: '/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof ProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/merchant-dashboard': {
       id: '/merchant-dashboard'
       path: '/merchant-dashboard'
@@ -130,6 +163,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/u/$handle': {
+      id: '/u/$handle'
+      path: '/u/$handle'
+      fullPath: '/u/$handle'
+      preLoaderRoute: typeof UHandleRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/track/$ticket': {
@@ -160,8 +200,10 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   HqAdminRoute: HqAdminRoute,
   MerchantDashboardRoute: MerchantDashboardRoute,
+  ProfileRoute: ProfileRoute,
   PPostIdRoute: PPostIdRoute,
   TrackTicketRoute: TrackTicketRoute,
+  UHandleRoute: UHandleRoute,
   ApiPublicWebhooksRazorpayRoute: ApiPublicWebhooksRazorpayRoute,
 }
 export const routeTree = rootRouteImport

@@ -466,54 +466,84 @@ export type Database = {
       }
       profiles: {
         Row: {
+          avatar_url: string | null
+          bio: string | null
           created_at: string
           declared_company: string | null
+          display_name: string | null
+          facebook_url: string | null
           flash_deal_text: string | null
+          github_url: string | null
+          handle: string | null
           id: string
+          instagram_url: string | null
           latitude: number | null
+          linkedin_url: string | null
           longitude: number | null
           map_query_address: string | null
           merchant_website: string | null
           pub_name: string | null
           role: Database["public"]["Enums"]["app_role"]
           tech_park_zone: string | null
+          twitter_url: string | null
           updated_at: string
           upi_vpa: string | null
           verified_hub_city: string | null
+          website_url: string | null
           whatsapp_number: string | null
         }
         Insert: {
+          avatar_url?: string | null
+          bio?: string | null
           created_at?: string
           declared_company?: string | null
+          display_name?: string | null
+          facebook_url?: string | null
           flash_deal_text?: string | null
+          github_url?: string | null
+          handle?: string | null
           id: string
+          instagram_url?: string | null
           latitude?: number | null
+          linkedin_url?: string | null
           longitude?: number | null
           map_query_address?: string | null
           merchant_website?: string | null
           pub_name?: string | null
           role?: Database["public"]["Enums"]["app_role"]
           tech_park_zone?: string | null
+          twitter_url?: string | null
           updated_at?: string
           upi_vpa?: string | null
           verified_hub_city?: string | null
+          website_url?: string | null
           whatsapp_number?: string | null
         }
         Update: {
+          avatar_url?: string | null
+          bio?: string | null
           created_at?: string
           declared_company?: string | null
+          display_name?: string | null
+          facebook_url?: string | null
           flash_deal_text?: string | null
+          github_url?: string | null
+          handle?: string | null
           id?: string
+          instagram_url?: string | null
           latitude?: number | null
+          linkedin_url?: string | null
           longitude?: number | null
           map_query_address?: string | null
           merchant_website?: string | null
           pub_name?: string | null
           role?: Database["public"]["Enums"]["app_role"]
           tech_park_zone?: string | null
+          twitter_url?: string | null
           updated_at?: string
           upi_vpa?: string | null
           verified_hub_city?: string | null
+          website_url?: string | null
           whatsapp_number?: string | null
         }
         Relationships: []
@@ -705,6 +735,25 @@ export type Database = {
           danger: number
           thread: number
           total: number
+        }[]
+      }
+      get_public_profile: {
+        Args: { p_handle: string }
+        Returns: {
+          avatar_url: string
+          bio: string
+          created_at: string
+          display_name: string
+          facebook_url: string
+          github_url: string
+          handle: string
+          id: string
+          instagram_url: string
+          linkedin_url: string
+          pub_name: string
+          role: Database["public"]["Enums"]["app_role"]
+          twitter_url: string
+          website_url: string
         }[]
       }
       get_user_tip_address: { Args: { p_user_id: string }; Returns: string }
