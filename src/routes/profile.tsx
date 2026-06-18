@@ -444,42 +444,46 @@ function KV({ k, v, ok }: { k: string; v: string; ok?: boolean }) {
 // ---------- Interception Log (private, mock-but-stable per user) ----------
 
 const SPY_HANDLES = [
-  "Anon_HR_Lurker", "Quiet_Quitter_Sam", "Burnt_Toast_PM", "Slack_DM_Therapist",
-  "OKR_Ghost_Q4", "Cubicle_Confessor", "Layoff_Lottery_22", "Caffeinated_TL_88",
-  "TownHall_Survivor", "Notion_Doc_Hoarder", "Friday_Deploy_Diva", "Mute_Button_MVP",
-  "ExFAANG_Now_Indie", "Sprint_Goal_Skeptic", "WFH_Pajama_Lead", "Bench_Warmer_Bro",
-  "Pantry_Coffee_Critic", "Calendar_Tetris_Pro", "Rohan_Ex_Unicorn", "Aisha_From_BKC",
-  "Ahmed_From_DIFC", "Yuki_Shibuya_Dev", "Lena_Aus_Berlin", "Diya_From_Powai",
+  "Anon_DeliveryHead_82", "Stealth_ScrumMaster", "Anon_HR_Lurker_07", "Quiet_Quitter_Sam",
+  "Burnt_Toast_PM", "Slack_DM_Therapist", "OKR_Ghost_Q4", "Cubicle_Confessor_11",
+  "Layoff_Lottery_22", "Caffeinated_TL_88", "TownHall_Survivor", "Notion_Doc_Hoarder",
+  "Friday_Deploy_Diva", "Mute_Button_MVP", "ExFAANG_Now_Indie", "Sprint_Goal_Skeptic",
+  "WFH_Pajama_Lead_44", "Bench_Warmer_Bro", "Pantry_Coffee_Critic", "Calendar_Tetris_Pro",
+  "Anon_VP_Eng_91", "Stealth_ProductOwner", "Anon_Recruiter_X", "Shadow_Director_03",
 ];
 
-const ORIGINS = [
-  "Routed via Whitefield Cluster, BLR",
-  "IP matches Major Banking ISP proxy, BKC",
-  "Egress: Gurgaon Cyber Hub VPN exit",
-  "TOR relay → exit in Hyderabad HITEC",
-  "Corporate WiFi: Powai Tech Park",
-  "5G handoff near DLF Cyber City",
-  "Egress: Bellandur SEZ uplink",
-  "Mobile data — Mumbai Western Line",
-  "VPN exit: Singapore (SG-DC3)",
-  "ISP proxy — Dubai DIFC tower",
-  "Office subnet 10.42.x — Whitefield",
-  "Corp gateway: Big4 Consulting LLP",
+const VECTORS = [
+  "Whitefield Tech Park · Block-A",
+  "Manyata Cluster / Proxy Array Delta",
+  "Hinjawadi Phase-3 ISP Hub",
+  "BKC Banking Backbone · Tier-2",
+  "Gurgaon Cyber Hub · Egress 17",
+  "DLF Cyber City · 5G handoff",
+  "Powai Tech Park · Corp WiFi",
+  "Bellandur SEZ Uplink · LAN/8",
+  "HITEC City · TOR exit relay",
+  "DIFC Tower · ISP proxy (DXB)",
+  "SG-DC3 VPN exit · Singapore",
+  "Big4 LLP Gateway · Subnet 10.42",
+  "Embassy GolfLinks · Floor 4",
+  "Marathahalli Outer Ring · Mobile",
 ];
 
-const ACTIVITIES = [
-  "Inspected 3 manager burns",
-  "Logged 2 Pints validations",
-  "Tribunal-voted on 1 post",
-  "Lingered 47s on your dossier",
-  "Re-scanned your badge QR twice",
-  "Followed deep-link from /p/burns",
-  "Hovered LinkedIn but didn't click",
+const TELEMETRY = [
+  "Audited 3 Manager Roasts",
+  "Triggered Boss Panic Button 2×",
+  "Logged 1 Pints validation",
+  "Lingered 47s on dossier header",
+  "Re-scanned badge QR · twice",
+  "Followed deep-link /p/burns",
+  "Tribunal-voted on 1 confession",
+  "Hovered LinkedIn · no click",
   "Validated 4 of your drops",
   "Cheers'd you 3× this week",
-  "Opened your portfolio in new tab",
-  "Bounced off the pintbox",
-  "Saved your handle to clipboard",
+  "Opened portfolio in new tab",
+  "Saved handle to clipboard",
+  "Replayed townhall thread · 12s",
+  "Inspected pintbox · bounced",
 ];
 
 function hashSeed(s: string): number {
@@ -494,75 +498,108 @@ function rng(seed: number) {
     return s / 0xffffffff;
   };
 }
-function pick<T>(arr: T[], r: () => number): T {
-  return arr[Math.floor(r() * arr.length)];
-}
-function relTime(minsAgo: number): string {
-  if (minsAgo < 1) return "just now";
-  if (minsAgo < 60) return `${minsAgo}m ago`;
-  const h = Math.floor(minsAgo / 60);
-  if (h < 24) return `${h}h ago`;
-  const d = Math.floor(h / 24);
-  return `${d}d ago`;
+
+function formatCorpTimestamp(d: Date): string {
+  // Render in IST regardless of viewer timezone
+  const ist = new Date(d.getTime() + (5.5 * 60 - d.getTimezoneOffset()) * 60_000);
+  const hh = String(ist.getHours()).padStart(2, "0");
+  const mm = String(ist.getMinutes()).padStart(2, "0");
+  const now = new Date();
+  const nowIst = new Date(now.getTime() + (5.5 * 60 - now.getTimezoneOffset()) * 60_000);
+  const sameDay = ist.toDateString() === nowIst.toDateString();
+  const yest = new Date(nowIst); yest.setDate(yest.getDate() - 1);
+  const isYest = ist.toDateString() === yest.toDateString();
+  if (sameDay) return `Today, ${hh}:${mm} IST`;
+  if (isYest) return `Yesterday, ${hh}:${mm} IST`;
+  const day = String(ist.getDate()).padStart(2, "0");
+  const mon = ist.toLocaleString("en-US", { month: "short" });
+  return `${day} ${mon}, ${hh}:${mm} IST`;
 }
 
 function InterceptionLog({ seed, handle }: { seed: string; handle: string }) {
-  // Re-seed every ~15 min so the list feels alive without thrashing
+  // Re-seed every ~15 min so the feed feels alive without thrashing
   const bucket = Math.floor(Date.now() / (15 * 60 * 1000));
   const entries = useMemo(() => {
     const r = rng(hashSeed(`${seed}|${bucket}`));
+    const now = Date.now();
     return Array.from({ length: 5 }).map((_, i) => {
-      const handleIdx = Math.floor(r() * SPY_HANDLES.length);
-      const originIdx = Math.floor(r() * ORIGINS.length);
-      const actIdx = Math.floor(r() * ACTIVITIES.length);
-      const mins = Math.floor(r() * (i === 0 ? 12 : 60 * 18)) + (i === 0 ? 0 : 3);
+      const hIdx = Math.floor(r() * SPY_HANDLES.length);
+      const vIdx = Math.floor(r() * VECTORS.length);
+      const tIdx = Math.floor(r() * TELEMETRY.length);
+      // Spread across the last ~36h, with one very recent
+      const mins = i === 0
+        ? Math.floor(r() * 12) + 1
+        : Math.floor(r() * 60 * 30) + 20;
       return {
-        handle: SPY_HANDLES[handleIdx],
-        origin: ORIGINS[originIdx],
-        activity: ACTIVITIES[actIdx],
+        handle: SPY_HANDLES[hIdx],
+        vector: VECTORS[vIdx],
+        telemetry: TELEMETRY[tIdx],
+        when: new Date(now - mins * 60_000),
         mins,
       };
     }).sort((a, b) => a.mins - b.mins);
   }, [seed, bucket]);
 
   return (
-    <section className="mt-8 rounded-xl border border-amber-500/20 bg-zinc-900/40 p-5 sm:p-6">
-      <div className="flex items-center justify-between gap-3">
+    <section className="mt-8 overflow-hidden rounded-xl border border-amber-500/20 bg-zinc-900/40">
+      {/* Terminal title bar */}
+      <div className="flex items-center justify-between gap-3 border-b border-amber-500/15 bg-black/60 px-4 py-2.5">
         <h2 className="inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.25em] text-amber-400">
           <Eye className="h-3.5 w-3.5" />
-          System Security · Recent Profile Interceptions
+          System Security · Recent Reconnaissance Interceptions
         </h2>
         <span className="inline-flex items-center gap-1.5 text-[10px] uppercase tracking-widest text-emerald-400/80">
           <Radio className="h-3 w-3 animate-pulse" /> live
         </span>
       </div>
-      <p className="mt-1 text-[11px] text-zinc-500">
-        Last 5 anonymous entities that pinged your node{handle ? <> at <span className="text-amber-300">@{handle}</span></> : null}. Visible only to you.
-      </p>
 
-      <ul className="mt-4 divide-y divide-amber-500/10 rounded-md border border-amber-500/15 bg-black/40">
-        {entries.map((e, i) => (
-          <li key={i} className="grid gap-1 px-3 py-2.5 sm:grid-cols-[1fr,auto]">
-            <div className="min-w-0">
-              <div className="flex flex-wrap items-baseline gap-x-2">
-                <span className="truncate font-mono text-sm font-bold text-amber-200">{e.handle}</span>
-                <span className="text-[10px] uppercase tracking-widest text-amber-400/60">↳ intercepted</span>
-              </div>
-              <div className="mt-0.5 truncate text-[11px] text-zinc-400">
-                <span className="text-emerald-400/80">◉</span> {e.origin}
-              </div>
-              <div className="truncate text-[11px] text-zinc-500">→ {e.activity}</div>
-            </div>
-            <div className="text-right text-[10px] uppercase tracking-widest text-amber-400/60 sm:self-center">
-              {relTime(e.mins)}
-            </div>
-          </li>
-        ))}
-      </ul>
+      <div className="px-4 pt-3 sm:px-5">
+        <p className="text-[11px] text-zinc-500">
+          Last 5 anonymous nodes that pinged your badge
+          {handle ? <> · <span className="text-amber-300">@{handle}</span></> : null}
+          . Visible only to you. Public timeline stays fully anonymized.
+        </p>
+      </div>
 
-      <p className="mt-3 text-[10px] uppercase tracking-[0.2em] text-zinc-500">
-        ⚠ Simulated forensic feed · No real PII collected · Confessions remain unlinked
-      </p>
+      {/* Table */}
+      <div className="mt-3 overflow-x-auto px-2 pb-4 sm:px-3">
+        <table className="w-full min-w-[640px] border-collapse text-left font-mono text-[11px]">
+          <thead>
+            <tr className="text-[9px] uppercase tracking-[0.25em] text-amber-400/70">
+              <th className="border-b border-amber-500/15 px-3 py-2 font-semibold">#</th>
+              <th className="border-b border-amber-500/15 px-3 py-2 font-semibold">Interceptor</th>
+              <th className="border-b border-amber-500/15 px-3 py-2 font-semibold">Network Vector</th>
+              <th className="border-b border-amber-500/15 px-3 py-2 font-semibold">Telemetry Logged</th>
+              <th className="border-b border-amber-500/15 px-3 py-2 text-right font-semibold">Timestamp</th>
+            </tr>
+          </thead>
+          <tbody>
+            {entries.map((e, i) => (
+              <tr key={i} className="group transition hover:bg-amber-500/[0.04]">
+                <td className="border-b border-amber-500/10 px-3 py-2 text-amber-400/40 tabular-nums">
+                  {String(i + 1).padStart(2, "0")}
+                </td>
+                <td className="border-b border-amber-500/10 px-3 py-2">
+                  <span className="font-bold text-amber-200">{e.handle}</span>
+                </td>
+                <td className="border-b border-amber-500/10 px-3 py-2 text-zinc-400">
+                  <span className="text-emerald-400/70">◉ </span>{e.vector}
+                </td>
+                <td className="border-b border-amber-500/10 px-3 py-2 text-zinc-300">
+                  {e.telemetry}
+                </td>
+                <td className="border-b border-amber-500/10 px-3 py-2 text-right text-amber-400/70 tabular-nums">
+                  {formatCorpTimestamp(e.when)}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <div className="border-t border-amber-500/10 bg-black/40 px-4 py-2 text-[9px] uppercase tracking-[0.3em] text-amber-400/50">
+        ▮ Identity Firewall: ACTIVE · No real PII captured · Confessions never linked to badge ▮
+      </div>
     </section>
   );
 }
