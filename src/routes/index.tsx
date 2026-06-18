@@ -2100,20 +2100,29 @@ function Index() {
             </div>
 
             {user && (
-              <button
-                type="button"
-                onClick={async () => {
-                  await signOut();
-                  setProfileOpen(false);
-                  toast("Logged out. The bar is closing… for now. 🚪", {
-                    description: "Your session token has been cleared.",
-                  });
-                }}
-                className="mt-4 w-full inline-flex items-center justify-center gap-2 rounded-md px-3 py-2 text-[12px] font-medium text-muted-foreground hover:text-foreground border border-border/60 hover:border-border bg-card/40 hover:bg-muted/40 transition"
-              >
-                <LogOut className="size-3.5" />
-                Logout 🚪
-              </button>
+              <>
+                <Link
+                  to="/profile"
+                  onClick={() => setProfileOpen(false)}
+                  className="mt-4 w-full inline-flex items-center justify-center gap-2 rounded-md px-3 py-2 text-[12px] font-semibold text-amber-950 bg-amber-500 hover:bg-amber-400 transition"
+                >
+                  ✨ Edit my profile &amp; QR
+                </Link>
+                <button
+                  type="button"
+                  onClick={async () => {
+                    await signOut();
+                    setProfileOpen(false);
+                    toast("Logged out. The bar is closing… for now. 🚪", {
+                      description: "Your session token has been cleared.",
+                    });
+                  }}
+                  className="mt-2 w-full inline-flex items-center justify-center gap-2 rounded-md px-3 py-2 text-[12px] font-medium text-muted-foreground hover:text-foreground border border-border/60 hover:border-border bg-card/40 hover:bg-muted/40 transition"
+                >
+                  <LogOut className="size-3.5" />
+                  Logout 🚪
+                </button>
+              </>
             )}
           </div>
         </DialogContent>
