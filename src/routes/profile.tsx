@@ -186,6 +186,46 @@ function ProfileEditor() {
     a.click();
   }
 
+  async function shareBadge() {
+    if (!previewUrl) {
+      toast.error("Claim a handle first to get a shareable link");
+      return;
+    }
+    const shareData = {
+      title: `${form.display_name || "@" + form.handle} · DrinkedIn Spy ID`,
+      text: "Scan my Corporate Spy ID Badge on DrinkedIn 🍻",
+      url: previewUrl,
+    };
+    try {
+      if (typeof navigator !== "undefined" && (navigator as any).share) {
+        await (navigator as any).share(shareData);
+        return;
+      }
+    } catch {
+      // user cancelled or share unsupported — fall through to copy
+    }
+    try {
+      await navigator.clipboard.writeText(previewUrl);
+      toast.success("Public badge link copied");
+    } catch {
+      toast.error("Couldn't share — copy failed");
+    }
+  }
+
+  async function copyLink() {
+    if (!previewUrl) {
+      toast.error("Claim a handle first");
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(previewUrl);
+      toast.success("Link copied");
+    } catch {
+      toast.error("Copy failed");
+    }
+  }
+
+
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100 font-mono">
       {/* CRT scanlines */}
