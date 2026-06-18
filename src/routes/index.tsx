@@ -90,6 +90,8 @@ import GlobalEscapeSimulator from "@/components/GlobalEscapeSimulator";
 import TrendingEscapeClusters from "@/components/TrendingEscapeClusters";
 import { WorkplaceSelectorCard } from "@/components/WorkplaceSelectorCard";
 import { VisitorTeaser } from "@/components/VisitorTeaser";
+import { FirstRunCoachmark } from "@/components/FirstRunCoachmark";
+import { LandingHero } from "@/components/LandingHero";
 import { ProximityAdDispatcher, dealCoord } from "@/components/ProximityAdDispatcher";
 import { useMerchantDeals, type MerchantDeal } from "@/lib/useMerchantDeals";
 import DesperationPoll from "@/components/DesperationPoll";
@@ -1659,6 +1661,7 @@ function Index() {
       </header>
 
       <EmergencyDealOverlay />
+      <FirstRunCoachmark />
 
 
       {/* Simplified single-column layout — feed-first */}
@@ -1679,10 +1682,20 @@ function Index() {
                 />
               )}
 
-              <DossierHero />
-
-              {/* HIGH-CURIOSITY HOOK: who decoded your dossier — only for signed-in users */}
-              {user && <VisitorTeaser userId={user.id} />}
+              {user ? (
+                <>
+                  <DossierHero />
+                  {/* HIGH-CURIOSITY HOOK: who decoded your dossier */}
+                  <VisitorTeaser userId={user.id} />
+                </>
+              ) : (
+                <LandingHero
+                  onSignIn={(reason) => {
+                    setAuthReason(reason);
+                    setAuthModalOpen(true);
+                  }}
+                />
+              )}
 
               <PresenceBar />
 
@@ -2353,11 +2366,13 @@ function NavItem({
   return (
     <button
       onClick={onClick}
-      className={`relative flex flex-col items-center justify-center px-3 py-1 min-w-[64px] text-[11px] transition-colors ${
+      className={`relative flex flex-col items-center justify-center px-2 sm:px-3 py-1 min-w-[44px] sm:min-w-[64px] text-[11px] transition-colors ${
         active
           ? "text-foreground border-b-2 border-primary -mb-px"
           : "text-muted-foreground hover:text-foreground"
       }`}
+      aria-label={label}
+      title={label}
     >
       <div className="relative">
         {icon}
@@ -2370,10 +2385,11 @@ function NavItem({
           </span>
         ) : null}
       </div>
-      <span className="mt-0.5 block">{label}</span>
+      <span className="mt-0.5 hidden sm:block">{label}</span>
     </button>
   );
 }
+
 
 function ComposerChip({ icon, label }: { icon: React.ReactNode; label: string }) {
   return (
