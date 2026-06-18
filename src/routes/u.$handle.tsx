@@ -1,6 +1,6 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { QRCodeCanvas } from "qrcode.react";
-import { ArrowLeft, Linkedin, Github, Twitter, Globe, Share2, Download } from "lucide-react";
+import { ArrowLeft, Linkedin, Github, Twitter, Globe, Share2, Download, Copy } from "lucide-react";
 import { toast } from "sonner";
 import { getPublicProfile, type PublicProfile } from "@/lib/profiles.functions";
 import { PublicTestimonials } from "@/components/PublicTestimonials";
