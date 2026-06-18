@@ -62,6 +62,45 @@ function PostActions({
     }
   }, [postId]);
 
+  // Live fluctuation: simulate other anonymous users validating / buying
+  // pints on background posts so counters tick up organically and the feed
+  // feels like a busy room. User-owned posts are excluded so the user sees
+  // their own real engagement only.
+  useEffect(() => {
+    if (isUserOwned) return;
+    let cancelled = false;
+    let timer: number | undefined;
+    const schedule = () => {
+      const delay = 4_000 + Math.floor(Math.random() * 9_000); // 4–13s
+      timer = window.setTimeout(tick, delay);
+    };
+    const tick = () => {
+      if (cancelled) return;
+      if (Math.random() < 0.55) { schedule(); return; }
+      if (Math.random() < 0.78) {
+        const bump = randInt(1, 3);
+        setValidated((n) => {
+          const next = n + bump;
+          setPints((pp) => { writeCounts(postId, next, pp); return pp; });
+          return next;
+        });
+        setVPulse(true);
+        window.setTimeout(() => setVPulse(false), 220);
+      } else {
+        setPints((n) => {
+          const next = n + 1;
+          setValidated((vv) => { writeCounts(postId, vv, next); return vv; });
+          return next;
+        });
+        setPPulse(true);
+        window.setTimeout(() => setPPulse(false), 220);
+      }
+      schedule();
+    };
+    schedule();
+    return () => { cancelled = true; if (timer) window.clearTimeout(timer); };
+  }, [postId, isUserOwned]);
+
   function onValidate() {
     setValidated((n) => {
       const next = n + 1;
@@ -392,6 +431,35 @@ const FEED_VIBES = [
   "Reading my own code from 6 months ago and wondering who hurt me.",
   "Standup ran 47 minutes. The actual blocker was 'we don't know what we're building.' Nobody said it.",
   "Currently at a cafe in Indiranagar pretending to take a customer call. It's a Duolingo session. 🦉",
+  "Manager wants 'data-driven storytelling.' I want a 4-day workweek. Neither of us is winning.",
+  "Anniversary review: 0.7% hike, 1 new responsibility, 0 new headcount. Math is mathing. 📉",
+  "Got pulled into a 'quick alignment' that turned into a 90-min political knife fight. No notes shared.",
+  "WFH ban announced via Slack at 11:47 PM on a Sunday. Bold strategy, Cotton.",
+  "Skip-skip-level pinged me directly. The org chart trembled. My calendar wept.",
+  "Just shipped a feature nobody asked for because the VP saw a competitor demo on LinkedIn. 🫡",
+  "Hackathon prize: a hoodie and the privilege of maintaining the winning project forever. 🎁",
+  "Got 'feedback' that I'm 'too direct.' Translation: I asked a question in the all-hands.",
+  "PIP'd a teammate's PR. Now I'm in the PIP. Beautiful symmetry.",
+  "Founder told us 'we're a family' and then fired engineering on a Zoom call with no audio. 🎭",
+  "Sales sold a feature that doesn't exist. Eng has 6 weeks. The customer has lawyers. 🧑‍⚖️",
+  "Recruiter promised 'flat hierarchy.' My grandboss has a grandboss. The hierarchy is fractal.",
+  "Just got asked to 'just make it pop' for the 4th time this sprint. The design system is a hostage.",
+  "L4 → L5 promo doc deadline got pushed because my manager forgot to write the calibration deck. Cool cool cool.",
+  "WFH Friday means I can finally interview at 11am without lying about a 'dentist appointment.' 🦷",
+  "PM just asked engineering to 'roughly estimate' a project. Translation: deadline already exists.",
+  "The new RTO policy has more pages than our company handbook. Priorities.",
+  "Got a calendar invite called '[CONFIDENTIAL] Quick chat.' Updated my resume preemptively. 📝",
+  "Demo day. Half the team is on caffeine, the other half is on Xanax. The product is on fire. 🔥",
+  "Lead asked me to mentor a new joiner who has 4 more years of experience than me. Make it make sense.",
+  "Just sat through 'AI Strategy Town Hall.' We're sprinkling GPT on the homepage and calling it transformation.",
+  "Slack DM from CEO: 'got a sec?' I have not had a sec since 2021. ⏳",
+  "Quarterly OKR review: we hit 30%, the deck says 110%. Storytelling is the real product.",
+  "Office party canceled because 'budget.' Same week the leadership team went to Goa for 'offsite.' 🏝️",
+  "Free office snacks downgraded from almonds to digestive biscuits. The runway is short, friends.",
+  "New stack ranking system just dropped. Two managers already started writing each other's review.",
+  "My ticket was reassigned 4 times in one sprint. It's basically a Pixar movie at this point. 🎬",
+  "Got asked to 'own the customer journey end-to-end.' I am one person. With one Figma license.",
+  "Standup blocker: my will to live. Standing item, every day this sprint.",
 ];
 
 const FEED_PERSONAS = [
@@ -411,6 +479,47 @@ const FEED_PERSONAS = [
   { name: "Anon_Flipkart_PM", headline: "Bangalore · OKR Negotiator" },
   { name: "Anon_Zomato_Eng", headline: "Gurgaon · Hotfix Specialist" },
   { name: "Stealth_SaaS_Founder", headline: "Remote · Refactoring Fugitive" },
+  { name: "Anon_Swiggy_PM", headline: "Bangalore · Surge-Pricing Apologist" },
+  { name: "Anon_PayTM_Dev", headline: "Noida · Compliance Hostage" },
+  { name: "Anon_Razorpay_SDE", headline: "Bangalore · Webhook Whisperer" },
+  { name: "Anon_Oyo_Lead", headline: "Gurgaon · Pivot Survivor" },
+  { name: "Anon_Byjus_Sales", headline: "Bangalore · Cold-Call Veteran" },
+  { name: "Anon_Adobe_PM", headline: "Noida · Subscription Defender" },
+  { name: "Anon_Salesforce_Eng", headline: "Hyderabad · Trailhead Refugee" },
+  { name: "Anon_Oracle_DBA", headline: "Bangalore · License Hostage" },
+  { name: "Anon_SAP_Consultant", headline: "Gurgaon · Transport Layer Survivor" },
+  { name: "Anon_IBM_Architect", headline: "Pune · Mainframe Archaeologist" },
+  { name: "Anon_Cisco_NetEng", headline: "Bangalore · VPN Firefighter" },
+  { name: "Anon_Dell_PreSales", headline: "Bangalore · Quota Hostage" },
+  { name: "Anon_Goldman_Quant", headline: "Bangalore · Excel Macro Slave" },
+  { name: "Anon_JPMC_Dev", headline: "Mumbai · Compliance Hostage" },
+  { name: "Anon_MorganStanley_PM", headline: "Bangalore · Bonus-Day Counter" },
+  { name: "Anon_Citi_Analyst", headline: "Mumbai · Risk-Model Refugee" },
+  { name: "Anon_HSBC_Ops", headline: "Hyderabad · KYC Survivor" },
+  { name: "Anon_Barclays_Java", headline: "Pune · Spring Boot Veteran" },
+  { name: "Anon_Walmart_Eng", headline: "Bangalore · Inventory API Hostage" },
+  { name: "Anon_Amazon_SDE2", headline: "Hyderabad · PIP Survivor" },
+  { name: "Anon_Microsoft_PM", headline: "Hyderabad · Teams Roadmap Negotiator" },
+  { name: "Anon_Google_TPM", headline: "Bangalore · OKR Translator" },
+  { name: "Anon_Uber_Eng", headline: "Bangalore · Surge-Pricing Apologist" },
+  { name: "Anon_Netflix_TLM", headline: "Remote · 'Keeper Test' Anxious" },
+  { name: "Anon_Atlassian_Dev", headline: "Bangalore · Jira on Jira" },
+  { name: "Anon_Shopify_Eng", headline: "Remote · Async Meeting Apologist" },
+  { name: "Anon_Cred_PM", headline: "Bangalore · Burn-Rate Anxious" },
+  { name: "Anon_Meesho_Eng", headline: "Bangalore · Seller-Catalog Firefighter" },
+  { name: "Anon_PhonePe_SDE", headline: "Bangalore · UPI Latency Survivor" },
+  { name: "Anon_Freshworks_PM", headline: "Chennai · CSAT Score Hostage" },
+  { name: "Anon_Zoho_Eng", headline: "Chennai · 'No-VC' Lifer" },
+  { name: "Anon_Nykaa_Eng", headline: "Mumbai · Festive Sale Refugee" },
+  { name: "Anon_BigBasket_PM", headline: "Bangalore · Slot-Capacity Negotiator" },
+  { name: "Anon_DBS_Dev", headline: "Singapore · Saturday Release Veteran" },
+  { name: "Anon_Grab_Eng", headline: "Singapore · Pivot Survivor" },
+  { name: "Anon_Shopee_PM", headline: "Singapore · Roadmap Renegotiator" },
+  { name: "Dubai_Careem_TL", headline: "Dubai · Ramadan Sprint Survivor" },
+  { name: "Anon_Klarna_Risk", headline: "Stockholm · Fraud-Model Refugee" },
+  { name: "Anon_Revolut_Ops", headline: "London · 'Move Fast' Casualty" },
+  { name: "Anon_N26_Dev", headline: "Berlin · KYC Backlog Hostage" },
+  { name: "Anon_Spotify_BE", headline: "Stockholm · Squad Model Skeptic" },
 ];
 
 function makeSimPost(idx: number, msg?: string): FeedPost {
@@ -516,7 +625,7 @@ export default function PostsFeed() {
   const [posts, setPosts] = useState<FeedPost[] | null>(null);
   const [simPosts, setSimPosts] = useState<FeedPost[]>(() => {
     const seeds = makeGlobalSeedPosts();
-    const fresh = Array.from({ length: 6 }, (_, i) => makeSimPost(i));
+    const fresh = Array.from({ length: 14 }, (_, i) => makeSimPost(i));
     return [...fresh, ...seeds];
   });
   const [replies, setReplies] = useState<Record<string, SimReply[]>>({});
@@ -567,14 +676,27 @@ export default function PostsFeed() {
   // every ~25s so the timeline always feels like users are actively posting.
   useEffect(() => {
     if (panicActive) return;
-    const interval = window.setInterval(() => {
+    let cancelled = false;
+    let timer: number | undefined;
+    const tick = () => {
+      if (cancelled) return;
+      // Occasionally drop 1–3 posts at once so the feed feels bursty,
+      // like a real room where multiple people chime in.
+      const burst = Math.random() < 0.25 ? randInt(2, 3) : 1;
       setSimPosts((prev) => {
         const seeds = prev.filter((p) => p.id.startsWith("global-seed-"));
         const others = prev.filter((p) => !p.id.startsWith("global-seed-"));
-        return [makeSimPost(others.length), ...others, ...seeds].slice(0, 30);
+        const fresh = Array.from({ length: burst }, (_, i) => makeSimPost(others.length + i));
+        return [...fresh, ...others, ...seeds].slice(0, 50);
       });
-    }, 25_000);
-    return () => window.clearInterval(interval);
+      schedule();
+    };
+    const schedule = () => {
+      const delay = 6_000 + Math.floor(Math.random() * 9_000); // 6–15s
+      timer = window.setTimeout(tick, delay);
+    };
+    schedule();
+    return () => { cancelled = true; if (timer) window.clearTimeout(timer); };
   }, [panicActive]);
 
 
