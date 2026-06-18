@@ -92,6 +92,7 @@ import { WorkplaceSelectorCard } from "@/components/WorkplaceSelectorCard";
 import { VisitorTeaser } from "@/components/VisitorTeaser";
 import { FirstRunCoachmark } from "@/components/FirstRunCoachmark";
 import { LandingHero } from "@/components/LandingHero";
+import { QrScannerModal } from "@/components/QrScannerModal";
 import { ProximityAdDispatcher, dealCoord } from "@/components/ProximityAdDispatcher";
 import { useMerchantDeals, type MerchantDeal } from "@/lib/useMerchantDeals";
 import DesperationPoll from "@/components/DesperationPoll";
@@ -393,6 +394,7 @@ function Index() {
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authReason, setAuthReason] = useState<string | undefined>(undefined);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [scannerOpen, setScannerOpen] = useState(false);
   function requireAuth(reason?: string): boolean {
     if (user) return true;
     setAuthReason(reason);
