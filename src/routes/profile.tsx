@@ -444,36 +444,57 @@ function KV({ k, v, ok }: { k: string; v: string; ok?: boolean }) {
 // ---------- Interception Log (private, mock-but-stable per user) ----------
 
 const SPY_HANDLES = [
-  "Anon_DeliveryHead_82", "Stealth_ScrumMaster", "Anon_HR_Lurker_07", "Quiet_Quitter_Sam",
-  "Burnt_Toast_PM", "Slack_DM_Therapist", "OKR_Ghost_Q4", "Cubicle_Confessor_11",
-  "Layoff_Lottery_22", "Caffeinated_TL_88", "TownHall_Survivor", "Notion_Doc_Hoarder",
-  "Friday_Deploy_Diva", "Mute_Button_MVP", "ExFAANG_Now_Indie", "Sprint_Goal_Skeptic",
-  "WFH_Pajama_Lead_44", "Bench_Warmer_Bro", "Pantry_Coffee_Critic", "Calendar_Tetris_Pro",
-  "Anon_VP_Eng_91", "Stealth_ProductOwner", "Anon_Recruiter_X", "Shadow_Director_03",
+  "Anon_VP_Compliance",
+  "Stealth_ScrumMaster",
+  "Incognito_HR_Lead",
+  "Deploys_On_Friday",
+  "Legacy_Stack_Survivor",
+  "Corporate_Audit_Node",
+  "Anon_DeliveryHead_82",
+  "Shadow_Director_03",
+  "Burnt_Toast_PM",
+  "Slack_DM_Therapist",
+  "OKR_Ghost_Q4",
+  "Cubicle_Confessor_11",
+  "Layoff_Lottery_22",
+  "Caffeinated_TL_88",
+  "TownHall_Survivor",
+  "Notion_Doc_Hoarder",
+  "Friday_Deploy_Diva",
+  "Mute_Button_MVP",
+  "ExFAANG_Now_Indie",
+  "Sprint_Goal_Skeptic",
+  "WFH_Pajama_Lead_44",
+  "Bench_Warmer_Bro",
+  "Pantry_Coffee_Critic",
+  "Calendar_Tetris_Pro",
 ];
 
 const VECTORS = [
-  "Whitefield Tech Park · Block-A",
-  "Manyata Cluster / Proxy Array Delta",
-  "Hinjawadi Phase-3 ISP Hub",
-  "BKC Banking Backbone · Tier-2",
-  "Gurgaon Cyber Hub · Egress 17",
-  "DLF Cyber City · 5G handoff",
-  "Powai Tech Park · Corp WiFi",
-  "Bellandur SEZ Uplink · LAN/8",
-  "HITEC City · TOR exit relay",
-  "DIFC Tower · ISP proxy (DXB)",
-  "SG-DC3 VPN exit · Singapore",
-  "Big4 LLP Gateway · Subnet 10.42",
-  "Embassy GolfLinks · Floor 4",
-  "Marathahalli Outer Ring · Mobile",
+  "Silicon Valley (Google HQ Proxy / Mountain View)",
+  "London Financial District (Barclays Net / Canary Wharf)",
+  "Manyata Tech Park (Cisco Proxy / Bangalore)",
+  "Seattle Cluster (AWS East Proxy / South Lake Union)",
+  "Berlin Tech Hub (Delivery Hero Network)",
+  "Tokyo Midtown (Sony Corporate Array)",
+  "Dublin Docklands (Meta EU Egress / Grand Canal)",
+  "Singapore (DBS Marina Bay / SG-DC3 VPN exit)",
+  "Toronto MaRS (Shopify Edge / King St W)",
+  "Sydney CBD (Atlassian Network / George St)",
+  "Dubai DIFC (HSBC Tower Proxy / Tier-2)",
+  "Tel Aviv Sarona (Wix Egress / Yigal Allon)",
+  "Stockholm Kista (Spotify Cluster / Färögatan)",
+  "São Paulo Faria Lima (Nubank Backbone)",
+  "Austin Domain (Indeed Proxy / North Burnet)",
+  "Hinjawadi Phase-3 ISP Hub (Pune)",
 ];
 
 const TELEMETRY = [
-  "Audited 3 Manager Roasts",
-  "Triggered Boss Panic Button 2×",
-  "Logged 1 Pints validation",
-  "Lingered 47s on dossier header",
+  "Audited 4 Manager Roasts",
+  "Inspected Global Escape Route",
+  "Triggered Boss Panic Button 3×",
+  "Logged 2 Pints validations",
+  "Attempted encrypted data wipe",
   "Re-scanned badge QR · twice",
   "Followed deep-link /p/burns",
   "Tribunal-voted on 1 confession",
@@ -483,7 +504,7 @@ const TELEMETRY = [
   "Opened portfolio in new tab",
   "Saved handle to clipboard",
   "Replayed townhall thread · 12s",
-  "Inspected pintbox · bounced",
+  "Lingered 47s on dossier header",
 ];
 
 function hashSeed(s: string): number {
@@ -500,20 +521,13 @@ function rng(seed: number) {
 }
 
 function formatCorpTimestamp(d: Date): string {
-  // Render in IST regardless of viewer timezone
-  const ist = new Date(d.getTime() + (5.5 * 60 - d.getTimezoneOffset()) * 60_000);
-  const hh = String(ist.getHours()).padStart(2, "0");
-  const mm = String(ist.getMinutes()).padStart(2, "0");
-  const now = new Date();
-  const nowIst = new Date(now.getTime() + (5.5 * 60 - now.getTimezoneOffset()) * 60_000);
-  const sameDay = ist.toDateString() === nowIst.toDateString();
-  const yest = new Date(nowIst); yest.setDate(yest.getDate() - 1);
-  const isYest = ist.toDateString() === yest.toDateString();
-  if (sameDay) return `Today, ${hh}:${mm} IST`;
-  if (isYest) return `Yesterday, ${hh}:${mm} IST`;
-  const day = String(ist.getDate()).padStart(2, "0");
-  const mon = ist.toLocaleString("en-US", { month: "short" });
-  return `${day} ${mon}, ${hh}:${mm} IST`;
+  // Relative tracking design — works for any viewer timezone
+  const mins = Math.max(1, Math.round((Date.now() - d.getTime()) / 60_000));
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  const days = Math.floor(hrs / 24);
+  return `${days}d ago`;
 }
 
 function InterceptionLog({ seed, handle }: { seed: string; handle: string }) {
