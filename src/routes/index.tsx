@@ -85,7 +85,11 @@ import { useGeolocation } from "@/hooks/useGeolocation";
 import { getOrCreateSessionId, haversineKm } from "@/lib/geo";
 import { LiveWorkspaceRadar, type ProximityFilter } from "@/components/LiveWorkspaceRadar";
 import WhistleblowerSafeHouse from "@/components/WhistleblowerSafeHouse";
-// Lazy-loaded secondary modules now live behind a drawer to keep the main feed clean.
+import GlobalTimezoneMatrix from "@/components/GlobalTimezoneMatrix";
+import MidnightLeakDigest from "@/components/MidnightLeakDigest";
+import GlobalEscapeSimulator from "@/components/GlobalEscapeSimulator";
+import TrendingEscapeClusters from "@/components/TrendingEscapeClusters";
+// Home-view secondary modules now live behind a lazy drawer to keep the main feed clean.
 import SecondaryToolsDrawer from "@/components/SecondaryToolsDrawer";
 import { WorkplaceSelectorCard } from "@/components/WorkplaceSelectorCard";
 import { VisitorTeaser } from "@/components/VisitorTeaser";
