@@ -1669,7 +1669,16 @@ function Index() {
       </header>
 
       <EmergencyDealOverlay />
-      <FirstRunCoachmark />
+      <FirstRunCoachmark
+        onClaim={() => {
+          if (user) {
+            navigate({ to: "/profile" });
+          } else {
+            setAuthReason("Sign in to claim your Spy Badge.");
+            setAuthModalOpen(true);
+          }
+        }}
+      />
       <QrScannerModal open={scannerOpen} onClose={() => setScannerOpen(false)} />
 
 
