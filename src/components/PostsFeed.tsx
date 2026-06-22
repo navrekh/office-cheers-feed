@@ -864,8 +864,26 @@ export default function PostsFeed() {
           No posts yet — be the first to drop a confession ☝️
         </p>
       ) : (
-        <ul className="space-y-4 max-h-[640px] overflow-y-auto pr-1">
-          {merged.map((p) => (
+        <ul className={`space-y-4 max-h-[640px] overflow-y-auto pr-1 ${!user ? "relative" : ""}`}>
+          {!user && merged.length > 3 && (
+            <li className="sticky bottom-0 z-20 -mb-2 list-none pointer-events-none">
+              <div className="pointer-events-auto rounded-xl border border-amber-400/40 bg-gradient-to-t from-neutral-950 via-neutral-950/95 to-neutral-950/70 backdrop-blur-md p-4 text-center shadow-[0_-20px_60px_rgba(0,0,0,0.8)]">
+                <p className="text-[11px] font-bold uppercase tracking-wider text-amber-300 mb-1">
+                  🔒 {merged.length - 3} more confessions tonight
+                </p>
+                <p className="text-xs text-neutral-400 mb-3">
+                  Sign in (10 sec, no work email) to unlock the rest, post your own, and see who decoded your dossier.
+                </p>
+                <button
+                  onClick={() => window.dispatchEvent(new CustomEvent("drinkedin:open-auth", { detail: { reason: "Unlock the full breakroom feed." } }))}
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-amber-400 px-4 py-2 text-xs font-black uppercase tracking-wider text-neutral-950 hover:bg-amber-300 transition"
+                >
+                  Unlock the feed →
+                </button>
+              </div>
+            </li>
+          )}
+          {(user ? merged : merged.slice(0, 3)).map((p) => (
             <li
               key={p.id}
               id={`post-${p.id}`}

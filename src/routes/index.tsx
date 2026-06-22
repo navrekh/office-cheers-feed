@@ -435,6 +435,51 @@ function Index() {
     }
   }, [user, profile?.role, navigate]);
 
+  // Global "open auth modal" trigger — used by feed unlock CTA and other components
+  useEffect(() => {
+    const onOpen = (e: Event) => {
+      const reason = (e as CustomEvent).detail?.reason as string | undefined;
+      if (user) return;
+      setAuthReason(reason);
+      setAuthModalOpen(true);
+    };
+    window.addEventListener("drinkedin:open-auth", onOpen);
+    return () => window.removeEventListener("drinkedin:open-auth", onOpen);
+  }, [user]);
+
+  // Post-signup hook: if a pending_username was reserved on the landing page,
+  // confirm it + nudge first confession (highest activation lever).
+  const firstPostNudgeRef = useRef(false);
+  useEffect(() => {
+    if (!user || firstPostNudgeRef.current) return;
+    let pendingName: string | null = null;
+    try { pendingName = sessionStorage.getItem("pending_username"); } catch {}
+    const nudgeKey = `drinkedin.firstPostNudged.${user.id}`;
+    let alreadyNudged = false;
+    try { alreadyNudged = !!localStorage.getItem(nudgeKey); } catch {}
+    if (!pendingName && alreadyNudged) return;
+    firstPostNudgeRef.current = true;
+    try { sessionStorage.removeItem("pending_username"); } catch {}
+    try { localStorage.setItem(nudgeKey, "1"); } catch {}
+    setTimeout(() => {
+      toast.success(
+        pendingName ? `drinkedin.me/${pendingName} is yours 🔒` : "You're in. Welcome to the breakroom 🍻",
+        {
+          description: "Drop your first anonymous confession to activate your badge — your manager will never see it.",
+          duration: 9000,
+          action: {
+            label: "Drop one →",
+            onClick: () => {
+              const composer = document.querySelector('textarea, [contenteditable="true"]') as HTMLElement | null;
+              composer?.scrollIntoView({ behavior: "smooth", block: "center" });
+              setTimeout(() => composer?.focus(), 400);
+            },
+          },
+        }
+      );
+    }, 800);
+  }, [user]);
+
   // Auto-fill composer alias from the signed-in user's email prefix (never the full email)
   const userAlias = user ? emailPrefix(user.email) : null;
   const userCodename = user ? corporateCodename(user.email) : null;
