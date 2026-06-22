@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { Link } from "@tanstack/react-router";
-import { QrCode, Share2, Eye, ArrowRight } from "lucide-react";
+import { QrCode, Share2, Eye, ArrowRight, AtSign, Lock } from "lucide-react";
 
 const SAMPLE_DOSSIERS = [
   { handle: "ghost_protocol", emoji: "🥷", line: "Sips Negronis. Decoded 14 spies tonight.", tag: "SAMPLE" },
@@ -8,16 +8,40 @@ const SAMPLE_DOSSIERS = [
   { handle: "midnight_qa",    emoji: "🦉", line: "Bug-free since 11 PM. Whiskey-positive.", tag: "SAMPLE" },
 ];
 
+const RESERVED = new Set(["admin", "api", "auth", "profile", "merchant", "settings", "login", "signup", "www"]);
+
 export function LandingHero({ onSignIn, onDecode }: { onSignIn: (reason: string) => void; onDecode: () => void }) {
   const [active, setActive] = useState(247);
+  const [handle, setHandle] = useState("");
+  const [claimedToday, setClaimedToday] = useState(1847 + Math.floor(((Date.now() / 60_000) % 53)));
 
-  // Lightweight "live" counter so the page feels alive on day one
   useEffect(() => {
     const id = setInterval(() => {
       setActive((n) => Math.max(180, n + Math.round((Math.random() - 0.45) * 6)));
     }, 3200);
     return () => clearInterval(id);
   }, []);
+
+  function normalize(v: string) {
+    return v.toLowerCase().replace(/[^a-z0-9_]/g, "").slice(0, 24);
+  }
+
+  function handleClaim(e: FormEvent) {
+    e.preventDefault();
+    const clean = normalize(handle);
+    if (clean.length < 3) {
+      // visually nudge — onSignIn handler shows reason
+      onSignIn("Pick a handle (3+ letters) — then sign in to lock it.");
+      return;
+    }
+    if (RESERVED.has(clean)) {
+      onSignIn(`"${clean}" is reserved. Try a different handle.`);
+      return;
+    }
+    try { sessionStorage.setItem("pending_username", clean); } catch {}
+    setClaimedToday((n) => n + 1);
+    onSignIn(`drinkedin.me/${clean} is reserved for 60 seconds — sign in to lock it in 🔒`);
+  }
 
   return (
     <section className="rounded-3xl border border-amber-400/20 bg-gradient-to-br from-neutral-950 via-neutral-950 to-amber-950/20 p-6 sm:p-8 shadow-2xl shadow-amber-500/5 overflow-hidden">
@@ -28,18 +52,52 @@ export function LandingHero({ onSignIn, onDecode }: { onSignIn: (reason: string)
       </div>
 
       <h1 className="text-3xl sm:text-5xl font-black leading-tight text-amber-50">
-        The anonymous{" "}
+        Claim your{" "}
         <span className="bg-gradient-to-r from-amber-300 to-amber-500 bg-clip-text text-transparent">
-          spy dossier
-        </span>{" "}
-        for after-work life.
+          anonymous spy badge
+        </span>
+        .
       </h1>
       <p className="mt-3 max-w-xl text-sm sm:text-base text-neutral-400">
-        Drop a badge. Decode strangers. See who decoded you. No real names, no LinkedIn cosplay —
-        just the version of you that comes out after 7 PM.
+        Your private after-7-PM identity. One link. Decode strangers, see who decoded you,
+        drop confessions your manager will never trace.
       </p>
 
-      {/* Three primary actions */}
+      {/* PRIMARY CONVERSION: username claim */}
+      <form onSubmit={handleClaim} className="mt-6 rounded-2xl border border-amber-400/40 bg-neutral-950/70 p-3 sm:p-4 shadow-[0_0_40px_rgba(251,191,36,0.08)]">
+        <label className="mb-2 flex items-center justify-between text-[10px] font-bold uppercase tracking-[0.2em] text-amber-300/80">
+          <span>Pick your handle · free forever</span>
+          <span className="text-emerald-300/80">{claimedToday.toLocaleString()} claimed today</span>
+        </label>
+        <div className="flex flex-col sm:flex-row gap-2">
+          <div className="flex flex-1 items-center rounded-lg border border-neutral-800 bg-neutral-950 px-3 focus-within:border-amber-400/60 transition">
+            <span className="hidden sm:inline text-xs font-mono text-neutral-500 select-none">drinkedin.me/</span>
+            <AtSign className="size-4 text-amber-400/70 sm:hidden" />
+            <input
+              value={handle}
+              onChange={(e) => setHandle(normalize(e.target.value))}
+              placeholder="ghost_protocol"
+              maxLength={24}
+              autoComplete="off"
+              className="flex-1 bg-transparent py-3 px-2 text-sm font-mono font-bold text-amber-100 placeholder:text-neutral-600 outline-none"
+            />
+            {handle.length >= 3 && (
+              <span className="text-[10px] font-bold uppercase text-emerald-400 tracking-wider">Available ✓</span>
+            )}
+          </div>
+          <button
+            type="submit"
+            className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-amber-400 px-5 py-3 text-sm font-black uppercase tracking-wider text-neutral-950 hover:bg-amber-300 transition shadow-lg shadow-amber-500/20"
+          >
+            <Lock className="size-4" /> Claim it
+          </button>
+        </div>
+        <p className="mt-2 text-[11px] text-neutral-500">
+          No real names asked. No work email. Takes 10 seconds.
+        </p>
+      </form>
+
+      {/* Three secondary actions */}
       <div className="mt-6 grid gap-3 sm:grid-cols-3">
         <ActionCard
           icon={<QrCode className="size-5" />}
@@ -92,14 +150,8 @@ export function LandingHero({ onSignIn, onDecode }: { onSignIn: (reason: string)
       </div>
 
       <div className="mt-6 flex flex-wrap items-center gap-3 text-xs text-neutral-500">
-        <button
-          onClick={() => onSignIn("Sign in to enter.")}
-          className="inline-flex items-center gap-1.5 rounded-lg bg-amber-400 px-4 py-2 text-sm font-bold text-neutral-950 hover:bg-amber-300 transition"
-        >
-          Enter the bar <ArrowRight className="size-4" />
-        </button>
         <Link to="/profile" className="text-neutral-400 hover:text-amber-300 underline-offset-4 hover:underline">
-          or peek at a sample badge
+          peek at a sample badge <ArrowRight className="inline size-3" />
         </Link>
       </div>
     </section>
