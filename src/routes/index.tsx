@@ -449,6 +449,16 @@ function Index() {
     return () => window.removeEventListener("drinkedin:open-auth", onOpen);
   }, [user]);
 
+  // Feed cards dispatch this when their 💬 comment-counter chip is tapped.
+  useEffect(() => {
+    const onOpenComments = (e: Event) => {
+      const postId = (e as CustomEvent).detail?.postId as string | undefined;
+      if (postId) setActiveCommentPostId(postId);
+    };
+    window.addEventListener("drinkedin:open-comments", onOpenComments);
+    return () => window.removeEventListener("drinkedin:open-comments", onOpenComments);
+  }, []);
+
   // Post-signup hook: if a pending_username was reserved on the landing page,
   // confirm it + nudge first confession (highest activation lever).
   const firstPostNudgeRef = useRef(false);
