@@ -102,7 +102,14 @@ export function FirstRunCoachmark({ onClaim }: { onClaim?: () => void } = {}) {
             Skip
           </button>
           <div className="flex items-center gap-2">
-            {step.href ? (
+            {step.href && onClaim ? (
+              <button
+                onClick={() => { dismiss(); onClaim(); }}
+                className="rounded-lg bg-amber-400 px-4 py-2 text-sm font-bold text-neutral-950 hover:bg-amber-300 transition"
+              >
+                {step.cta} →
+              </button>
+            ) : step.href ? (
               <Link
                 to={step.href}
                 onClick={dismiss}
