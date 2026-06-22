@@ -541,9 +541,13 @@ export default function DesperationPoll({ onSignUp }: { onSignUp: (reason?: stri
     chill: 0,
   });
 
-  // Pick a random poll on mount (client-only to avoid SSR hydration drift).
+  // Pick a NEW poll every day (deterministic by date so everyone sees the
+  // same "Poll of the Day" — rotates automatically at local midnight).
   useEffect(() => {
-    const picked = POLLS[Math.floor(Math.random() * POLLS.length)];
+    const now = new Date();
+    const dayKey = `${now.getFullYear()}-${now.getMonth()}-${now.getDate()}`;
+    const dayIndex = hash(dayKey) % POLLS.length;
+    const picked = POLLS[dayIndex];
     setPoll(picked);
     setCounts(simulatedCounts(picked.id, hub));
     if (typeof window !== "undefined") {
