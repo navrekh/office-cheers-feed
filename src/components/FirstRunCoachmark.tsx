@@ -28,7 +28,7 @@ const STEPS = [
   },
 ] as const;
 
-export function FirstRunCoachmark() {
+export function FirstRunCoachmark({ onClaim }: { onClaim?: () => void } = {}) {
   const [open, setOpen] = useState(false);
   const [i, setI] = useState(0);
 
@@ -43,19 +43,35 @@ export function FirstRunCoachmark() {
     setOpen(false);
   }
 
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") dismiss(); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open]);
+
   if (!open) return null;
   const step = STEPS[i];
   const last = i === STEPS.length - 1;
 
   return (
-    <div className="fixed inset-0 z-[120] grid place-items-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-300">
-      <div className="relative w-full max-w-md rounded-2xl border border-amber-400/30 bg-gradient-to-br from-neutral-950 to-neutral-900 p-6 shadow-2xl shadow-amber-500/10">
+    <div
+      className="fixed inset-0 z-[120] grid place-items-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-300"
+      onClick={dismiss}
+      role="dialog"
+      aria-modal="true"
+    >
+      <div
+        className="relative w-full max-w-md rounded-2xl border border-amber-400/30 bg-gradient-to-br from-neutral-950 to-neutral-900 p-6 pt-12 shadow-2xl shadow-amber-500/10"
+        onClick={(e) => e.stopPropagation()}
+      >
         <button
           onClick={dismiss}
-          aria-label="Skip onboarding"
-          className="absolute right-3 top-3 grid size-8 place-items-center rounded-full text-neutral-500 hover:bg-neutral-800 hover:text-neutral-200"
+          aria-label="Close"
+          type="button"
+          className="absolute right-3 top-3 z-10 grid size-10 place-items-center rounded-full border border-neutral-700 bg-neutral-900/95 text-neutral-200 hover:bg-amber-400 hover:text-neutral-950 hover:border-amber-400 transition shadow-lg"
         >
-          <X className="size-4" />
+          <X className="size-5" />
         </button>
 
         <div className="mb-4 flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em] text-amber-400/80">
