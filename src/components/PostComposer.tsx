@@ -17,6 +17,22 @@ const MENTION_POOL = [
   "JiraGhost", "SlackLurker", "MidweekMartyr", "TaproomScout",
 ];
 
+// Rotating, relatable prompts so the composer never feels like a blank wall.
+const COMPOSER_PROMPTS = [
+  "What corporate buzzword did you hear in your sync today?",
+  "Drop the 4:45 PM 'quick chat' calendar invite title here…",
+  "Paste that passive-aggressive Slack from your manager.",
+  "What's the most unhinged thing you've done to look busy?",
+  "Today's stand-up update, but make it brutally honest.",
+  "Describe your skip-level in 5 words. No HR filter.",
+  "What did your VP actually mean by 'circle back'?",
+  "Confess a side-hustle your day job knows nothing about.",
+  "What's the worst feedback you've ever been gaslit with?",
+  "Drop the OKR that made you laugh out loud this quarter.",
+  "Which meeting could've been an email? Bonus: name names.",
+  "What's the cringiest 'we're a family' moment you've survived?",
+];
+
 const MAX_IMAGE = 8 * 1024 * 1024;   //  8 MB
 const MAX_VIDEO = 25 * 1024 * 1024;  // 25 MB
 const MAX_BODY = 600;
@@ -55,6 +71,16 @@ export default function PostComposer({
   const [popover, setPopover] = useState<Suggestion[] | null>(null);
   const [popoverTrigger, setPopoverTrigger] = useState<"#" | "@" | null>(null);
   const [focused, setFocused] = useState(false);
+  const [promptIdx, setPromptIdx] = useState(() => Math.floor(Math.random() * COMPOSER_PROMPTS.length));
+  // Rotate the placeholder every 4.5s while the textarea is empty + unfocused
+  // so a fresh prompt is waiting whenever a new lurker glances at the composer.
+  useEffect(() => {
+    if (focused || body) return;
+    const id = window.setInterval(() => {
+      setPromptIdx((i) => (i + 1) % COMPOSER_PROMPTS.length);
+    }, 4500);
+    return () => window.clearInterval(id);
+  }, [focused, body]);
   const taRef = useRef<HTMLTextAreaElement>(null);
   const imgInputRef = useRef<HTMLInputElement>(null);
   const vidInputRef = useRef<HTMLInputElement>(null);
@@ -234,7 +260,7 @@ export default function PostComposer({
           onFocus={() => setFocused(true)}
           onBlur={() => { if (!body && !mood) setFocused(false); }}
           rows={focused || body ? 3 : 2}
-          placeholder="Type your confession… use #TCS, #Capgemini, or @SprintZombie to tag."
+          placeholder={COMPOSER_PROMPTS[promptIdx]}
           className="w-full resize-none rounded-xl border border-white/10 bg-zinc-950/60 px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/60 focus:border-amber-400/40 focus:outline-none focus:ring-1 focus:ring-amber-400/20 leading-snug whitespace-normal break-words"
         />
 
