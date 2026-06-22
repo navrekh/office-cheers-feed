@@ -1792,7 +1792,7 @@ function Index() {
                     LIVE · ANON
                   </span>
                 </header>
-                <div className="p-3 sm:p-4">
+                <div id="feed" className="p-3 sm:p-4 scroll-mt-20">
                   <ErrorBoundary label="Feed" message="Feed is reconnecting…">
                     <PostsFeed />
                   </ErrorBoundary>
