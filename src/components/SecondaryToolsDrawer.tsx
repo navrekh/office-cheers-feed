@@ -1,4 +1,4 @@
-import { lazy, Suspense, useState } from "react";
+import { lazy, Suspense, useState, type ReactNode } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { Loader2, Wrench, ChevronRight } from "lucide-react";
@@ -23,7 +23,7 @@ type Tool = {
   eyebrow: string;
   title: string;
   blurb: string;
-  render: () => JSX.Element;
+  render: () => ReactNode;
 };
 
 const TOOLS: Tool[] = [
