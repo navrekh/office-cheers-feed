@@ -1815,34 +1815,7 @@ function Index() {
 
 
 
-              {/* 🎭 Roast generator */}
-              <HomeSection
-                eyebrow="🎭 INSTANT REVENGE"
-                title="Roast My Manager"
-                blurb="Type their name. Receive a surgical, HR-unsafe roast."
-              >
-                <ErrorBoundary label="RoastEngine"><RoastMyManager /></ErrorBoundary>
-              </HomeSection>
-
-              {/* 🤥 Excuse fabricator */}
-              <HomeSection
-                eyebrow="🤥 ESCAPE HATCH"
-                title="Excuse Fabricator"
-                blurb="One-click alibi for skipping the 4:45 PM 'quick sync'."
-              >
-                <ErrorBoundary label="ExcuseFabricator"><ExcuseFabricator /></ErrorBoundary>
-              </HomeSection>
-
-              {/* 🔥 Rumor bracket */}
-              <HomeSection
-                eyebrow="🔥 OFFICE GOSSIP"
-                title="Rumor Mill Bracket"
-                blurb="March-madness, but every team is a workplace conspiracy."
-              >
-                <ErrorBoundary label="RumorMill"><RumorMillBracket /></ErrorBoundary>
-              </HomeSection>
-
-              {/* 📡 Radar */}
+              {/* 📡 Radar — kept inline (location-aware, feed-adjacent) */}
               <HomeSection
                 eyebrow="📡 LIVE RADAR"
                 title="Who's escaping work near you"
@@ -1877,18 +1850,7 @@ function Index() {
                 </ErrorBoundary>
               </HomeSection>
 
-              {/* 🤫 Whistleblower */}
-              <HomeSection
-                eyebrow="🤫 STRICTLY OFF THE RECORD"
-                title="Whistleblower Safe-House"
-                blurb="Drop the leak. No names, no IPs, no Slack screenshots traced back."
-              >
-                <ErrorBoundary label="SafeHouse" message="Safe-house reloading…">
-                  <WhistleblowerSafeHouse />
-                </ErrorBoundary>
-              </HomeSection>
-
-              {/* 💬 Rally + chat */}
+              {/* 💬 Rally + chat — kept inline (real-time engagement) */}
               <HomeSection
                 eyebrow="💬 BREAKROOM CHAT"
                 title="Rally & Local Shoutbox"
@@ -1903,53 +1865,11 @@ function Index() {
                 </ErrorBoundary>
               </HomeSection>
 
-              {/* 📈 Suffering stats */}
-              <HomeSection
-                eyebrow="📈 SUFFERING STATS"
-                title="Burnout Telemetry & Leaderboards"
-                blurb="Live rankings of corporate decay. Are you winning?"
-              >
-                <ErrorBoundary label="BurnoutTelemetry"><BurnoutTelemetry /></ErrorBoundary>
-                <div className="h-3" />
-                <BurnoutLeaderboard />
-                <div className="h-3" />
-                <ErrorBoundary label="LayoffLeaderboard"><LayoffLeaderboard /></ErrorBoundary>
-              </HomeSection>
+              {/* 🧰 Everything else — lazy-loaded drawer */}
+              <ErrorBoundary label="ToolsDrawer" message="Toolbelt is reconnecting…">
+                <SecondaryToolsDrawer />
+              </ErrorBoundary>
 
-              {/* 🗳️ Drama polls */}
-              <HomeSection
-                eyebrow="🗳️ MORE BALLOTS"
-                title="Office Drama Polls"
-                blurb="Settle the petty wars. Anonymously, of course."
-              >
-                <ErrorBoundary label="OfficeDramaPolls"><OfficeDramaPolls /></ErrorBoundary>
-              </HomeSection>
-
-              {/* 🌐 Global feel */}
-              <HomeSection
-                eyebrow="🌐 EVERYONE'S COOKED"
-                title="Around the world right now"
-                blurb="Timezones, leaks, escapes, and trending clusters of burnout."
-              >
-                <ErrorBoundary label="GlobalTimezoneMatrix"><GlobalTimezoneMatrix /></ErrorBoundary>
-                <div className="h-3" />
-                <ErrorBoundary label="MidnightLeakDigest"><MidnightLeakDigest /></ErrorBoundary>
-                <div className="h-3" />
-                <ErrorBoundary label="GlobalEscapeSimulator"><GlobalEscapeSimulator /></ErrorBoundary>
-                <div className="h-3" />
-                <ErrorBoundary label="Clusters" message="Leaderboard offline — refresh to retry.">
-                  <TrendingEscapeClusters />
-                </ErrorBoundary>
-              </HomeSection>
-
-              {/* 📨 Feedback */}
-              <HomeSection
-                eyebrow="📨 ANON DROPBOX"
-                title="Anonymous Feedback Terminal"
-                blurb="Tell us what's broken. Or what's funny. We can't see who you are."
-              >
-                <ErrorBoundary label="FeedbackTerminal"><AnonymousFeedbackTerminal /></ErrorBoundary>
-              </HomeSection>
 
               {/* Poll modal stays globally mounted */}
               <DesperationPollModal
