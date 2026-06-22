@@ -883,7 +883,7 @@ export default function PostsFeed() {
               </div>
             </li>
           )}
-          {merged.map((p) => (
+          {(user ? merged : merged.slice(0, 3)).map((p) => (
             <li
               key={p.id}
               id={`post-${p.id}`}
