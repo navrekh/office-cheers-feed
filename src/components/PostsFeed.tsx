@@ -36,12 +36,14 @@ function PostActions({
   bodyText,
   isUserOwned = false,
   replyCount = 0,
+  commentCount,
 }: {
   postId: string;
   authorName: string;
   bodyText: string;
   isUserOwned?: boolean;
   replyCount?: number;
+  commentCount?: number | null;
 }) {
   const seed = useMemo(
     () => (isUserOwned ? { v: 0, p: 0, c: 0 } : { v: randInt(14, 85), p: randInt(3, 22), c: randInt(4, 38) }),
@@ -225,7 +227,7 @@ function PostActions({
         className="px-3 py-1 rounded-full text-[11px] font-bold border border-cyan-400/30 bg-cyan-500/[0.06] text-cyan-200 hover:bg-cyan-500/[0.14] hover:border-cyan-300/60 transition-all duration-200"
         aria-label="Open replies"
       >
-        💬 {seed.c + replyCount} replies
+        💬 {(typeof commentCount === "number" ? commentCount : seed.c) + replyCount} replies
       </button>
       <button
         type="button"
@@ -979,7 +981,7 @@ export default function PostsFeed() {
                     </div>
                   ))}
 
-                  <PostActions postId={p.id} authorName={p.author_name} bodyText={p.body_text} isUserOwned={p.isUserOwned} replyCount={(replies[p.id] ?? []).length} />
+                  <PostActions postId={p.id} authorName={p.author_name} bodyText={p.body_text} isUserOwned={p.isUserOwned} replyCount={(replies[p.id] ?? []).length} commentCount={(p as { comment_count?: number | null }).comment_count ?? null} />
                 </div>
               </div>
             </li>
