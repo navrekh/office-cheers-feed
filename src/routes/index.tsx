@@ -57,9 +57,7 @@ import {
   Sparkles,
   
   MapPin,
-  UserPlus,
-  Check,
-  Clock,
+  MapPin,
   Rocket,
   Volume2,
   VolumeX,
@@ -69,7 +67,6 @@ import {
   ExternalLink,
   Navigation,
   ShieldCheck,
-  Users as UsersIcon,
   QrCode,
 } from "lucide-react";
 import {
@@ -96,8 +93,7 @@ import { VisitorTeaser } from "@/components/VisitorTeaser";
 import { FirstRunCoachmark } from "@/components/FirstRunCoachmark";
 import { LandingHero } from "@/components/LandingHero";
 import { QrScannerModal } from "@/components/QrScannerModal";
-import { ProximityAdDispatcher, dealCoord } from "@/components/ProximityAdDispatcher";
-import { useMerchantDeals, type MerchantDeal } from "@/lib/useMerchantDeals";
+import { ProximityAdDispatcher } from "@/components/ProximityAdDispatcher";
 import DesperationPoll from "@/components/DesperationPoll";
 import DesperationPollModal from "@/components/DesperationPollModal";
 import BroetryMemeCard from "@/components/BroetryMemeCard";
