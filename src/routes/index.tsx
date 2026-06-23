@@ -85,7 +85,8 @@ import MidnightLeakDigest from "@/components/MidnightLeakDigest";
 import GlobalEscapeSimulator from "@/components/GlobalEscapeSimulator";
 import TrendingEscapeClusters from "@/components/TrendingEscapeClusters";
 // Home-view secondary modules now live behind a lazy drawer to keep the main feed clean.
-import MoreToolsDrawer from "@/components/MoreToolsDrawer";
+// Lazy-imported so the drawer shell + its 13 sub-tools stay out of the initial bundle.
+const MoreToolsDrawer = lazy(() => import("@/components/MoreToolsDrawer"));
 import { WorkplaceSelectorCard } from "@/components/WorkplaceSelectorCard";
 import { VisitorTeaser } from "@/components/VisitorTeaser";
 import { FirstRunCoachmark } from "@/components/FirstRunCoachmark";
@@ -1785,7 +1786,9 @@ function Index() {
 
               {/* 🧰 Everything else — lazy-loaded drawer */}
               <ErrorBoundary label="ToolsDrawer" message="Toolbelt is reconnecting…">
-                <MoreToolsDrawer />
+                <Suspense fallback={null}>
+                  <MoreToolsDrawer />
+                </Suspense>
               </ErrorBoundary>
 
 
