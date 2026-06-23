@@ -241,8 +241,11 @@ function Index() {
   // because location pings compromise the absolute-anonymity promise.
   // `geoCoords` is kept as a stable null so legacy call sites
   // (`geoCoords?.latitude ?? null`, `if (geoCoords)` guards) stay valid.
-  const geoCoords: { latitude: number; longitude: number } | null = null;
-  const geoStatus = "idle" as const;
+  // eslint-disable-next-line prefer-const
+  let geoCoords: { latitude: number; longitude: number } | null = null;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const geoStatus: "idle" | "granted" | "denied" | "prompt" = "idle";
+  void geoCoords; void geoStatus;
 
   const [posts, setPosts] = useState<Post[]>([]);
   const [commentsByPost, setCommentsByPost] = useState<Record<string, Comment[]>>({});
