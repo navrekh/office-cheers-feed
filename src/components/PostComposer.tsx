@@ -19,6 +19,9 @@ const MENTION_POOL = [
 
 // Rotating, relatable prompts so the composer never feels like a blank wall.
 const COMPOSER_PROMPTS = [
+  "Drop your first confession — it's 100% anonymous.",
+  "What's the latest rumor floating around the water cooler?",
+  "Fabricate an excuse or drop a hot take here...",
   "What corporate buzzword did you hear in your sync today?",
   "Drop the 4:45 PM 'quick chat' calendar invite title here…",
   "Paste that passive-aggressive Slack from your manager.",
