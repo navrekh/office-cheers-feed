@@ -31,6 +31,17 @@ const COMPOSER_PROMPTS = [
   "Drop the OKR that made you laugh out loud this quarter.",
   "Which meeting could've been an email? Bonus: name names.",
   "What's the cringiest 'we're a family' moment you've survived?",
+  "What did your manager say today that made you sigh out loud?",
+  "Translate your latest performance review into plain English.",
+  "Which Slack emoji is doing the most emotional labor for you?",
+  "Rate today's all-hands. Show your work.",
+  "What's the most unhinged Jira ticket you've ever closed?",
+  "Confess: how many tabs are open right now, really?",
+  "What 'urgent' thing have you been ignoring since Monday?",
+  "Describe your PIP-era energy in one sentence.",
+  "What's the dumbest thing leadership called 'strategic' this week?",
+  "Which coworker would survive 3 days in a real office? Why?",
+  "What did you Google to look smart in your last meeting?",
 ];
 
 const MAX_IMAGE = 8 * 1024 * 1024;   //  8 MB

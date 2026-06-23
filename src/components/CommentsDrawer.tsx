@@ -34,6 +34,18 @@ function initials(name: string) {
   return name.split(" ").map((n) => n[0]).slice(0, 2).join("").toUpperCase() || "??";
 }
 
+// Rotating reply prompts so the drawer never opens to a dead-air input.
+const REPLY_PROMPTS = [
+  "Drop an office reply anonymously... 🤫",
+  "Co-sign, roast, or escalate — your call.",
+  "What would you Slack back if HR wasn't watching?",
+  "Hot take? Spicy take? Lukewarm take? Send it.",
+  "Validate the suffering. Or pile on.",
+  "Reply with the meme this deserves.",
+  "What's the petty version of this story?",
+  "Drop the receipt your manager doesn't know exists.",
+];
+
 export default function CommentsDrawer({
   open,
   onOpenChange,
@@ -46,12 +58,23 @@ export default function CommentsDrawer({
 }: Props) {
   const [text, setText] = useState("");
   const [sending, setSending] = useState(false);
+  const [promptIdx, setPromptIdx] = useState(() => Math.floor(Math.random() * REPLY_PROMPTS.length));
   const listRef = useRef<HTMLDivElement | null>(null);
 
   // Reset composer when post changes
   useEffect(() => {
     setText("");
   }, [postId]);
+
+  // Rotate placeholder every 4.5s while the input is empty so a fresh
+  // nudge is always waiting for the lurker hovering over the drawer.
+  useEffect(() => {
+    if (!open || text) return;
+    const id = window.setInterval(() => {
+      setPromptIdx((i) => (i + 1) % REPLY_PROMPTS.length);
+    }, 4500);
+    return () => window.clearInterval(id);
+  }, [open, text]);
 
   // Auto-scroll on new comment
   const last = comments[comments.length - 1]?.id;
@@ -110,7 +133,7 @@ export default function CommentsDrawer({
               <Input
                 value={text}
                 onChange={(e) => setText(e.target.value)}
-                placeholder="Drop an office reply anonymously... 🤫"
+                placeholder={REPLY_PROMPTS[promptIdx]}
                 disabled={!postId || sending}
                 className="h-9 rounded-full bg-background pr-10 text-sm"
               />
