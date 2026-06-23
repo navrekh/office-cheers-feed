@@ -236,16 +236,11 @@ type PendingDraft = {
 
 function Index() {
   const t = useT();
-  // Geolocation is intentionally disabled — DrinkedIn never prompts for the
-  // user's physical position. The Live Workspace Radar was removed (June 2026)
+  // Geolocation is intentionally disabled (June 2026). DrinkedIn never prompts
+  // for the user's physical position — the Live Workspace Radar was removed
   // because location pings compromise the absolute-anonymity promise.
-  // `geoCoords` is kept as a stable null so legacy call sites
-  // (`geoCoords?.latitude ?? null`, `if (geoCoords)` guards) stay valid.
-  // eslint-disable-next-line prefer-const
-  let geoCoords: { latitude: number; longitude: number } | null = null;
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const geoStatus: "idle" | "granted" | "denied" | "prompt" = "idle";
-  void geoCoords; void geoStatus;
+  // Components downstream that accept an `origin` (ProximityAdDispatcher,
+  // NotificationsDrawer) receive `null` and degrade to non-geo modes.
 
   const [posts, setPosts] = useState<Post[]>([]);
   const [commentsByPost, setCommentsByPost] = useState<Record<string, Comment[]>>({});
