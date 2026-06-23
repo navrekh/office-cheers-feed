@@ -1093,7 +1093,7 @@ function Index() {
       }));
       toast.error("Couldn't post your reply. Try again in a sec.");
     }
-  }, [user, geoCoords?.latitude, geoCoords?.longitude]);
+  }, [user]);
 
   const reportPost = useCallback(async (post: Post) => {
     if (isSimulatedPost(post) || post.post_type === "merchant" || post.id.startsWith("merchant-")) {
@@ -1937,14 +1937,14 @@ function Index() {
       </Dialog>
 
 
-      <ProximityAdDispatcher origin={geoCoords} userId={user?.id ?? null} />
+      <ProximityAdDispatcher origin={null} userId={user?.id ?? null} />
 
       <NotificationsDrawer
         open={notifOpen}
         onOpenChange={setNotifOpen}
         signedIn={!!user}
         myPosts={myPosts}
-        origin={geoCoords}
+        origin={null}
         city={selectedCity}
         postReplies={postReplyNotifs}
         onPostReplyClick={(postId) => {
