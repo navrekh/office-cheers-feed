@@ -57,7 +57,6 @@ import {
   Sparkles,
   
   MapPin,
-  MapPin,
   Rocket,
   Volume2,
   VolumeX,
