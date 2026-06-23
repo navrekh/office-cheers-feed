@@ -75,7 +75,6 @@ import {
   subscribeCity,
   mapsDirectionsUrl,
   type CityKey,
-  type Merchant,
 } from "@/lib/cityStore";
 import { useGeolocation } from "@/hooks/useGeolocation";
 import { getOrCreateSessionId, haversineKm } from "@/lib/geo";
