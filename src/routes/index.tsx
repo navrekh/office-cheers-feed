@@ -1734,41 +1734,6 @@ function Index() {
 
 
 
-              {/* 📡 Radar — kept inline (location-aware, feed-adjacent) */}
-              <HomeSection
-                eyebrow="📡 LIVE RADAR"
-                title="Who's escaping work near you"
-                blurb="Anonymous pings from fellow corporate refugees within a few blocks."
-              >
-                <ErrorBoundary label="Radar" message="Radar recalibrating…">
-                  <div className="rounded-2xl p-3 bg-neutral-950/80 border border-neutral-900/60">
-                    <LiveWorkspaceRadar
-                      origin={geoCoords}
-                      geoStatus={geoStatus}
-                      posts={posts.map((p) => ({
-                        id: p.id,
-                        latitude: (p as any).latitude ?? null,
-                        longitude: (p as any).longitude ?? null,
-                        created_at: p.created_at,
-                        author_name: p.author_name,
-                      }))}
-                      merchants={(MERCHANTS[selectedCity] ?? []).map((m) => ({
-                        id: m.id,
-                        name: m.name,
-                        area: m.area,
-                      }))}
-                      proximity={proximity}
-                      onProximityChange={(p) => {
-                        setProximity(p);
-                        import("@/lib/analytics").then((m) =>
-                          m.trackEngagement("radar_proximity_change", { proximity: p })
-                        );
-                      }}
-                    />
-                  </div>
-                </ErrorBoundary>
-              </HomeSection>
-
               {/* 💬 Rally + chat — kept inline (real-time engagement) */}
               <HomeSection
                 eyebrow="💬 BREAKROOM CHAT"
@@ -1817,48 +1782,6 @@ function Index() {
               <ErrorBoundary label="Shoutbox" message="Chat is reconnecting…">
                 <LocalShoutbox requireAuth={requireAuth} variant="hero" />
               </ErrorBoundary>
-            </SubPageShell>
-          )}
-
-          {view === "radar" && (
-            <SubPageShell title="📡 Live Workspace Radar" subtitle="Who's escaping nearby right now" onBack={() => setView("home")}>
-              <ErrorBoundary label="Radar" message="Radar recalibrating…">
-                <div className="rounded-2xl p-3 bg-neutral-950/80 border border-neutral-900/60">
-                  <LiveWorkspaceRadar
-                    origin={geoCoords}
-                    geoStatus={geoStatus}
-                    posts={posts.map((p) => ({
-                      id: p.id,
-                      latitude: (p as any).latitude ?? null,
-                      longitude: (p as any).longitude ?? null,
-                      created_at: p.created_at,
-                      author_name: p.author_name,
-                    }))}
-                    merchants={(MERCHANTS[selectedCity] ?? []).map((m) => ({
-                      id: m.id,
-                      name: m.name,
-                      area: m.area,
-                    }))}
-                    proximity={proximity}
-                    onProximityChange={(p) => {
-                      setProximity(p);
-                      import("@/lib/analytics").then((m) =>
-                        m.trackEngagement("radar_proximity_change", { proximity: p })
-                      );
-                    }}
-                  />
-                </div>
-              </ErrorBoundary>
-              <ErrorBoundary label="SafeHouse" message="Safe-house reloading…">
-                <WhistleblowerSafeHouse />
-              </ErrorBoundary>
-              <ErrorBoundary label="GlobalTimezoneMatrix"><GlobalTimezoneMatrix /></ErrorBoundary>
-              <ErrorBoundary label="MidnightLeakDigest"><MidnightLeakDigest /></ErrorBoundary>
-              <ErrorBoundary label="GlobalEscapeSimulator"><GlobalEscapeSimulator /></ErrorBoundary>
-              <ErrorBoundary label="Clusters" message="Leaderboard offline — refresh to retry.">
-                <TrendingEscapeClusters />
-              </ErrorBoundary>
-              <BurnoutLeaderboard />
             </SubPageShell>
           )}
 
