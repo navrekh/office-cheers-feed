@@ -76,9 +76,9 @@ import {
   mapsDirectionsUrl,
   type CityKey,
 } from "@/lib/cityStore";
-import { useGeolocation } from "@/hooks/useGeolocation";
-import { getOrCreateSessionId, haversineKm } from "@/lib/geo";
-import { LiveWorkspaceRadar, type ProximityFilter } from "@/components/LiveWorkspaceRadar";
+// Geolocation removed (June 2026) — DrinkedIn is anonymity-first and never
+// prompts for the user's physical position. The Live Workspace Radar is gone.
+import { getOrCreateSessionId } from "@/lib/geo";
 import WhistleblowerSafeHouse from "@/components/WhistleblowerSafeHouse";
 import GlobalTimezoneMatrix from "@/components/GlobalTimezoneMatrix";
 import MidnightLeakDigest from "@/components/MidnightLeakDigest";
@@ -220,7 +220,7 @@ export const Route = createFileRoute("/")({
 
 
 
-type ViewKey = "home" | "barhop" | "pubs" | "messages" | "notifications" | "rally" | "radar" | "polls" | "tools";
+type ViewKey = "home" | "barhop" | "pubs" | "messages" | "notifications" | "rally" | "polls" | "tools";
 
 const PENDING_DRAFT_KEY = "drinkedin.pendingDraft.v1";
 type PendingDraft = {
@@ -236,11 +236,11 @@ type PendingDraft = {
 
 function Index() {
   const t = useT();
-  // Live geolocation (jittered). Coords here are ALREADY fuzzed by ±50–100 m
-  // before they leave the useGeolocation hook — precise lat/lng never reach
-  // the database or any other client. Declared first so all submit/insert
-  // callbacks below can close over it.
-  const { coords: geoCoords, status: geoStatus } = useGeolocation();
+  // Geolocation is intentionally disabled (June 2026). DrinkedIn never prompts
+  // for the user's physical position — the Live Workspace Radar was removed
+  // because location pings compromise the absolute-anonymity promise.
+  // Components downstream that accept an `origin` (ProximityAdDispatcher,
+  // NotificationsDrawer) receive `null` and degrade to non-geo modes.
 
   const [posts, setPosts] = useState<Post[]>([]);
   const [commentsByPost, setCommentsByPost] = useState<Record<string, Comment[]>>({});
@@ -282,7 +282,7 @@ function Index() {
   const [liveViewers, setLiveViewers] = useState<number | null>(null);
   const [lastExcuseImpressions, setLastExcuseImpressions] = useState<number | null>(null);
   const [sortMode, setSortMode] = useState<"recent" | "top" | "mine" | "tribunal">("recent");
-  const [proximity, setProximity] = useState<ProximityFilter>("city");
+  // (proximity filter removed with the Live Workspace Radar — DrinkedIn is anonymity-first.)
   const [notifOpen, setNotifOpen] = useState(false);
   const [notifUnread, setNotifUnread] = useState<number>(0);
   const [notifPulseKey, setNotifPulseKey] = useState<number>(0);
@@ -980,25 +980,15 @@ function Index() {
         user_id: user?.id ?? null,
         post_type: "user",
         attached_visual_url: attachedUrl ?? null,
-        latitude: geoCoords?.latitude ?? null,
-        longitude: geoCoords?.longitude ?? null,
+        latitude: null,
+        longitude: null,
       })
       .select()
       .single();
     if (!error && data) {
       recordPostTimestamp();
       try { localStorage.removeItem(PENDING_DRAFT_KEY); } catch {}
-      // Fire a presence beacon so the radar lights up for nearby colleagues.
-      if (geoCoords) {
-        void (supabase as any).from("check_ins").insert({
-          session_id: getOrCreateSessionId(),
-          user_id: user?.id ?? null,
-          activity: "posting",
-          city: selectedCity,
-          latitude: geoCoords.latitude,
-          longitude: geoCoords.longitude,
-        });
-      }
+      // (Presence beacon removed — geolocation is disabled platform-wide.)
       setPosts((prev) => (prev.some((p) => p.id === data.id) ? prev : [data as Post, ...prev]));
       setBody("");
       setGifUrl(null);
@@ -1083,8 +1073,8 @@ function Index() {
           author_name: alias,
           author_alias: alias,
           user_id: user.id,
-          latitude: geoCoords?.latitude ?? null,
-          longitude: geoCoords?.longitude ?? null,
+          latitude: null,
+          longitude: null,
         })
         .select()
         .single();
@@ -1103,7 +1093,7 @@ function Index() {
       }));
       toast.error("Couldn't post your reply. Try again in a sec.");
     }
-  }, [user, geoCoords?.latitude, geoCoords?.longitude]);
+  }, [user]);
 
   const reportPost = useCallback(async (post: Post) => {
     if (isSimulatedPost(post) || post.post_type === "merchant" || post.id.startsWith("merchant-")) {
@@ -1222,20 +1212,9 @@ function Index() {
     return subscribeCity(setSelectedCityState);
   }, []);
 
-  // Drop a "browsing_deals" presence beacon whenever we first acquire a fix.
-  useEffect(() => {
-    if (!geoCoords) return;
-    const sessionId = getOrCreateSessionId();
-    void (supabase as any).from("check_ins").insert({
-      session_id: sessionId,
-      user_id: user?.id ?? null,
-      activity: "browsing_deals",
-      city: selectedCity,
-      latitude: geoCoords.latitude,
-      longitude: geoCoords.longitude,
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [geoCoords?.latitude, geoCoords?.longitude]);
+  // (Radar presence beacon removed — DrinkedIn no longer tracks user coordinates.)
+
+
 
   // Sort posts by selected mode, inject merchant ads at fixed slots, pin highlighted
   // Employee of the Day — most-cheered real user post in the last 24h.
@@ -1268,43 +1247,14 @@ function Index() {
         .filter((p) => (p as any).user_id === user.id && !p.is_hidden)
         .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
     }
-    const proximityKm = proximity === "tech-park" ? 0.5 : proximity === "lunch-dash" ? 2 : Infinity;
-    const visible = [...posts].filter((p) => {
-      if (p.is_hidden) return false;
-      if (proximityKm !== Infinity) {
-        if (!geoCoords) return true; // no fix yet → don't hide everything
-        const d = haversineKm(geoCoords, {
-          latitude: (p as any).latitude,
-          longitude: (p as any).longitude,
-        });
-        if (!isFinite(d) || d > proximityKm) return false;
-      }
-      return true;
-    });
+    const visible = [...posts].filter((p) => !p.is_hidden);
     const sorted = visible.sort((a, b) => {
       if (sortMode === "top") return b.cheers_count - a.cheers_count;
-      // "recent" mode: when we have a live geo fix, elevate physically-close
-      // posts (within 5 km) above the rest. Recency still wins inside each band.
-      if (sortMode === "recent" && geoCoords) {
-        const da = haversineKm(geoCoords, {
-          latitude: (a as any).latitude,
-          longitude: (a as any).longitude,
-        });
-        const db = haversineKm(geoCoords, {
-          latitude: (b as any).latitude,
-          longitude: (b as any).longitude,
-        });
-        const aNear = isFinite(da) && da <= 5 ? 0 : 1;
-        const bNear = isFinite(db) && db <= 5 ? 0 : 1;
-        if (aNear !== bNear) return aNear - bNear;
-      }
       return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
     });
 
     // Inject merchant ads for the active city at slots 2 and 6.
-    // Skip ads when the user has narrowed the spatial filter — strict
-    // proximity modes should show only nearby colleague chatter.
-    const merchants = proximityKm === Infinity ? (MERCHANTS[selectedCity] ?? []) : [];
+    const merchants = MERCHANTS[selectedCity] ?? [];
     const withAds: Post[] = [...sorted];
     if (merchants[0]) withAds.splice(Math.min(2, withAds.length), 0, merchantToPost(merchants[0], selectedCity));
     if (merchants[1]) withAds.splice(Math.min(6, withAds.length), 0, merchantToPost(merchants[1], selectedCity));
@@ -1320,7 +1270,7 @@ function Index() {
     const idx = withPin.findIndex((p) => p.id === highlightedId);
     if (idx < 0) return withPin;
     return [withPin[idx], ...withPin.slice(0, idx), ...withPin.slice(idx + 1)];
-  }, [posts, highlightedId, sortMode, selectedCity, user, employeeOfDay, geoCoords?.latitude, geoCoords?.longitude, proximity]);
+  }, [posts, highlightedId, sortMode, selectedCity, user, employeeOfDay]);
 
   // List of the signed-in user's own posts, used by the Tickets accordion.
   const myPosts = useMemo(() => {
@@ -1734,41 +1684,6 @@ function Index() {
 
 
 
-              {/* 📡 Radar — kept inline (location-aware, feed-adjacent) */}
-              <HomeSection
-                eyebrow="📡 LIVE RADAR"
-                title="Who's escaping work near you"
-                blurb="Anonymous pings from fellow corporate refugees within a few blocks."
-              >
-                <ErrorBoundary label="Radar" message="Radar recalibrating…">
-                  <div className="rounded-2xl p-3 bg-neutral-950/80 border border-neutral-900/60">
-                    <LiveWorkspaceRadar
-                      origin={geoCoords}
-                      geoStatus={geoStatus}
-                      posts={posts.map((p) => ({
-                        id: p.id,
-                        latitude: (p as any).latitude ?? null,
-                        longitude: (p as any).longitude ?? null,
-                        created_at: p.created_at,
-                        author_name: p.author_name,
-                      }))}
-                      merchants={(MERCHANTS[selectedCity] ?? []).map((m) => ({
-                        id: m.id,
-                        name: m.name,
-                        area: m.area,
-                      }))}
-                      proximity={proximity}
-                      onProximityChange={(p) => {
-                        setProximity(p);
-                        import("@/lib/analytics").then((m) =>
-                          m.trackEngagement("radar_proximity_change", { proximity: p })
-                        );
-                      }}
-                    />
-                  </div>
-                </ErrorBoundary>
-              </HomeSection>
-
               {/* 💬 Rally + chat — kept inline (real-time engagement) */}
               <HomeSection
                 eyebrow="💬 BREAKROOM CHAT"
@@ -1817,48 +1732,6 @@ function Index() {
               <ErrorBoundary label="Shoutbox" message="Chat is reconnecting…">
                 <LocalShoutbox requireAuth={requireAuth} variant="hero" />
               </ErrorBoundary>
-            </SubPageShell>
-          )}
-
-          {view === "radar" && (
-            <SubPageShell title="📡 Live Workspace Radar" subtitle="Who's escaping nearby right now" onBack={() => setView("home")}>
-              <ErrorBoundary label="Radar" message="Radar recalibrating…">
-                <div className="rounded-2xl p-3 bg-neutral-950/80 border border-neutral-900/60">
-                  <LiveWorkspaceRadar
-                    origin={geoCoords}
-                    geoStatus={geoStatus}
-                    posts={posts.map((p) => ({
-                      id: p.id,
-                      latitude: (p as any).latitude ?? null,
-                      longitude: (p as any).longitude ?? null,
-                      created_at: p.created_at,
-                      author_name: p.author_name,
-                    }))}
-                    merchants={(MERCHANTS[selectedCity] ?? []).map((m) => ({
-                      id: m.id,
-                      name: m.name,
-                      area: m.area,
-                    }))}
-                    proximity={proximity}
-                    onProximityChange={(p) => {
-                      setProximity(p);
-                      import("@/lib/analytics").then((m) =>
-                        m.trackEngagement("radar_proximity_change", { proximity: p })
-                      );
-                    }}
-                  />
-                </div>
-              </ErrorBoundary>
-              <ErrorBoundary label="SafeHouse" message="Safe-house reloading…">
-                <WhistleblowerSafeHouse />
-              </ErrorBoundary>
-              <ErrorBoundary label="GlobalTimezoneMatrix"><GlobalTimezoneMatrix /></ErrorBoundary>
-              <ErrorBoundary label="MidnightLeakDigest"><MidnightLeakDigest /></ErrorBoundary>
-              <ErrorBoundary label="GlobalEscapeSimulator"><GlobalEscapeSimulator /></ErrorBoundary>
-              <ErrorBoundary label="Clusters" message="Leaderboard offline — refresh to retry.">
-                <TrendingEscapeClusters />
-              </ErrorBoundary>
-              <BurnoutLeaderboard />
             </SubPageShell>
           )}
 
@@ -2064,14 +1937,14 @@ function Index() {
       </Dialog>
 
 
-      <ProximityAdDispatcher origin={geoCoords} userId={user?.id ?? null} />
+      <ProximityAdDispatcher origin={null} userId={user?.id ?? null} />
 
       <NotificationsDrawer
         open={notifOpen}
         onOpenChange={setNotifOpen}
         signedIn={!!user}
         myPosts={myPosts}
-        origin={geoCoords}
+        origin={null}
         city={selectedCity}
         postReplies={postReplyNotifs}
         onPostReplyClick={(postId) => {
