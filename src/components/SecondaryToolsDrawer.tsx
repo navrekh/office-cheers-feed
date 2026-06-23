@@ -66,7 +66,17 @@ export function SecondaryToolsDrawer() {
   return (
     <>
       {/* Trigger card — replaces the 9 sprawling HomeSections */}
-      <section className="rounded-2xl border border-amber-400/30 bg-gradient-to-br from-neutral-950 via-neutral-950 to-amber-950/10 p-5 shadow-[0_0_40px_rgba(251,191,36,0.06)]">
+      <section className="relative rounded-2xl border border-amber-400/30 bg-gradient-to-br from-neutral-950 via-neutral-950 to-amber-950/10 p-5 shadow-[0_0_40px_rgba(251,191,36,0.06)]">
+        {/* Pulse curiosity badge */}
+        <div className="absolute -top-2.5 -right-2.5">
+          <span className="relative flex h-6 items-center">
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-rose-500/40" />
+            <span className="relative inline-flex items-center gap-1 rounded-full bg-rose-500 px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wider text-white shadow-lg shadow-rose-500/30">
+              🔥 12 new today
+            </span>
+          </span>
+        </div>
+
         <div className="flex items-start gap-3">
           <div className="grid size-10 shrink-0 place-items-center rounded-xl border border-amber-400/30 bg-amber-500/10 text-amber-300">
             <Wrench className="size-5" />
