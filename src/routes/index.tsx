@@ -150,7 +150,7 @@ import { type Post, type Comment, merchantToPost } from "@/lib/feedTypes";
 
 
 // ---------- Lazy code-split modules (kept out of the initial bundle) ----------
-const BarLocator = lazy(() => import("@/components/BarLocator"));
+// BarLocator now imported inside PubsView (lazy)
 const DevConsole = lazy(() => import("@/components/DevConsole"));
 // Image export is a one-shot click; dynamic import on demand
 async function triggerDownloadPostCard(post: { id: string; author_name: string; author_headline: string; body_text: string; cheers_count: number }) {
@@ -165,7 +165,7 @@ import TaproomVisualizer from "@/components/TaproomVisualizer";
 import DesperationGauge from "@/components/DesperationGauge";
 import EmergencyDealOverlay from "@/components/EmergencyDealOverlay";
 import CorporateBingo from "@/components/CorporateBingo";
-import VerifiedWateringHole from "@/components/VerifiedWateringHole";
+// VerifiedWateringHole now imported inside PubsView
 import LiveVibeBoard from "@/components/LiveVibeBoard";
 import HappyHourTicker from "@/components/HappyHourTicker";
 import HappyHourCountdown from "@/components/HappyHourCountdown";
