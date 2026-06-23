@@ -76,9 +76,9 @@ import {
   mapsDirectionsUrl,
   type CityKey,
 } from "@/lib/cityStore";
-// useGeolocation intentionally NOT imported — see geoCoords stub below.
-import { getOrCreateSessionId, haversineKm } from "@/lib/geo";
-// LiveWorkspaceRadar deleted (June 2026) — anonymity-first product decision.
+// Geolocation removed (June 2026) — DrinkedIn is anonymity-first and never
+// prompts for the user's physical position. The Live Workspace Radar is gone.
+import { getOrCreateSessionId } from "@/lib/geo";
 import WhistleblowerSafeHouse from "@/components/WhistleblowerSafeHouse";
 import GlobalTimezoneMatrix from "@/components/GlobalTimezoneMatrix";
 import MidnightLeakDigest from "@/components/MidnightLeakDigest";
