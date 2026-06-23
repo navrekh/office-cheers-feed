@@ -980,25 +980,15 @@ function Index() {
         user_id: user?.id ?? null,
         post_type: "user",
         attached_visual_url: attachedUrl ?? null,
-        latitude: geoCoords?.latitude ?? null,
-        longitude: geoCoords?.longitude ?? null,
+        latitude: null,
+        longitude: null,
       })
       .select()
       .single();
     if (!error && data) {
       recordPostTimestamp();
       try { localStorage.removeItem(PENDING_DRAFT_KEY); } catch {}
-      // Fire a presence beacon so the radar lights up for nearby colleagues.
-      if (geoCoords) {
-        void (supabase as any).from("check_ins").insert({
-          session_id: getOrCreateSessionId(),
-          user_id: user?.id ?? null,
-          activity: "posting",
-          city: selectedCity,
-          latitude: geoCoords.latitude,
-          longitude: geoCoords.longitude,
-        });
-      }
+      // (Presence beacon removed — geolocation is disabled platform-wide.)
       setPosts((prev) => (prev.some((p) => p.id === data.id) ? prev : [data as Post, ...prev]));
       setBody("");
       setGifUrl(null);
