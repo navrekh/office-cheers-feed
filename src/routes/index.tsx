@@ -116,41 +116,38 @@ import PresenceBar from "@/components/PresenceBar";
 import NewSipsPill from "@/components/NewSipsPill";
 import { useNewPostsNotifier } from "@/lib/presence";
 
-// ---------- Client-side spam guard ----------
-const RATE_KEY = "drinkedin.rate.posts";
-const RATE_WINDOW_MS = 60_000;
-const RATE_MAX = 2;
-function checkRateLimit(): { ok: boolean; retryInMs: number } {
-  try {
-    const raw = localStorage.getItem(RATE_KEY);
-    const now = Date.now();
-    const arr: number[] = raw ? JSON.parse(raw) : [];
-    const recent = arr.filter((t) => now - t < RATE_WINDOW_MS);
-    if (recent.length >= RATE_MAX) {
-      const retry = RATE_WINDOW_MS - (now - recent[0]);
-      return { ok: false, retryInMs: Math.max(retry, 30_000) };
-    }
-    return { ok: true, retryInMs: 0 };
-  } catch {
-    return { ok: true, retryInMs: 0 };
-  }
-}
-function recordPostTimestamp() {
-  try {
-    const raw = localStorage.getItem(RATE_KEY);
-    const arr: number[] = raw ? JSON.parse(raw) : [];
-    arr.push(Date.now());
-    const trimmed = arr.slice(-10);
-    localStorage.setItem(RATE_KEY, JSON.stringify(trimmed));
-  } catch {}
-}
-function sanitizePostBody(raw: string): { ok: boolean; reason?: string; clean: string } {
-  const clean = raw.trim();
-  if (!clean) return { ok: false, reason: "Empty post — even silence costs HR money.", clean };
-  if (/(.)\1{6,}/.test(clean)) return { ok: false, reason: "Repetitive character spam detected. Sober up the keyboard.", clean };
-  if (clean.length < 2) return { ok: false, reason: "Too short to be a hot take.", clean };
-  return { ok: true, clean };
-}
+// Extracted leaf modules (3,661-line cleanup pass — June 2026)
+import {
+  checkRateLimit,
+  recordPostTimestamp,
+  sanitizePostBody,
+  isHappyHourNow,
+} from "@/lib/postGuards";
+import {
+  RANDOM_COMMENT_NAMES,
+  pick,
+  randomIdentity,
+  timeAgo,
+  initials,
+  hashStr,
+  snippetOf,
+} from "@/lib/randomIdentity";
+import SubPageShell from "@/components/landing/SubPageShell";
+import HomeSection from "@/components/landing/HomeSection";
+import DossierHero from "@/components/landing/DossierHero";
+import NavItem from "@/components/landing/NavItem";
+import {
+  ComposerChip,
+  ActionBtn,
+  SocialAction,
+  ReactionStrip,
+  TrendItem,
+  CopeItem,
+  ComingSoonView,
+} from "@/components/landing/feedBits";
+import BuzzwordDecrypter from "@/components/landing/BuzzwordDecrypter";
+import UpiVpaEditor from "@/components/landing/UpiVpaEditor";
+
 
 // ---------- Lazy code-split modules (kept out of the initial bundle) ----------
 const BarLocator = lazy(() => import("@/components/BarLocator"));
@@ -202,10 +199,6 @@ import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "
 import { LogOut, Copy, Briefcase, KeyRound, FileText as DraftIcon } from "lucide-react";
 
 
-function isHappyHourNow(d: Date = new Date()): boolean {
-  const minutes = d.getHours() * 60 + d.getMinutes();
-  return minutes >= 16 * 60 + 30 && minutes < 18 * 60;
-}
 export const Route = createFileRoute("/")({
   head: () => {
     const title = "DrinkedIn 🍻 | Anonymous Corporate Coping & Pub Parody";
@@ -268,50 +261,6 @@ type Comment = {
   created_at: string;
 };
 
-const RANDOM_FIRST = ["Brittany", "Chad", "Devon", "Marcus", "Priya", "Ainsley", "Trent", "Kelsey", "Jordan", "Avery", "Skyler", "Hunter"];
-const RANDOM_LAST = ["Sullivan", "Hollows", "Volkov", "Park", "Reyes", "Lambert", "O'Brien", "Ngata", "Whitaker", "Stein", "Vasquez", "Bloom"];
-const RANDOM_TITLES = [
-  "Principal Synergy Drinker",
-  "Chief Hangover Officer",
-  "VP of Liquid Infrastructure",
-  "Director of Strategic Pours",
-  "Head of Pint-Driven Development",
-  "Senior Manager, After-Hours Alignment",
-  "Lead Evangelist, Craft Brew Operations",
-  "Distinguished Fellow of Post-Mortem Cocktails",
-  "Chief of Staff to the Open Bar",
-  "Global Lead, Mandatory Fun",
-  "Staff Engineer of Liquid Refactoring",
-  "Fractional CFO (Chief Fermentation Officer)",
-];
-const RANDOM_COMMENT_NAMES = ["Anonymous Intern", "Casey from Comms", "Mid-Level Manager", "Recruiter Bot 9000", "Probably-A-VP"];
-
-function pick<T>(arr: T[]) {
-  return arr[Math.floor(Math.random() * arr.length)];
-}
-function randomIdentity() {
-  return {
-    name: `${pick(RANDOM_FIRST)} ${pick(RANDOM_LAST)}`,
-    headline: pick(RANDOM_TITLES),
-  };
-}
-
-function timeAgo(iso: string) {
-  const diff = Math.max(1, Math.floor((Date.now() - new Date(iso).getTime()) / 1000));
-  if (diff < 60) return `${diff}s`;
-  if (diff < 3600) return `${Math.floor(diff / 60)}m`;
-  if (diff < 86400) return `${Math.floor(diff / 3600)}h`;
-  return `${Math.floor(diff / 86400)}d`;
-}
-
-function initials(name: string) {
-  return name
-    .split(" ")
-    .map((n) => n[0])
-    .slice(0, 2)
-    .join("")
-    .toUpperCase();
-}
 
 type ViewKey = "home" | "barhop" | "pubs" | "messages" | "notifications" | "rally" | "radar" | "polls" | "tools";
 
@@ -2201,203 +2150,7 @@ function Index() {
   );
 }
 
-function SubPageShell({
-  title,
-  subtitle,
-  onBack,
-  children,
-}: {
-  title: string;
-  subtitle?: string;
-  onBack: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="space-y-5">
-      <div className="flex items-center justify-between gap-3">
-        <button
-          type="button"
-          onClick={onBack}
-          className="text-[12px] font-semibold text-amber-300/90 hover:text-amber-200 transition"
-        >
-          ← Back to feed
-        </button>
-      </div>
-      <header className="space-y-1">
-        <h2 className="text-xl font-black text-foreground">{title}</h2>
-        {subtitle && <p className="text-[12px] text-neutral-500">{subtitle}</p>}
-      </header>
-      <div className="space-y-5">{children}</div>
-    </div>
-  );
-}
 
-
-function HomeSection({
-  eyebrow,
-  title,
-  blurb,
-  children,
-}: {
-  eyebrow: string;
-  title: string;
-  blurb?: string;
-  children: React.ReactNode;
-}) {
-  // Grungy notice-board: a weathered sheet of paper pinned to a dark wall.
-  return (
-    <section
-      className="relative bg-[#e3dac9] text-stone-900 p-6 md:p-8 shadow-[0_25px_50px_-15px_rgba(0,0,0,0.85)] border-b-4 border-r-4 border-stone-400/80"
-      style={{ fontFamily: "'Special Elite', 'Courier Prime', monospace" }}
-    >
-      {/* coffee-stain blur */}
-      <div className="pointer-events-none absolute top-6 right-6 w-28 h-28 rounded-full bg-amber-900/10 blur-3xl" />
-      {/* fake fold shadow */}
-      <div className="pointer-events-none absolute -left-1 top-0 bottom-0 w-1 bg-black/5" />
-      {/* pushpin */}
-      <div className="absolute -top-2 left-8 w-3.5 h-3.5 rounded-full bg-red-600 shadow-inner ring-2 ring-red-900" />
-
-      <header className="mb-4 flex items-start justify-between gap-3 border-b border-dashed border-stone-400/70 pb-3">
-        <div className="min-w-0">
-          <div
-            className="text-[10px] tracking-[0.22em] text-stone-500 uppercase"
-            style={{ fontFamily: "'Courier Prime', monospace" }}
-          >
-            {eyebrow}
-          </div>
-          <h2 className="mt-1 text-xl md:text-2xl font-bold text-stone-900 leading-tight uppercase tracking-tight">
-            {title}
-          </h2>
-          {blurb && (
-            <p className="mt-1 text-[12px] text-stone-600 leading-snug normal-case">
-              {blurb}
-            </p>
-          )}
-        </div>
-        <div
-          className="hidden sm:block shrink-0 text-[9px] text-stone-500 text-right leading-tight uppercase"
-          style={{ fontFamily: "'Courier Prime', monospace" }}
-        >
-          FILE #{Math.abs(hashStr(title)) % 9999}
-          <br />
-          CLASSIFIED // ANON
-        </div>
-      </header>
-
-      {/* Inner "interactive zone" — dark again so all the live widgets read correctly */}
-      <div className="relative rounded-xl bg-neutral-950 text-foreground p-4 md:p-5 border border-stone-800/60 shadow-inner space-y-3" style={{ fontFamily: "inherit" }}>
-        <div className="text-foreground" style={{ fontFamily: "Inter, system-ui, sans-serif" }}>
-          {children}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function hashStr(s: string) {
-  let h = 0;
-  for (let i = 0; i < s.length; i++) h = (h << 5) - h + s.charCodeAt(i);
-  return h;
-}
-
-function DossierHero() {
-  return (
-    <section
-      className="relative bg-[#e3dac9] text-stone-900 px-5 py-4 md:px-6 md:py-4 shadow-[0_25px_50px_-15px_rgba(0,0,0,0.85)] border-b-4 border-r-4 border-stone-400/80 -rotate-[0.4deg]"
-      style={{ fontFamily: "'Special Elite', 'Courier Prime', monospace" }}
-    >
-      <div className="pointer-events-none absolute -left-1 top-0 bottom-0 w-1 bg-black/5" />
-      <div className="absolute -top-2 left-6 w-3.5 h-3.5 rounded-full bg-red-600 shadow-inner ring-2 ring-red-900" />
-      <div className="absolute -top-2 right-6 w-3.5 h-3.5 rounded-full bg-red-600 shadow-inner ring-2 ring-red-900" />
-
-      <div className="flex items-center justify-between gap-4 flex-wrap">
-        <div className="flex items-center gap-3 min-w-0">
-          <div className="border-[3px] border-red-800/80 px-2 py-1 -rotate-3 shrink-0">
-            <div className="text-xl md:text-2xl font-bold text-red-800 uppercase tracking-tighter mix-blend-multiply leading-none">
-              DrinkedIn
-            </div>
-          </div>
-          <h2
-            className="text-base md:text-lg font-bold text-stone-900 uppercase leading-tight min-w-0"
-            style={{ fontFamily: "'Permanent Marker', cursive" }}
-          >
-            Quit posing. <span className="text-red-800">Start posting.</span>
-          </h2>
-        </div>
-        <div
-          className="text-stone-500 text-[9px] text-right leading-tight uppercase shrink-0"
-          style={{ fontFamily: "'Courier Prime', monospace" }}
-        >
-          STATUS: UNEMPLOYABLE · ANON
-          <br />
-          CLEARANCE: BREAKROOM
-        </div>
-      </div>
-    </section>
-  );
-}
-
-
-
-
-
-
-function NavItem({
-  icon,
-  label,
-  active,
-  badge,
-  pulseKey,
-  bounce,
-  onClick,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  active?: boolean;
-  badge?: number;
-  pulseKey?: number;
-  bounce?: boolean;
-  onClick?: () => void;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      className={`relative flex flex-col items-center justify-center px-2 sm:px-3 py-1 min-w-[44px] sm:min-w-[64px] text-[11px] transition-colors ${
-        active
-          ? "text-foreground border-b-2 border-primary -mb-px"
-          : "text-muted-foreground hover:text-foreground"
-      }`}
-      aria-label={label}
-      title={label}
-    >
-      <div className="relative">
-        {icon}
-        {badge ? (
-          <span
-            key={pulseKey ?? 0}
-            className={`absolute -top-1.5 -right-2 bg-amber-500 text-amber-950 text-[9px] font-bold rounded-full min-w-4 h-4 px-1 grid place-items-center shadow-[0_0_10px_rgba(251,191,36,0.8)] animate-notif-glow ${bounce ? "animate-bounce" : ""}`}
-          >
-            {badge > 99 ? "99+" : badge}
-          </span>
-        ) : null}
-      </div>
-      <span className="mt-0.5 hidden sm:block">{label}</span>
-    </button>
-  );
-}
-
-
-function ComposerChip({ icon, label }: { icon: React.ReactNode; label: string }) {
-  return (
-    <button
-      type="button"
-      className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-medium text-muted-foreground hover:bg-muted/60 hover:text-foreground transition"
-    >
-      {icon}
-      {label}
-    </button>
-  );
-}
 
 const PostCard = memo(function PostCard({
   post,
@@ -2774,155 +2527,6 @@ function CommentSection({
   );
 }
 
-function ActionBtn({
-  icon,
-  label,
-  onClick,
-  active,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  onClick?: () => void;
-  active?: boolean;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      className={`flex items-center justify-center gap-2 py-2.5 rounded-md text-sm font-semibold transition ${
-        active
-          ? "text-primary bg-primary/10"
-          : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
-      }`}
-    >
-      {icon}
-      {label}
-    </button>
-  );
-}
-
-const SOCIAL_THEME = {
-  amber:    { text: "group-hover:text-amber-300",    bg: "group-hover:bg-amber-400/10",    active: "text-amber-300" },
-  sky:      { text: "group-hover:text-sky-300",      bg: "group-hover:bg-sky-400/10",      active: "text-sky-300" },
-  emerald:  { text: "group-hover:text-emerald-300",  bg: "group-hover:bg-emerald-400/10",  active: "text-emerald-300" },
-  fuchsia:  { text: "group-hover:text-fuchsia-300",  bg: "group-hover:bg-fuchsia-400/10",  active: "text-fuchsia-300" },
-} as const;
-
-function SocialAction({
-  icon, label, count, countKey, onClick, active, theme = "sky",
-}: {
-  icon: React.ReactNode;
-  label: string;
-  count?: number;
-  countKey?: number;
-  onClick?: () => void;
-  active?: boolean;
-  theme?: keyof typeof SOCIAL_THEME;
-}) {
-  const t = SOCIAL_THEME[theme];
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-label={label}
-      className={`group flex-1 flex items-center justify-center gap-2 py-2 text-[13px] font-semibold transition ${active ? t.active : "text-muted-foreground"}`}
-    >
-      <span className={`size-8 rounded-full grid place-items-center transition ${t.bg} ${active ? "" : t.text}`}>
-        {icon}
-      </span>
-      {typeof count === "number" && count > 0 && (
-        <span
-          key={countKey}
-          className={`tabular-nums ${countKey ? "animate-count-bump" : ""} ${active ? "" : t.text}`}
-        >
-          {count >= 1000 ? `${(count / 1000).toFixed(1)}k` : count}
-        </span>
-      )}
-    </button>
-  );
-}
-
-const QUICK_REACTIONS = ["🍻", "😂", "💀", "🔥", "😭"] as const;
-
-function ReactionStrip({ postId, onCheers }: { postId: string; onCheers: () => void }) {
-  const [counts, setCounts] = useState<Record<string, number>>({});
-  const [floats, setFloats] = useState<{ id: number; emoji: string; x: number }[]>([]);
-  function tap(emoji: string) {
-    setCounts((c) => ({ ...c, [emoji]: (c[emoji] ?? 0) + 1 }));
-    const id = Date.now() + Math.random();
-    setFloats((f) => [...f, { id, emoji, x: 20 + Math.random() * 60 }]);
-    setTimeout(() => setFloats((f) => f.filter((x) => x.id !== id)), 900);
-    if (emoji === "🍻") onCheers();
-    import("@/lib/analytics").then((m) =>
-      m.trackEngagement("post_reaction", { post_id: postId, emoji })
-    );
-  }
-  return (
-    <div className="relative px-4 pb-2 pt-1 flex items-center gap-1.5 flex-wrap">
-      {QUICK_REACTIONS.map((e) => {
-        const n = counts[e] ?? 0;
-        return (
-          <button
-            key={e}
-            type="button"
-            onClick={() => tap(e)}
-            aria-label={`React with ${e}`}
-            className={`inline-flex items-center gap-1 rounded-full border px-2 py-1 text-[12px] font-bold transition hover:scale-110 active:scale-95 ${
-              n > 0
-                ? "border-amber-400/60 bg-amber-400/10 text-amber-200 shadow-[0_0_14px_-4px_rgba(251,191,36,0.55)]"
-                : "border-border bg-muted/30 text-muted-foreground hover:text-foreground hover:bg-muted/60"
-            }`}
-          >
-            <span className="text-[14px] leading-none">{e}</span>
-            {n > 0 && <span className="tabular-nums">{n}</span>}
-          </button>
-        );
-      })}
-      <div className="pointer-events-none absolute inset-0 overflow-visible">
-        {floats.map((f) => (
-          <span
-            key={f.id}
-            className="absolute bottom-2 text-2xl animate-reaction-float"
-            style={{ left: `${f.x}%` }}
-          >
-            {f.emoji}
-          </span>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-
-function TrendItem({ title, meta }: { title: string; meta: string }) {
-  return (
-    <li className="flex gap-2 group cursor-pointer">
-      <Plus className="size-3.5 mt-1 text-muted-foreground group-hover:text-primary shrink-0" />
-      <div>
-        <div className="font-semibold text-foreground leading-snug group-hover:text-primary">
-          {title}
-        </div>
-        <div className="text-muted-foreground text-[11px]">{meta}</div>
-      </div>
-    </li>
-  );
-}
-
-function CopeItem({ tag, title, stat }: { tag: string; title: string; stat: string }) {
-  return (
-    <li className="flex gap-2 cursor-pointer group">
-      <BookmarkPlus className="size-3.5 mt-1 text-muted-foreground group-hover:text-accent shrink-0" />
-      <div>
-        <div className="text-[10px] uppercase tracking-wider text-accent font-bold">
-          {tag}
-        </div>
-        <div className="font-semibold text-foreground leading-snug group-hover:text-accent">
-          {title}
-        </div>
-        <div className="text-muted-foreground text-[11px]">{stat}</div>
-      </div>
-    </li>
-  );
-}
 
 // ============================================================
 // Pubs view — trending neighborhood watering holes (city-filtered)
@@ -3234,78 +2838,6 @@ function BarHopView() {
   );
 }
 
-function ComingSoonView({ title, emoji, copy }: { title: string; emoji: string; copy: string }) {
-  return (
-    <Card className="p-10 text-center border-border space-y-3 animate-in fade-in duration-300">
-      <div className="text-5xl">{emoji}</div>
-      <h2 className="text-xl font-bold">{title}</h2>
-      <p className="text-sm text-muted-foreground max-w-sm mx-auto leading-relaxed">{copy}</p>
-      <p className="text-xs text-muted-foreground/70 italic pt-2">
-        (Sober-rolling out next sprint.)
-      </p>
-    </Card>
-  );
-}
-
-const BUZZWORDS: { phrase: string; translation: string }[] = [
-  {
-    phrase: "Let's take this offline",
-    translation:
-      "If I have to look at your shared screen for another 30 seconds I am opening a beer.",
-  },
-  {
-    phrase: "Circle back next week",
-    translation:
-      "I am actively hungover and will not process this spreadsheet today.",
-  },
-  {
-    phrase: "High-priority deliverable",
-    translation:
-      "The VP promised something to a client while drinking at an airport bar.",
-  },
-  {
-    phrase: "Synergistic alignment",
-    translation:
-      "We are drinking together at 5:00 PM to forget this project structure.",
-  },
-];
-
-function BuzzwordDecrypter() {
-  const [phrase, setPhrase] = useState<string>(BUZZWORDS[0].phrase);
-  const translation = BUZZWORDS.find((b) => b.phrase === phrase)?.translation ?? "";
-
-  return (
-    <Card className="p-4 border-border">
-      <h4 className="text-sm font-semibold mb-1 flex items-center gap-1.5">
-        <Sparkles className="size-4 text-primary" /> Corporate Buzzword Decrypter
-      </h4>
-      <p className="text-[11px] text-muted-foreground mb-3 leading-snug">
-        Pick a phrase. We'll tell you what it actually meant.
-      </p>
-      <Select value={phrase} onValueChange={setPhrase}>
-        <SelectTrigger className="h-9 text-xs">
-          <SelectValue placeholder="Select a corporate phrase" />
-        </SelectTrigger>
-        <SelectContent>
-          {BUZZWORDS.map((b) => (
-            <SelectItem key={b.phrase} value={b.phrase} className="text-xs">
-              {b.phrase}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-      <blockquote
-        key={phrase}
-        className="mt-3 relative rounded-lg border-l-4 border-primary bg-primary/10 px-3 py-2.5 text-xs italic leading-relaxed text-foreground/90 animate-in fade-in duration-300"
-      >
-        <span className="absolute -top-2 left-2 text-2xl leading-none text-primary/60 select-none">
-          "
-        </span>
-        {translation}
-      </blockquote>
-    </Card>
-  );
-}
 
 const MOCK_NOTIFICATIONS = [
   {
@@ -3589,73 +3121,4 @@ function NotificationsDrawer({
   );
 }
 
-function snippetOf(s: string): string {
-  const clean = s.replace(/«di-meta»[\s\S]*?«\/di-meta»/g, "").trim();
-  return clean.length > 60 ? clean.slice(0, 57) + "…" : clean || "(visual post)";
-}
-
-function UpiVpaEditor({
-  userId,
-  initial,
-  onSaved,
-}: {
-  userId: string;
-  initial: string | null;
-  onSaved: () => void;
-}) {
-  const [vpa, setVpa] = useState(initial ?? "");
-  const [saving, setSaving] = useState(false);
-  useEffect(() => {
-    setVpa(initial ?? "");
-  }, [initial]);
-
-  async function save() {
-    const clean = vpa.trim();
-    if (clean && !/^[a-z0-9._-]{2,}@[a-z]{2,}$/i.test(clean)) {
-      toast.error("That doesn't look like a UPI VPA (e.g. yourname@upi).");
-      return;
-    }
-    setSaving(true);
-    const { error } = await (supabase as any)
-      .from("profiles")
-      .update({ upi_vpa: clean || null })
-      .eq("id", userId);
-    setSaving(false);
-    if (error) {
-      toast.error("Couldn't save your tip handle. Try again in a sec.");
-      return;
-    }
-    toast.success("Beer fund handle saved 🍺");
-    onSaved();
-  }
-
-  return (
-    <div className="mt-3 rounded-md border border-amber-400/30 bg-amber-500/5 p-2.5">
-      <label className="text-[10px] uppercase tracking-wider font-bold text-amber-200/90">
-        Beer-Fund UPI VPA
-      </label>
-      <p className="text-[10px] text-muted-foreground mb-1.5">
-        Optional. Lets colleagues tip you ₹50 via the "Buy them a Beer 🍺" QR.
-      </p>
-      <div className="flex gap-1.5">
-        <Input
-          value={vpa}
-          onChange={(e) => setVpa(e.target.value)}
-          placeholder="yourname@upi"
-          maxLength={120}
-          className="h-8 text-[12px]"
-        />
-        <Button
-          type="button"
-          size="sm"
-          onClick={save}
-          disabled={saving || vpa === (initial ?? "")}
-          className="h-8 px-3 bg-amber-500 hover:bg-amber-400 text-amber-950 text-[11px] font-bold"
-        >
-          {saving ? "…" : "Save"}
-        </Button>
-      </div>
-    </div>
-  );
-}
 
