@@ -58,7 +58,7 @@ function ToolFallback() {
   );
 }
 
-export function SecondaryToolsDrawer() {
+export function MoreToolsDrawer() {
   const [open, setOpen] = useState(false);
   const [activeId, setActiveId] = useState<string | null>(null);
   const active = TOOLS.find((t) => t.id === activeId) ?? null;
@@ -93,9 +93,9 @@ export function SecondaryToolsDrawer() {
             </p>
             <button
               onClick={() => setOpen(true)}
-              className="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-amber-400 px-4 py-2 text-xs font-black uppercase tracking-wider text-neutral-950 hover:bg-amber-300 transition shadow-lg shadow-amber-500/20"
+              className="mt-3 inline-flex items-center gap-1.5 rounded-lg border border-amber-300/70 bg-amber-400 px-4 py-2 text-xs font-black uppercase tracking-wider text-neutral-950 hover:bg-amber-300 transition shadow-[0_0_24px_rgba(251,191,36,0.35)]"
             >
-              Open the toolbelt <ChevronRight className="size-4" />
+              🛠️ Open Breakroom Terminal <ChevronRight className="size-4" />
             </button>
           </div>
         </div>
@@ -163,4 +163,4 @@ export function SecondaryToolsDrawer() {
   );
 }
 
-export default SecondaryToolsDrawer;
+export default MoreToolsDrawer;
