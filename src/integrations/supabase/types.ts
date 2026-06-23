@@ -406,6 +406,7 @@ export type Database = {
           body_text: string
           cheers_count: number
           claim_ticket: string
+          comment_count: number
           created_at: string
           id: string
           is_author_view: boolean
@@ -427,6 +428,7 @@ export type Database = {
           body_text: string
           cheers_count?: number
           claim_ticket?: string
+          comment_count?: number
           created_at?: string
           id?: string
           is_author_view?: boolean
@@ -448,6 +450,7 @@ export type Database = {
           body_text?: string
           cheers_count?: number
           claim_ticket?: string
+          comment_count?: number
           created_at?: string
           id?: string
           is_author_view?: boolean
