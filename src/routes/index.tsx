@@ -76,9 +76,9 @@ import {
   mapsDirectionsUrl,
   type CityKey,
 } from "@/lib/cityStore";
-import { useGeolocation } from "@/hooks/useGeolocation";
+// useGeolocation intentionally NOT imported — see geoCoords stub below.
 import { getOrCreateSessionId, haversineKm } from "@/lib/geo";
-import { LiveWorkspaceRadar, type ProximityFilter } from "@/components/LiveWorkspaceRadar";
+// LiveWorkspaceRadar deleted (June 2026) — anonymity-first product decision.
 import WhistleblowerSafeHouse from "@/components/WhistleblowerSafeHouse";
 import GlobalTimezoneMatrix from "@/components/GlobalTimezoneMatrix";
 import MidnightLeakDigest from "@/components/MidnightLeakDigest";
@@ -220,7 +220,7 @@ export const Route = createFileRoute("/")({
 
 
 
-type ViewKey = "home" | "barhop" | "pubs" | "messages" | "notifications" | "rally" | "radar" | "polls" | "tools";
+type ViewKey = "home" | "barhop" | "pubs" | "messages" | "notifications" | "rally" | "polls" | "tools";
 
 const PENDING_DRAFT_KEY = "drinkedin.pendingDraft.v1";
 type PendingDraft = {
@@ -236,11 +236,13 @@ type PendingDraft = {
 
 function Index() {
   const t = useT();
-  // Live geolocation (jittered). Coords here are ALREADY fuzzed by ±50–100 m
-  // before they leave the useGeolocation hook — precise lat/lng never reach
-  // the database or any other client. Declared first so all submit/insert
-  // callbacks below can close over it.
-  const { coords: geoCoords, status: geoStatus } = useGeolocation();
+  // Geolocation is intentionally disabled — DrinkedIn never prompts for the
+  // user's physical position. The Live Workspace Radar was removed (June 2026)
+  // because location pings compromise the absolute-anonymity promise.
+  // `geoCoords` is kept as a stable null so legacy call sites
+  // (`geoCoords?.latitude ?? null`, `if (geoCoords)` guards) stay valid.
+  const geoCoords: { latitude: number; longitude: number } | null = null;
+  const geoStatus = "idle" as const;
 
   const [posts, setPosts] = useState<Post[]>([]);
   const [commentsByPost, setCommentsByPost] = useState<Record<string, Comment[]>>({});
@@ -282,7 +284,7 @@ function Index() {
   const [liveViewers, setLiveViewers] = useState<number | null>(null);
   const [lastExcuseImpressions, setLastExcuseImpressions] = useState<number | null>(null);
   const [sortMode, setSortMode] = useState<"recent" | "top" | "mine" | "tribunal">("recent");
-  const [proximity, setProximity] = useState<ProximityFilter>("city");
+  // (proximity filter removed with the Live Workspace Radar — DrinkedIn is anonymity-first.)
   const [notifOpen, setNotifOpen] = useState(false);
   const [notifUnread, setNotifUnread] = useState<number>(0);
   const [notifPulseKey, setNotifPulseKey] = useState<number>(0);
@@ -1222,20 +1224,9 @@ function Index() {
     return subscribeCity(setSelectedCityState);
   }, []);
 
-  // Drop a "browsing_deals" presence beacon whenever we first acquire a fix.
-  useEffect(() => {
-    if (!geoCoords) return;
-    const sessionId = getOrCreateSessionId();
-    void (supabase as any).from("check_ins").insert({
-      session_id: sessionId,
-      user_id: user?.id ?? null,
-      activity: "browsing_deals",
-      city: selectedCity,
-      latitude: geoCoords.latitude,
-      longitude: geoCoords.longitude,
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [geoCoords?.latitude, geoCoords?.longitude]);
+  // (Radar presence beacon removed — DrinkedIn no longer tracks user coordinates.)
+
+
 
   // Sort posts by selected mode, inject merchant ads at fixed slots, pin highlighted
   // Employee of the Day — most-cheered real user post in the last 24h.
@@ -1268,43 +1259,14 @@ function Index() {
         .filter((p) => (p as any).user_id === user.id && !p.is_hidden)
         .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
     }
-    const proximityKm = proximity === "tech-park" ? 0.5 : proximity === "lunch-dash" ? 2 : Infinity;
-    const visible = [...posts].filter((p) => {
-      if (p.is_hidden) return false;
-      if (proximityKm !== Infinity) {
-        if (!geoCoords) return true; // no fix yet → don't hide everything
-        const d = haversineKm(geoCoords, {
-          latitude: (p as any).latitude,
-          longitude: (p as any).longitude,
-        });
-        if (!isFinite(d) || d > proximityKm) return false;
-      }
-      return true;
-    });
+    const visible = [...posts].filter((p) => !p.is_hidden);
     const sorted = visible.sort((a, b) => {
       if (sortMode === "top") return b.cheers_count - a.cheers_count;
-      // "recent" mode: when we have a live geo fix, elevate physically-close
-      // posts (within 5 km) above the rest. Recency still wins inside each band.
-      if (sortMode === "recent" && geoCoords) {
-        const da = haversineKm(geoCoords, {
-          latitude: (a as any).latitude,
-          longitude: (a as any).longitude,
-        });
-        const db = haversineKm(geoCoords, {
-          latitude: (b as any).latitude,
-          longitude: (b as any).longitude,
-        });
-        const aNear = isFinite(da) && da <= 5 ? 0 : 1;
-        const bNear = isFinite(db) && db <= 5 ? 0 : 1;
-        if (aNear !== bNear) return aNear - bNear;
-      }
       return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
     });
 
     // Inject merchant ads for the active city at slots 2 and 6.
-    // Skip ads when the user has narrowed the spatial filter — strict
-    // proximity modes should show only nearby colleague chatter.
-    const merchants = proximityKm === Infinity ? (MERCHANTS[selectedCity] ?? []) : [];
+    const merchants = MERCHANTS[selectedCity] ?? [];
     const withAds: Post[] = [...sorted];
     if (merchants[0]) withAds.splice(Math.min(2, withAds.length), 0, merchantToPost(merchants[0], selectedCity));
     if (merchants[1]) withAds.splice(Math.min(6, withAds.length), 0, merchantToPost(merchants[1], selectedCity));
@@ -1320,7 +1282,7 @@ function Index() {
     const idx = withPin.findIndex((p) => p.id === highlightedId);
     if (idx < 0) return withPin;
     return [withPin[idx], ...withPin.slice(0, idx), ...withPin.slice(idx + 1)];
-  }, [posts, highlightedId, sortMode, selectedCity, user, employeeOfDay, geoCoords?.latitude, geoCoords?.longitude, proximity]);
+  }, [posts, highlightedId, sortMode, selectedCity, user, employeeOfDay]);
 
   // List of the signed-in user's own posts, used by the Tickets accordion.
   const myPosts = useMemo(() => {
