@@ -1073,8 +1073,8 @@ function Index() {
           author_name: alias,
           author_alias: alias,
           user_id: user.id,
-          latitude: geoCoords?.latitude ?? null,
-          longitude: geoCoords?.longitude ?? null,
+          latitude: null,
+          longitude: null,
         })
         .select()
         .single();
