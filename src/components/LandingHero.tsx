@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { ArrowDown } from "lucide-react";
+import { ArrowDown, ArrowRight, Sparkles } from "lucide-react";
+import { Link } from "@tanstack/react-router";
 
 export function LandingHero({ onSignIn: _onSignIn, onDecode: _onDecode }: { onSignIn: (reason: string) => void; onDecode: () => void }) {
   const [active, setActive] = useState(247);
@@ -35,21 +36,31 @@ export function LandingHero({ onSignIn: _onSignIn, onDecode: _onDecode }: { onSi
         for everyone who can't say it on Slack.
       </h1>
       <p className="mt-4 max-w-2xl text-sm sm:text-base text-neutral-400 leading-relaxed">
-        Confessions, desperation polls, manager roasts. No real names. No work email.
-        Just the unfiltered truth of modern work life — scroll down, we'll prove it.
+        Confessions, desperation polls, manager roasts. And a one-click{" "}
+        <span className="text-amber-300 font-semibold">Anti-ATS profile</span>{" "}
+        that recruiters can actually read. No real names. No work email.
       </p>
 
-      <div className="mt-6 flex flex-wrap items-center gap-3">
+      {/* PRIMARY CTA — routes straight to the product, above the fold. */}
+      <div className="mt-7 flex flex-col sm:flex-row sm:items-center gap-3">
+        <Link
+          to="/profile"
+          className="group inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-amber-300 to-amber-500 px-7 py-4 text-base font-black uppercase tracking-wider text-neutral-950 hover:from-amber-200 hover:to-amber-400 transition shadow-2xl shadow-amber-500/30 ring-2 ring-amber-300/40"
+        >
+          <Sparkles className="size-5" />
+          Create Your Anti-ATS Profile
+          <ArrowRight className="size-5 group-hover:translate-x-1 transition-transform" />
+        </Link>
         <button
           onClick={scrollToFeed}
-          className="inline-flex items-center gap-2 rounded-lg bg-amber-400 px-5 py-3 text-sm font-black uppercase tracking-wider text-neutral-950 hover:bg-amber-300 transition shadow-lg shadow-amber-500/20"
+          className="inline-flex items-center justify-center gap-2 rounded-xl border border-amber-400/30 bg-neutral-900/60 px-5 py-3 text-xs font-bold uppercase tracking-wider text-amber-200 hover:bg-neutral-900 transition"
         >
-          Read tonight's confessions <ArrowDown className="size-4" />
+          Or lurk the feed <ArrowDown className="size-4" />
         </button>
-        <span className="text-[11px] text-neutral-500">
-          Lurk free · sign up only when you want to post
-        </span>
       </div>
+      <p className="mt-3 text-[11px] text-neutral-500">
+        Free · anonymous · 60 seconds · no work email required
+      </p>
     </section>
   );
 }
