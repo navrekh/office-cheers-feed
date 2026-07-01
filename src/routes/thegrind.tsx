@@ -41,6 +41,25 @@ function buildSeedPosts(): GrindPost[] {
   }));
 }
 
+// Deterministic anonymous handle per post id — same id -> same handle.
+const ANON_ADJ = [
+  "burnt", "ghosted", "spiralling", "rejected", "caffeinated", "unpaid",
+  "layoff", "midnight", "friday", "quiet", "silent", "cracked", "leaked",
+  "expired", "pinged", "muted", "cursed", "salaried", "vested", "fried",
+];
+const ANON_NOUN = [
+  "intern", "grunt", "grinder", "dev", "pm", "analyst", "consultant",
+  "founder", "engineer", "designer", "recruiter", "manager", "ic", "tester",
+  "ops", "sre", "lead", "architect", "scrubber", "ghost",
+];
+function anonHandle(seed: string): string {
+  let h = 0;
+  for (let i = 0; i < seed.length; i++) h = (h * 31 + seed.charCodeAt(i)) >>> 0;
+  const a = ANON_ADJ[h % ANON_ADJ.length];
+  const n = ANON_NOUN[(h >>> 8) % ANON_NOUN.length];
+  const num = (h >>> 16) % 900 + 100;
+  return `${a}_${n}_${num}`;
+
 export const Route = createFileRoute("/thegrind")({
   head: () => ({
     meta: [
