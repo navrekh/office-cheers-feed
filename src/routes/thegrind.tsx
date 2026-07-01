@@ -530,13 +530,16 @@ type ShameRow = {
 };
 
 const INITIAL_SHAME: ShameRow[] = [
-  { name: "Accenture", ats: 94, ghost: 42, velocity: 3 },
-  { name: "Capgemini", ats: 91, ghost: 51, velocity: 4 },
-  { name: "TCS", ats: 88, ghost: 38, velocity: 6 },
-  { name: "Infosys", ats: 86, ghost: 45, velocity: 5 },
-  { name: "Cognizant", ats: 92, ghost: 37, velocity: 2 },
-  { name: "Wipro", ats: 84, ghost: 49, velocity: 7 },
+  { name: "Tier-1 IT Consultancy", ats: 94, ghost: 42, velocity: 3 },
+  { name: "Big 4 Auditor", ats: 91, ghost: 51, velocity: 4 },
+  { name: "Legacy Body-Shop Giant", ats: 88, ghost: 38, velocity: 6 },
+  { name: "Bangalore Campus Behemoth", ats: 86, ghost: 45, velocity: 5 },
+  { name: "US-Listed Services Co.", ats: 92, ghost: 37, velocity: 2 },
+  { name: "Pune-HQ Outsourcer", ats: 84, ghost: 49, velocity: 7 },
+  { name: "FAANG-adjacent Unicorn", ats: 78, ghost: 33, velocity: 9 },
+  { name: "Series-C Fintech", ats: 71, ghost: 28, velocity: 12 },
 ];
+
 
 type SortKey = keyof Omit<ShameRow, "name"> | "name";
 
