@@ -1621,9 +1621,9 @@ function Index() {
                   <VisitorTeaser userId={user.id} />
                 </>
               ) : (
-                // Break out of the max-w-3xl main so the hero fills the page.
-                <div className="-mx-4 lg:-mx-6">
-                  <div className="mx-auto w-full max-w-6xl px-4 lg:px-6">
+                // Full-bleed break-out of the max-w-3xl main so the hero fills the viewport.
+                <div className="relative left-1/2 right-1/2 -mx-[50vw] w-screen overflow-x-hidden">
+                  <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-10">
                     <LandingHero
                       onSignIn={(reason) => {
                         setAuthReason(reason);
