@@ -530,13 +530,16 @@ type ShameRow = {
 };
 
 const INITIAL_SHAME: ShameRow[] = [
-  { name: "Accenture", ats: 94, ghost: 42, velocity: 3 },
-  { name: "Capgemini", ats: 91, ghost: 51, velocity: 4 },
-  { name: "TCS", ats: 88, ghost: 38, velocity: 6 },
-  { name: "Infosys", ats: 86, ghost: 45, velocity: 5 },
-  { name: "Cognizant", ats: 92, ghost: 37, velocity: 2 },
-  { name: "Wipro", ats: 84, ghost: 49, velocity: 7 },
+  { name: "Tier-1 IT Consultancy", ats: 94, ghost: 42, velocity: 3 },
+  { name: "Big 4 Auditor", ats: 91, ghost: 51, velocity: 4 },
+  { name: "Legacy Body-Shop Giant", ats: 88, ghost: 38, velocity: 6 },
+  { name: "Bangalore Campus Behemoth", ats: 86, ghost: 45, velocity: 5 },
+  { name: "US-Listed Services Co.", ats: 92, ghost: 37, velocity: 2 },
+  { name: "Pune-HQ Outsourcer", ats: 84, ghost: 49, velocity: 7 },
+  { name: "FAANG-adjacent Unicorn", ats: 78, ghost: 33, velocity: 9 },
+  { name: "Series-C Fintech", ats: 71, ghost: 28, velocity: 12 },
 ];
+
 
 type SortKey = keyof Omit<ShameRow, "name"> | "name";
 
@@ -600,10 +603,14 @@ function ShamePanel({ rows }: { rows: ShameRow[] }) {
   return (
     <Panel
       title="WITCH & SI :: Shame Index"
-      subtitle="Real-time corporate accountability leaderboard."
+      subtitle="Anonymous, satirical archetypes — community sentiment only, not factual claims about any real company."
       accent={AMBER}
     >
+      <div className="mb-3 border rounded-sm px-3 py-2 text-[10px] leading-relaxed" style={{ borderColor: BORDER, background: "rgba(255,176,32,0.06)", color: GRAY }}>
+        ⚠️ SATIRE // Rows are fictional archetypes ("Tier-1 IT Consultancy", "Big 4 Auditor", etc.). Any resemblance to real firms is coincidental. Metrics reflect anonymous user sentiment, not verified data.
+      </div>
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_220px] gap-4">
+
         <div className="overflow-x-auto border rounded-sm" style={{ borderColor: BORDER }}>
           <table className="w-full text-xs">
             <thead style={{ background: BG }}>
