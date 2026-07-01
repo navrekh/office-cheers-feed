@@ -777,11 +777,13 @@ function BypassPanel({ candidates }: { candidates: BypassCandidate[] }) {
           />
           <Button
             onClick={push}
+            disabled={busy}
             className={cn("w-full", mono)}
             style={{ background: NEON, color: BG }}
           >
-            OPEN_TO_BYPASS()
+            {busy ? "PUSHING..." : "OPEN_TO_BYPASS()"}
           </Button>
+
         </div>
 
         {/* Employed side */}
