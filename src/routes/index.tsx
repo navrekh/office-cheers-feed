@@ -1621,13 +1621,18 @@ function Index() {
                   <VisitorTeaser userId={user.id} />
                 </>
               ) : (
-                <LandingHero
-                  onSignIn={(reason) => {
-                    setAuthReason(reason);
-                    setAuthModalOpen(true);
-                  }}
-                  onDecode={() => setScannerOpen(true)}
-                />
+                // Break out of the max-w-3xl main so the hero fills the page.
+                <div className="-mx-4 lg:-mx-6">
+                  <div className="mx-auto w-full max-w-6xl px-4 lg:px-6">
+                    <LandingHero
+                      onSignIn={(reason) => {
+                        setAuthReason(reason);
+                        setAuthModalOpen(true);
+                      }}
+                      onDecode={() => setScannerOpen(true)}
+                    />
+                  </div>
+                </div>
               )}
 
               <PresenceBar />
