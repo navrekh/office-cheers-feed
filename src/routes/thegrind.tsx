@@ -1069,8 +1069,24 @@ function TheGrindPage() {
       )
       .subscribe();
 
+    // Refresh the feed feel: every ~22s pluck a sample post from the bottom
+    // and re-stamp it near the top, so newcomers always see movement.
+    const rotate = setInterval(() => {
+      setPosts((prev) => {
+        const samples = prev.filter((p) => p.sample);
+        if (samples.length < 2) return prev;
+        const pick = samples[Math.floor(Math.random() * samples.length)];
+        const rest = prev.filter((p) => p.id !== pick.id);
+        const real = rest.filter((p) => !p.sample);
+        const otherSamples = rest.filter((p) => p.sample);
+        const refreshed = { ...pick, ts: new Date().toISOString() };
+        return [...real, refreshed, ...otherSamples];
+      });
+    }, 22_000);
+
     return () => {
       alive = false;
+      clearInterval(rotate);
       supabase.removeChannel(channel);
     };
   }, []);
