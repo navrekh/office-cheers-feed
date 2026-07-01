@@ -284,18 +284,23 @@ function FeedPanel({
     if (f) void handleFile(f);
   };
 
-  const submit = () => {
+  const submit = async () => {
     if (!body.trim() && !scrubbed) {
       toast.error("Log entry requires text or scrubbed asset");
       return;
     }
-    onPost({
-      id: crypto.randomUUID(),
+    setBusy(true);
+    const { error } = await supabase.from("grind_posts").insert({
       body: body.trim(),
       tags,
-      image: scrubbed,
-      ts: new Date().toISOString(),
+      image_url: scrubbed ?? null,
     });
+    setBusy(false);
+    if (error) {
+      toast.error("Broadcast failed: " + error.message);
+      return;
+    }
+    // realtime handler will append; also optimistically clear input
     setBody("");
     setTags([]);
     setScrubbed(undefined);
