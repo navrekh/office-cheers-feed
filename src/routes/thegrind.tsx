@@ -59,6 +59,9 @@ function anonHandle(seed: string): string {
   const n = ANON_NOUN[(h >>> 8) % ANON_NOUN.length];
   const num = (h >>> 16) % 900 + 100;
   return `${a}_${n}_${num}`;
+}
+
+
 
 export const Route = createFileRoute("/thegrind")({
   head: () => ({
