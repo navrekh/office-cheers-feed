@@ -405,7 +405,7 @@ function FeedTimeline({ posts }: { posts: GrindPost[] }) {
                 anon_{p.id.slice(0, 6)}
               </span>
               <span className={cn("text-[10px] text-zinc-500", mono)}>
-                {new Date(p.ts).toLocaleString()}
+                <ClientTime iso={p.ts} />
               </span>
             </div>
             {p.body && (
