@@ -402,8 +402,13 @@ function FeedTimeline({ posts }: { posts: GrindPost[] }) {
           </div>
           <div className="min-w-0 flex-1">
             <div className="flex items-center justify-between gap-2">
-              <span className={cn("text-xs font-semibold text-zinc-300", sans)}>
-                anon_{p.id.slice(0, 6)}
+              <span className={cn("text-xs font-semibold text-zinc-300 flex items-center gap-1.5", sans)}>
+                anon_{p.id.slice(0, 6).replace(/^seed-?/, "s")}
+                {p.sample && (
+                  <span className="text-[9px] px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-400 border border-zinc-700 font-bold uppercase tracking-wider">
+                    Sample
+                  </span>
+                )}
               </span>
               <span className={cn("text-[10px] text-zinc-500", mono)}>
                 <ClientTime iso={p.ts} />
