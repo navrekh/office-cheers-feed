@@ -866,29 +866,84 @@ function StatsBar() {
 }
 
 // ============================================================
-// SEED POSTS
+// MAIN PAGE — owns realtime subscriptions & data fetch
 // ============================================================
-const SEED_POSTS: GrindPost[] = [
-  {
-    id: "seed1",
-    body: "Applied to SI firm at 14:03:07. Auto-reject email at 14:03:19. Twelve. Seconds. The algorithm didn't even pretend to read.",
-    tags: ["Instant Rejection", "AI Assessment Choke"],
-    ts: new Date(Date.now() - 45 * 60e3).toISOString(),
-  },
-  {
-    id: "seed2",
-    body: "Round 7. 'Culture fit.' They asked me to whiteboard leftpad. Ghosted 3 weeks later.",
-    tags: ["7-Round Interview Traumatic Stress", "Ghosted 30 Days"],
-    ts: new Date(Date.now() - 6 * 3600e3).toISOString(),
-  },
-];
+type ShameRowDb = {
+  company: string;
+  ats_score: number;
+  ghost_days: number;
+  rejection_velocity: number;
+};
+type PostRowDb = { id: string; body: string; tags: string[] | null; image_url: string | null; created_at: string };
+type BypassRowDb = { id: string; candidate_profile: string; referred: boolean; created_at: string };
 
-// ============================================================
-// MAIN PAGE
-// ============================================================
 function TheGrindPage() {
   const [active, setActive] = useState<NavKey>("grind");
-  const [posts, setPosts] = useState<GrindPost[]>(SEED_POSTS);
+  const [posts, setPosts] = useState<GrindPost[]>([]);
+  const [shame, setShame] = useState<ShameRow[]>([]);
+  const [candidates, setCandidates] = useState<BypassCandidate[]>([]);
+
+  const mapPost = (r: PostRowDb): GrindPost => ({
+    id: r.id,
+    body: r.body,
+    tags: r.tags ?? [],
+    image: r.image_url ?? undefined,
+    ts: r.created_at,
+  });
+  const mapShame = (r: ShameRowDb): ShameRow => ({
+    name: r.company,
+    ats: r.ats_score,
+    ghost: r.ghost_days,
+    velocity: r.rejection_velocity,
+  });
+  const mapCand = (r: BypassRowDb): BypassCandidate => ({
+    id: r.id,
+    profile: r.candidate_profile,
+    referred: r.referred,
+    ts: r.created_at,
+  });
+
+  // Initial load + realtime
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      const [p, s, b] = await Promise.all([
+        supabase.from("grind_posts").select("*").order("created_at", { ascending: false }).limit(50),
+        supabase.from("shame_metrics").select("*").order("ats_score", { ascending: false }),
+        supabase.from("bypass_referrals").select("*").order("created_at", { ascending: false }).limit(30),
+      ]);
+      if (!alive) return;
+      if (p.data) setPosts(p.data.map(mapPost));
+      if (s.data) setShame(s.data.map(mapShame));
+      if (b.data) setCandidates(b.data.map(mapCand));
+    })();
+
+    const channel = supabase
+      .channel("thegrind_live")
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "grind_posts" }, (payload) => {
+        setPosts((prev) => [mapPost(payload.new as PostRowDb), ...prev]);
+      })
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "shame_metrics" }, (payload) => {
+        const row = mapShame(payload.new as ShameRowDb);
+        setShame((prev) => prev.map((r) => (r.name === row.name ? row : r)));
+      })
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "shame_metrics" }, (payload) => {
+        setShame((prev) => [...prev, mapShame(payload.new as ShameRowDb)]);
+      })
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "bypass_referrals" }, (payload) => {
+        setCandidates((prev) => [mapCand(payload.new as BypassRowDb), ...prev]);
+      })
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "bypass_referrals" }, (payload) => {
+        const row = mapCand(payload.new as BypassRowDb);
+        setCandidates((prev) => prev.map((c) => (c.id === row.id ? row : c)));
+      })
+      .subscribe();
+
+    return () => {
+      alive = false;
+      supabase.removeChannel(channel);
+    };
+  }, []);
 
   return (
     <div className="min-h-screen flex flex-col lg:flex-row" style={{ background: BG }}>
@@ -900,7 +955,7 @@ function TheGrindPage() {
             #TheGrind_Portal
           </h1>
           <p className={cn("text-xs mt-1", mono)} style={{ color: GRAY }}>
-            {"// underground terminal for the algorithmically-rejected class."}
+            {"// underground terminal for the algorithmically-rejected class · live via realtime"}
           </p>
         </header>
 
@@ -914,20 +969,21 @@ function TheGrindPage() {
         <StatsBar />
 
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-          <FeedPanel posts={posts} onPost={(p) => setPosts((prev) => [p, ...prev])} />
+          <FeedPanel posts={posts} onPost={() => {}} />
           <GhostTrackerPanel />
           <div className="xl:col-span-2">
-            <ShamePanel />
+            <ShamePanel rows={shame} />
           </div>
           <div className="xl:col-span-2">
-            <BypassPanel />
+            <BypassPanel candidates={candidates} />
           </div>
         </div>
 
         <footer className={cn("mt-8 text-center text-[10px]", mono)} style={{ color: GRAY }}>
-          drinkedin.me/thegrind :: v0.1.0-noir :: no PII stored :: all state client-side
+          drinkedin.me/thegrind :: v0.2.0-live :: no PII stored :: streaming via realtime
         </footer>
       </main>
     </div>
   );
 }
+
