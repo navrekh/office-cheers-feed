@@ -675,11 +675,13 @@ function ShamePanel({ rows }: { rows: ShameRow[] }) {
           <Button
             size="sm"
             onClick={submitComplaint}
+            disabled={busy}
             className={cn("w-full", mono)}
             style={{ background: AMBER, color: BG }}
           >
-            SUBMIT_REPORT()
+            {busy ? "SUBMITTING..." : "SUBMIT_REPORT()"}
           </Button>
+
           <p className={cn("text-[9px] mt-2", mono)} style={{ color: GRAY }}>
             // Stanford HAI '24: 78% of enterprise reqs are auto-culled pre-human.
           </p>
