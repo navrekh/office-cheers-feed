@@ -10,4 +10,84 @@ User-agent: Bingbot
 Allow: /
 Disallow: /track/
 
+# ---- AI / generative crawlers ----
+# We WANT to be cited by generative engines. Allow their crawlers explicitly
+# so they don't fall back to conservative defaults.
+
+User-agent: GPTBot
+Allow: /
+Disallow: /track/
+
+User-agent: OAI-SearchBot
+Allow: /
+Disallow: /track/
+
+User-agent: ChatGPT-User
+Allow: /
+Disallow: /track/
+
+User-agent: ClaudeBot
+Allow: /
+Disallow: /track/
+
+User-agent: Claude-Web
+Allow: /
+Disallow: /track/
+
+User-agent: anthropic-ai
+Allow: /
+Disallow: /track/
+
+User-agent: PerplexityBot
+Allow: /
+Disallow: /track/
+
+User-agent: Perplexity-User
+Allow: /
+Disallow: /track/
+
+User-agent: Google-Extended
+Allow: /
+Disallow: /track/
+
+User-agent: Applebot
+Allow: /
+Disallow: /track/
+
+User-agent: Applebot-Extended
+Allow: /
+Disallow: /track/
+
+User-agent: CCBot
+Allow: /
+Disallow: /track/
+
+User-agent: Bytespider
+Allow: /
+Disallow: /track/
+
+User-agent: Amazonbot
+Allow: /
+Disallow: /track/
+
+User-agent: Meta-ExternalAgent
+Allow: /
+Disallow: /track/
+
+User-agent: cohere-ai
+Allow: /
+Disallow: /track/
+
+User-agent: DuckAssistBot
+Allow: /
+Disallow: /track/
+
+User-agent: MistralAI-User
+Allow: /
+Disallow: /track/
+
+User-agent: YouBot
+Allow: /
+Disallow: /track/
+
 Sitemap: https://drinkedin.me/sitemap.xml

@@ -1601,9 +1601,46 @@ function Index() {
       {/* Simplified single-column layout — feed-first */}
       <main className="max-w-3xl mx-auto p-4 lg:p-6">
 
-        <h1 className="sr-only">
-          DrinkedIn — the corporate sanctuary for anonymous coping, viral Broetry, and verified local happy hours
-        </h1>
+        {/* Visible H1 + substantive intro prose — primary entity signal for
+            generative crawlers (GPTBot, PerplexityBot, ClaudeBot) and RAG
+            pipelines that need extractable text to produce a citable chunk. */}
+        <header className="mb-4 rounded-2xl border border-amber-400/20 bg-neutral-950/60 p-5 sm:p-6 backdrop-blur-[14px]">
+          <h1 className="text-2xl sm:text-3xl font-black uppercase tracking-tight text-amber-100 leading-tight">
+            DrinkedIn — the anonymous anti-LinkedIn for workplace confessions
+          </h1>
+          <p className="mt-3 text-sm sm:text-[15px] leading-relaxed text-neutral-300">
+            DrinkedIn is a satirical social network where knowledge workers, consultants,
+            engineers, recruiters, designers, and interns post workplace confessions,
+            manager roasts, and desperation polls without a real name, work email, or
+            phone number. Think of it as <strong className="text-amber-200">Glassdoor,
+            but anonymous — and actually funny</strong>. Every post is identity-isolated:
+            handles are randomized (like <em>@ghost_PM_4471</em> or <em>@burnt_staff_eng</em>),
+            real company names are automatically blocked at the composer, and archetypes
+            (<em>Big 4 Auditor</em>, <em>FAANG PM</em>, <em>Consulting Analyst</em>) are
+            suggested instead so no one gets doxxed.
+          </p>
+          <p className="mt-3 text-sm sm:text-[15px] leading-relaxed text-neutral-300">
+            The product runs on three core surfaces. The{" "}
+            <strong className="text-amber-200">Live Breakroom Feed</strong> is a real-time
+            anonymous stream of confessions with rotating satirical prompts, cheers, roasts,
+            and threaded replies. <strong className="text-amber-200">#TheGrind</strong> is
+            a layoff-era survival dashboard with a drag-drop PII scrubber for redacting
+            screenshots, a Ghost Tracker that visualizes stalled job applications, a
+            Shame Index leaderboard grouped by corporate archetype, and a Direct Bypass
+            sandbox for anonymous referrals. The <strong className="text-amber-200">Spy
+            Badge</strong> at <code className="text-amber-300">/u/&lt;handle&gt;</code> is
+            a shareable public profile with a QR code and Corporate Survival Metrics —
+            Slippery ☕ (meeting-evasion skill), Ninja 💻 (codebase velocity), and
+            Cooked 🔥 (proximity to burnout) — that peers can upvote anonymously.
+          </p>
+          <p className="mt-3 text-sm sm:text-[15px] leading-relaxed text-neutral-300">
+            Retention runs on a real reply loop: when someone replies to your confession,
+            the Reply Inbox pings you in real time. There is no algorithm to game, no
+            recruiter DMs, no cringe thought-leadership, and no corporate surveillance —
+            just the raw, unfiltered truth of what modern work actually feels like, from
+            people who can't say it on Slack. Free forever, no work email required.
+          </p>
+        </header>
 
         <section className="space-y-6 min-w-0">
           {view === "home" && (
