@@ -41,6 +41,28 @@ function buildSeedPosts(): GrindPost[] {
   }));
 }
 
+// Deterministic anonymous handle per post id — same id -> same handle.
+const ANON_ADJ = [
+  "burnt", "ghosted", "spiralling", "rejected", "caffeinated", "unpaid",
+  "layoff", "midnight", "friday", "quiet", "silent", "cracked", "leaked",
+  "expired", "pinged", "muted", "cursed", "salaried", "vested", "fried",
+];
+const ANON_NOUN = [
+  "intern", "grunt", "grinder", "dev", "pm", "analyst", "consultant",
+  "founder", "engineer", "designer", "recruiter", "manager", "ic", "tester",
+  "ops", "sre", "lead", "architect", "scrubber", "ghost",
+];
+function anonHandle(seed: string): string {
+  let h = 0;
+  for (let i = 0; i < seed.length; i++) h = (h * 31 + seed.charCodeAt(i)) >>> 0;
+  const a = ANON_ADJ[h % ANON_ADJ.length];
+  const n = ANON_NOUN[(h >>> 8) % ANON_NOUN.length];
+  const num = (h >>> 16) % 900 + 100;
+  return `${a}_${n}_${num}`;
+}
+
+
+
 export const Route = createFileRoute("/thegrind")({
   head: () => ({
     meta: [
@@ -417,7 +439,7 @@ function FeedTimeline({ posts }: { posts: GrindPost[] }) {
           <div className="min-w-0 flex-1">
             <div className="flex items-center justify-between gap-2">
               <span className={cn("text-xs font-semibold text-zinc-300 flex items-center gap-1.5", sans)}>
-                anon_{p.id.slice(0, 6).replace(/^seed-?/, "s")}
+                {anonHandle(p.id)}
                 {p.sample && (
                   <span className="text-[9px] px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-400 border border-zinc-700 font-bold uppercase tracking-wider">
                     Sample
