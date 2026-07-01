@@ -716,31 +716,35 @@ const SEED_CANDIDATES: BypassCandidate[] = [
   },
 ];
 
-function BypassPanel() {
+function BypassPanel({ candidates }: { candidates: BypassCandidate[] }) {
   const [profile, setProfile] = useState("");
-  const [candidates, setCandidates] = useState<BypassCandidate[]>(SEED_CANDIDATES);
   const [handshake, setHandshake] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
 
-  const push = () => {
+  const push = async () => {
     if (profile.trim().length < 20) {
       toast.error("Profile too thin. Add architectures, metrics, framework fluencies.");
       return;
     }
-    setCandidates((prev) => [
-      {
-        id: crypto.randomUUID(),
-        profile: profile.trim(),
-        ts: new Date().toISOString(),
-        referred: false,
-      },
-      ...prev,
-    ]);
+    setBusy(true);
+    const { error } = await supabase
+      .from("bypass_referrals")
+      .insert({ candidate_profile: profile.trim() });
+    setBusy(false);
+    if (error) {
+      toast.error("Push failed: " + error.message);
+      return;
+    }
     setProfile("");
     toast.success("Bypass profile added to anonymous pool.");
   };
 
-  const refer = (id: string) => {
-    setCandidates((prev) => prev.map((c) => (c.id === id ? { ...c, referred: true } : c)));
+  const refer = async (id: string) => {
+    const { error } = await supabase.rpc("mark_bypass_referred", { p_id: id });
+    if (error) {
+      toast.error("Handshake failed: " + error.message);
+      return;
+    }
     setHandshake(
       `> handshake_init(0x${crypto.randomUUID().replace(/-/g, "").slice(0, 16)})\n` +
       `> bridging candidate → verified.employee[hash:0x${Math.random().toString(16).slice(2, 10)}]\n` +
@@ -751,6 +755,7 @@ function BypassPanel() {
     );
     setTimeout(() => setHandshake(null), 6000);
   };
+
 
   return (
     <Panel
