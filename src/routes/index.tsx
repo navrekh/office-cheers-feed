@@ -1621,13 +1621,18 @@ function Index() {
                   <VisitorTeaser userId={user.id} />
                 </>
               ) : (
-                <LandingHero
-                  onSignIn={(reason) => {
-                    setAuthReason(reason);
-                    setAuthModalOpen(true);
-                  }}
-                  onDecode={() => setScannerOpen(true)}
-                />
+                // Full-bleed break-out of the max-w-3xl main so the hero fills the viewport.
+                <div className="relative left-1/2 -translate-x-1/2 w-screen max-w-[100vw] overflow-x-hidden">
+                  <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-10">
+                    <LandingHero
+                      onSignIn={(reason) => {
+                        setAuthReason(reason);
+                        setAuthModalOpen(true);
+                      }}
+                      onDecode={() => setScannerOpen(true)}
+                    />
+                  </div>
+                </div>
               )}
 
               <PresenceBar />
