@@ -26,6 +26,20 @@ import { Textarea } from "@/components/ui/textarea";
 import { Slider } from "@/components/ui/slider";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { GRIND_SEED_POSTS, type SeedPost } from "@/lib/grindSeed";
+
+// Build 50 sample posts with staggered timestamps (2-180 minutes old) so
+// they look like a lively feed on first paint. Sample rows never touch the DB.
+function buildSeedPosts(): GrindPost[] {
+  const now = Date.now();
+  return GRIND_SEED_POSTS.map((s: SeedPost, i: number) => ({
+    id: s.id,
+    body: s.body,
+    tags: s.tags,
+    ts: new Date(now - (2 + i * 3.5) * 60_000).toISOString(),
+    sample: true,
+  }));
+}
 
 export const Route = createFileRoute("/thegrind")({
   head: () => ({
