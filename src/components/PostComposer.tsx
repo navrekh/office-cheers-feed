@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Image as ImageIcon, Video as VideoIcon, Hash, AtSign, Loader2, X, Send } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/useAuth";
+import { detectCompanyNames } from "@/lib/companyFilter";
 import { toast } from "sonner";
 import { getSelectedCity } from "@/lib/cityStore";
 import { broadcastTyping } from "@/lib/presence";
@@ -193,9 +194,20 @@ export default function PostComposer({
       toast.error("Write something or attach a photo/video first.");
       return;
     }
+    // Legal guard: block real company names to reduce defamation/trademark risk.
+    const combined = `${body} ${extractedTags.join(" ")}`;
+    const hits = detectCompanyNames(combined);
+    if (hits.length > 0) {
+      const first = hits[0];
+      toast.error(`Company names aren't allowed — swap "${first.term}" for something like "${first.suggestion}".`, {
+        description: hits.length > 1 ? `Also flagged: ${hits.slice(1).map((h: { term: string }) => h.term).join(", ")}` : undefined,
+      });
+      return;
+    }
     if (!requireAuth("Sign in to post — your mask stays on, just need a session.")) return;
     const uid = user?.id;
     if (!uid) return;
+
 
     setSubmitting(true);
     try {

@@ -94,17 +94,27 @@ const SEED_CANDIDATES: BypassCandidate[] = [
     id: "c1",
     profile:
       "Backend / Go+Rust · gRPC · 8y distributed systems · k8s operator author · 40M QPS load handled",
-    ts: new Date(Date.now() - 3600e3).toISOString(),
+    ts: "2026-01-01T00:00:00.000Z",
     referred: false,
   },
   {
     id: "c2",
     profile:
       "ML/Infra · PyTorch · CUDA kernel opt · trained 7B param model · MLOps @ hyperscaler",
-    ts: new Date(Date.now() - 7200e3).toISOString(),
+    ts: "2026-01-01T00:00:00.000Z",
     referred: false,
   },
 ];
+
+// Renders a locale-formatted time only after mount to avoid SSR/CSR hydration mismatch.
+function ClientTime({ iso, mode = "datetime" }: { iso: string; mode?: "datetime" | "time" }) {
+  const [text, setText] = useState("");
+  useEffect(() => {
+    const d = new Date(iso);
+    setText(mode === "time" ? d.toLocaleTimeString() : d.toLocaleString());
+  }, [iso, mode]);
+  return <span suppressHydrationWarning>{text}</span>;
+}
 
 // ============================================================
 // HELPERS
@@ -395,7 +405,7 @@ function FeedTimeline({ posts }: { posts: GrindPost[] }) {
                 anon_{p.id.slice(0, 6)}
               </span>
               <span className={cn("text-[10px] text-zinc-500", mono)}>
-                {new Date(p.ts).toLocaleString()}
+                <ClientTime iso={p.ts} />
               </span>
             </div>
             {p.body && (
@@ -858,7 +868,7 @@ function DirectBypass({ candidates }: { candidates: BypassCandidate[] }) {
                 <div className="flex items-center justify-between text-[10px] text-zinc-500 mb-1.5">
                   <span className={mono}>anon#{c.id.slice(0, 6)}</span>
                   <span className={mono}>
-                    {new Date(c.ts).toLocaleTimeString()}
+                    <ClientTime iso={c.ts} mode="time" />
                   </span>
                 </div>
                 <p className={cn("text-sm text-zinc-200 mb-3 leading-relaxed", sans)}>
