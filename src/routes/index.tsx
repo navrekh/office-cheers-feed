@@ -66,7 +66,7 @@ import {
   ExternalLink,
   Navigation,
   ShieldCheck,
-  QrCode,
+  
 } from "lucide-react";
 import {
   CITIES,
