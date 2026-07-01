@@ -1559,6 +1559,13 @@ function Index() {
                 navigate({ to: "/profile" });
               }}
             />
+            <NavItem
+              icon={<span className="text-base leading-none">💀</span>}
+              label="#TheGrind"
+              onClick={() => navigate({ to: "/thegrind" })}
+            />
+
+
 
 
             <button
