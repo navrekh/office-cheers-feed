@@ -143,7 +143,7 @@ import {
 import BuzzwordDecrypter from "@/components/landing/BuzzwordDecrypter";
 import UpiVpaEditor from "@/components/landing/UpiVpaEditor";
 import PubsView from "@/components/views/PubsView";
-import BarHopView from "@/components/views/BarHopView";
+
 import NotificationsView from "@/components/views/NotificationsView";
 import NotificationsDrawer from "@/components/views/NotificationsDrawer";
 import { type Post, type Comment, merchantToPost } from "@/lib/feedTypes";
@@ -220,7 +220,7 @@ export const Route = createFileRoute("/")({
 
 
 
-type ViewKey = "home" | "barhop" | "pubs" | "messages" | "notifications" | "rally" | "polls" | "tools";
+type ViewKey = "home" | "pubs" | "messages" | "notifications" | "rally" | "polls" | "tools";
 
 const PENDING_DRAFT_KEY = "drinkedin.pendingDraft.v1";
 type PendingDraft = {
@@ -304,7 +304,7 @@ function Index() {
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authReason, setAuthReason] = useState<string | undefined>(undefined);
   const [profileOpen, setProfileOpen] = useState(false);
-  const [scannerOpen, setScannerOpen] = useState(false);
+  
   function requireAuth(reason?: string): boolean {
     if (user) return true;
     setAuthReason(reason);
@@ -1533,7 +1533,7 @@ function Index() {
 
           <nav className="flex items-center gap-1 ml-auto">
             <NavItem icon={<Home className="size-5" />} label="Home" active={view === "home"} onClick={() => setView("home")} />
-            <NavItem icon={<Users className="size-5" />} label="Bar Hop" active={view === "barhop"} onClick={() => setView("barhop")} />
+            
             <NavItem icon={<Beer className="size-5" />} label="Pubs" active={view === "pubs"} onClick={() => setView("pubs")} />
             <NavItem icon={<MessageSquare className="size-5" />} label="Messages" active={view === "messages"} onClick={() => setView("messages")} />
             <NavItem icon={<Bell className="size-5" />} label="Notifications" badge={notifUnread} pulseKey={notifPulseKey} bounce={notifBounce} active={notifOpen} onClick={() => {
@@ -1542,11 +1542,6 @@ function Index() {
               setNotifOpen((o) => !o);
               toast("🔔 Tech park alerts cleared! You are fully caught up with the pod.");
             }} />
-            <NavItem
-              icon={<QrCode className="size-5" />}
-              label="Scan"
-              onClick={() => setScannerOpen(true)}
-            />
             <NavItem
               icon={<span className="text-base leading-none">🪪</span>}
               label="My Badge"
@@ -1600,7 +1595,7 @@ function Index() {
           }
         }}
       />
-      <QrScannerModal open={scannerOpen} onClose={() => setScannerOpen(false)} />
+      
 
 
       {/* Simplified single-column layout — feed-first */}
@@ -1636,7 +1631,7 @@ function Index() {
                         setAuthReason(reason);
                         setAuthModalOpen(true);
                       }}
-                      onDecode={() => setScannerOpen(true)}
+                      onDecode={() => {}}
                     />
                   </div>
                 </div>
@@ -1767,7 +1762,7 @@ function Index() {
               onProfileUpdated={() => void refreshProfile()}
             />
           )}
-          {view === "barhop" && <BarHopView />}
+          
           {view === "messages" && <ComingSoonView title="Messages" emoji="📬" copy="Your DMs are too embarrassing. We're protecting you from yourself." />}
           {view === "notifications" && <NotificationsView />}
 
