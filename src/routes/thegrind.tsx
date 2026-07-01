@@ -868,7 +868,7 @@ function DirectBypass({ candidates }: { candidates: BypassCandidate[] }) {
                 <div className="flex items-center justify-between text-[10px] text-zinc-500 mb-1.5">
                   <span className={mono}>anon#{c.id.slice(0, 6)}</span>
                   <span className={mono}>
-                    {new Date(c.ts).toLocaleTimeString()}
+                    <ClientTime iso={c.ts} mode="time" />
                   </span>
                 </div>
                 <p className={cn("text-sm text-zinc-200 mb-3 leading-relaxed", sans)}>
