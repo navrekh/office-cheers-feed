@@ -91,7 +91,7 @@ import { WorkplaceSelectorCard } from "@/components/WorkplaceSelectorCard";
 import { VisitorTeaser } from "@/components/VisitorTeaser";
 import { FirstRunCoachmark } from "@/components/FirstRunCoachmark";
 import { LandingHero } from "@/components/LandingHero";
-import { QrScannerModal } from "@/components/QrScannerModal";
+
 import { ProximityAdDispatcher } from "@/components/ProximityAdDispatcher";
 import DesperationPoll from "@/components/DesperationPoll";
 import DesperationPollModal from "@/components/DesperationPollModal";
