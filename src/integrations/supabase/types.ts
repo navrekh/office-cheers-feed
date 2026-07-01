@@ -107,6 +107,33 @@ export type Database = {
         }
         Relationships: []
       }
+      bypass_referrals: {
+        Row: {
+          candidate_profile: string
+          created_at: string
+          id: string
+          referred: boolean
+          referred_at: string | null
+          referrer_hash: string | null
+        }
+        Insert: {
+          candidate_profile: string
+          created_at?: string
+          id?: string
+          referred?: boolean
+          referred_at?: string | null
+          referrer_hash?: string | null
+        }
+        Update: {
+          candidate_profile?: string
+          created_at?: string
+          id?: string
+          referred?: boolean
+          referred_at?: string | null
+          referrer_hash?: string | null
+        }
+        Relationships: []
+      }
       check_ins: {
         Row: {
           activity: string
@@ -251,6 +278,33 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      grind_posts: {
+        Row: {
+          author_id: string | null
+          body: string
+          created_at: string
+          id: string
+          image_url: string | null
+          tags: string[]
+        }
+        Insert: {
+          author_id?: string | null
+          body?: string
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          tags?: string[]
+        }
+        Update: {
+          author_id?: string | null
+          body?: string
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          tags?: string[]
+        }
+        Relationships: []
       }
       merchant_clicks: {
         Row: {
@@ -748,6 +802,36 @@ export type Database = {
           },
         ]
       }
+      shame_metrics: {
+        Row: {
+          ats_score: number
+          company: string
+          complaint_count: number
+          ghost_days: number
+          id: string
+          rejection_velocity: number
+          updated_at: string
+        }
+        Insert: {
+          ats_score?: number
+          company: string
+          complaint_count?: number
+          ghost_days?: number
+          id?: string
+          rejection_velocity?: number
+          updated_at?: string
+        }
+        Update: {
+          ats_score?: number
+          company?: string
+          complaint_count?: number
+          ghost_days?: number
+          id?: string
+          rejection_velocity?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       shoutbox_messages: {
         Row: {
           body: string
@@ -851,6 +935,24 @@ export type Database = {
       claim_first_admin: { Args: never; Returns: boolean }
       claim_merchant_role: { Args: { p_pub_name?: string }; Returns: boolean }
       delete_post_by_ticket: { Args: { ticket: string }; Returns: boolean }
+      file_shame_complaint: {
+        Args: { p_company: string; p_severity: number }
+        Returns: {
+          ats_score: number
+          company: string
+          complaint_count: number
+          ghost_days: number
+          id: string
+          rejection_velocity: number
+          updated_at: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "shame_metrics"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       get_city_status: {
         Args: { p_city: string }
         Returns: {
@@ -924,6 +1026,23 @@ export type Database = {
       }
       increment_cheers: { Args: { post_id: string }; Returns: number }
       increment_heading_there: { Args: { p_deal_id: string }; Returns: number }
+      mark_bypass_referred: {
+        Args: { p_id: string }
+        Returns: {
+          candidate_profile: string
+          created_at: string
+          id: string
+          referred: boolean
+          referred_at: string | null
+          referrer_hash: string | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "bypass_referrals"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       record_profile_visit: {
         Args: { p_handle: string; p_via?: string }
         Returns: {
