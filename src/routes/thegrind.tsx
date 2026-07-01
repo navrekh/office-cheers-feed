@@ -540,12 +540,12 @@ const INITIAL_SHAME: ShameRow[] = [
 
 type SortKey = keyof Omit<ShameRow, "name"> | "name";
 
-function ShamePanel() {
-  const [rows, setRows] = useState<ShameRow[]>(INITIAL_SHAME);
+function ShamePanel({ rows }: { rows: ShameRow[] }) {
   const [sortKey, setSortKey] = useState<SortKey>("ats");
   const [asc, setAsc] = useState(false);
   const [selected, setSelected] = useState(0);
   const [complaint, setComplaint] = useState([50]);
+  const [busy, setBusy] = useState(false);
 
   const sorted = useMemo(() => {
     const copy = [...rows];
@@ -568,22 +568,22 @@ function ShamePanel() {
     }
   };
 
-  const submitComplaint = () => {
-    const delta = Math.round(complaint[0] / 20);
-    setRows((prev) =>
-      prev.map((r, i) =>
-        i === selected
-          ? {
-              ...r,
-              ats: Math.min(100, r.ats + delta),
-              ghost: r.ghost + Math.floor(delta / 2),
-              velocity: Math.max(1, r.velocity - Math.floor(delta / 3)),
-            }
-          : r,
-      ),
-    );
-    toast.success(`Complaint filed against ${rows[selected].name}. Shame index recalculated.`);
+  const submitComplaint = async () => {
+    const target = rows[selected];
+    if (!target) return;
+    setBusy(true);
+    const { error } = await supabase.rpc("file_shame_complaint", {
+      p_company: target.name,
+      p_severity: complaint[0],
+    });
+    setBusy(false);
+    if (error) {
+      toast.error("Complaint dropped: " + error.message);
+      return;
+    }
+    toast.success(`Complaint filed against ${target.name}. Shame index recalculated.`);
   };
+
 
   const Th = ({ k, label }: { k: SortKey; label: string }) => (
     <th
