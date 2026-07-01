@@ -26,6 +26,20 @@ import { Textarea } from "@/components/ui/textarea";
 import { Slider } from "@/components/ui/slider";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { GRIND_SEED_POSTS, type SeedPost } from "@/lib/grindSeed";
+
+// Build 50 sample posts with staggered timestamps (2-180 minutes old) so
+// they look like a lively feed on first paint. Sample rows never touch the DB.
+function buildSeedPosts(): GrindPost[] {
+  const now = Date.now();
+  return GRIND_SEED_POSTS.map((s: SeedPost, i: number) => ({
+    id: s.id,
+    body: s.body,
+    tags: s.tags,
+    ts: new Date(now - (2 + i * 3.5) * 60_000).toISOString(),
+    sample: true,
+  }));
+}
 
 export const Route = createFileRoute("/thegrind")({
   head: () => ({
@@ -64,6 +78,7 @@ type GrindPost = {
   tags: string[];
   image?: string;
   ts: string;
+  sample?: boolean;
 };
 
 type ShameRow = {
@@ -401,8 +416,13 @@ function FeedTimeline({ posts }: { posts: GrindPost[] }) {
           </div>
           <div className="min-w-0 flex-1">
             <div className="flex items-center justify-between gap-2">
-              <span className={cn("text-xs font-semibold text-zinc-300", sans)}>
-                anon_{p.id.slice(0, 6)}
+              <span className={cn("text-xs font-semibold text-zinc-300 flex items-center gap-1.5", sans)}>
+                anon_{p.id.slice(0, 6).replace(/^seed-?/, "s")}
+                {p.sample && (
+                  <span className="text-[9px] px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-400 border border-zinc-700 font-bold uppercase tracking-wider">
+                    Sample
+                  </span>
+                )}
               </span>
               <span className={cn("text-[10px] text-zinc-500", mono)}>
                 <ClientTime iso={p.ts} />
@@ -959,7 +979,7 @@ type BypassRowDb = {
 };
 
 function TheGrindPage() {
-  const [posts, setPosts] = useState<GrindPost[]>([]);
+  const [posts, setPosts] = useState<GrindPost[]>(() => buildSeedPosts());
   const [shame, setShame] = useState<ShameRow[]>([]);
   const [candidates, setCandidates] = useState<BypassCandidate[]>(SEED_CANDIDATES);
 
@@ -1000,7 +1020,10 @@ function TheGrindPage() {
           .limit(30),
       ]);
       if (!alive) return;
-      if (p.data) setPosts(p.data.map(mapPost));
+      if (p.data) {
+        const real = p.data.map(mapPost);
+        setPosts((prev) => [...real, ...prev.filter((x) => x.sample)]);
+      }
       if (s.data) setShame(s.data.map(mapShame));
       if (b.data && b.data.length > 0) setCandidates(b.data.map(mapCand));
     })();
@@ -1046,8 +1069,24 @@ function TheGrindPage() {
       )
       .subscribe();
 
+    // Refresh the feed feel: every ~22s pluck a sample post from the bottom
+    // and re-stamp it near the top, so newcomers always see movement.
+    const rotate = setInterval(() => {
+      setPosts((prev) => {
+        const samples = prev.filter((p) => p.sample);
+        if (samples.length < 2) return prev;
+        const pick = samples[Math.floor(Math.random() * samples.length)];
+        const rest = prev.filter((p) => p.id !== pick.id);
+        const real = rest.filter((p) => !p.sample);
+        const otherSamples = rest.filter((p) => p.sample);
+        const refreshed = { ...pick, ts: new Date().toISOString() };
+        return [...real, refreshed, ...otherSamples];
+      });
+    }, 22_000);
+
     return () => {
       alive = false;
+      clearInterval(rotate);
       supabase.removeChannel(channel);
     };
   }, []);
