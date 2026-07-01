@@ -979,7 +979,7 @@ type BypassRowDb = {
 };
 
 function TheGrindPage() {
-  const [posts, setPosts] = useState<GrindPost[]>([]);
+  const [posts, setPosts] = useState<GrindPost[]>(() => buildSeedPosts());
   const [shame, setShame] = useState<ShameRow[]>([]);
   const [candidates, setCandidates] = useState<BypassCandidate[]>(SEED_CANDIDATES);
 
