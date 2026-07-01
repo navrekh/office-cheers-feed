@@ -193,9 +193,20 @@ export default function PostComposer({
       toast.error("Write something or attach a photo/video first.");
       return;
     }
+    // Legal guard: block real company names to reduce defamation/trademark risk.
+    const combined = `${body} ${extractedTags.join(" ")}`;
+    const hits = detectCompanyNames(combined);
+    if (hits.length > 0) {
+      const first = hits[0];
+      toast.error(`Company names aren't allowed — swap "${first.term}" for something like "${first.suggestion}".`, {
+        description: hits.length > 1 ? `Also flagged: ${hits.slice(1).map((h) => h.term).join(", ")}` : undefined,
+      });
+      return;
+    }
     if (!requireAuth("Sign in to post — your mask stays on, just need a session.")) return;
     const uid = user?.id;
     if (!uid) return;
+
 
     setSubmitting(true);
     try {
