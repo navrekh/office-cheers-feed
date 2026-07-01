@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useCallback, useMemo, useRef, useState, type ChangeEvent, type DragEvent } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type ChangeEvent, type DragEvent } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import {
   Coffee,
   Flame,
@@ -283,18 +284,23 @@ function FeedPanel({
     if (f) void handleFile(f);
   };
 
-  const submit = () => {
+  const submit = async () => {
     if (!body.trim() && !scrubbed) {
       toast.error("Log entry requires text or scrubbed asset");
       return;
     }
-    onPost({
-      id: crypto.randomUUID(),
+    setBusy(true);
+    const { error } = await supabase.from("grind_posts").insert({
       body: body.trim(),
       tags,
-      image: scrubbed,
-      ts: new Date().toISOString(),
+      image_url: scrubbed ?? null,
     });
+    setBusy(false);
+    if (error) {
+      toast.error("Broadcast failed: " + error.message);
+      return;
+    }
+    // realtime handler will append; also optimistically clear input
     setBody("");
     setTags([]);
     setScrubbed(undefined);
@@ -534,12 +540,12 @@ const INITIAL_SHAME: ShameRow[] = [
 
 type SortKey = keyof Omit<ShameRow, "name"> | "name";
 
-function ShamePanel() {
-  const [rows, setRows] = useState<ShameRow[]>(INITIAL_SHAME);
+function ShamePanel({ rows }: { rows: ShameRow[] }) {
   const [sortKey, setSortKey] = useState<SortKey>("ats");
   const [asc, setAsc] = useState(false);
   const [selected, setSelected] = useState(0);
   const [complaint, setComplaint] = useState([50]);
+  const [busy, setBusy] = useState(false);
 
   const sorted = useMemo(() => {
     const copy = [...rows];
@@ -562,22 +568,22 @@ function ShamePanel() {
     }
   };
 
-  const submitComplaint = () => {
-    const delta = Math.round(complaint[0] / 20);
-    setRows((prev) =>
-      prev.map((r, i) =>
-        i === selected
-          ? {
-              ...r,
-              ats: Math.min(100, r.ats + delta),
-              ghost: r.ghost + Math.floor(delta / 2),
-              velocity: Math.max(1, r.velocity - Math.floor(delta / 3)),
-            }
-          : r,
-      ),
-    );
-    toast.success(`Complaint filed against ${rows[selected].name}. Shame index recalculated.`);
+  const submitComplaint = async () => {
+    const target = rows[selected];
+    if (!target) return;
+    setBusy(true);
+    const { error } = await supabase.rpc("file_shame_complaint", {
+      p_company: target.name,
+      p_severity: complaint[0],
+    });
+    setBusy(false);
+    if (error) {
+      toast.error("Complaint dropped: " + error.message);
+      return;
+    }
+    toast.success(`Complaint filed against ${target.name}. Shame index recalculated.`);
   };
+
 
   const Th = ({ k, label }: { k: SortKey; label: string }) => (
     <th
@@ -669,11 +675,13 @@ function ShamePanel() {
           <Button
             size="sm"
             onClick={submitComplaint}
+            disabled={busy}
             className={cn("w-full", mono)}
             style={{ background: AMBER, color: BG }}
           >
-            SUBMIT_REPORT()
+            {busy ? "SUBMITTING..." : "SUBMIT_REPORT()"}
           </Button>
+
           <p className={cn("text-[9px] mt-2", mono)} style={{ color: GRAY }}>
             // Stanford HAI '24: 78% of enterprise reqs are auto-culled pre-human.
           </p>
@@ -708,31 +716,35 @@ const SEED_CANDIDATES: BypassCandidate[] = [
   },
 ];
 
-function BypassPanel() {
+function BypassPanel({ candidates }: { candidates: BypassCandidate[] }) {
   const [profile, setProfile] = useState("");
-  const [candidates, setCandidates] = useState<BypassCandidate[]>(SEED_CANDIDATES);
   const [handshake, setHandshake] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
 
-  const push = () => {
+  const push = async () => {
     if (profile.trim().length < 20) {
       toast.error("Profile too thin. Add architectures, metrics, framework fluencies.");
       return;
     }
-    setCandidates((prev) => [
-      {
-        id: crypto.randomUUID(),
-        profile: profile.trim(),
-        ts: new Date().toISOString(),
-        referred: false,
-      },
-      ...prev,
-    ]);
+    setBusy(true);
+    const { error } = await supabase
+      .from("bypass_referrals")
+      .insert({ candidate_profile: profile.trim() });
+    setBusy(false);
+    if (error) {
+      toast.error("Push failed: " + error.message);
+      return;
+    }
     setProfile("");
     toast.success("Bypass profile added to anonymous pool.");
   };
 
-  const refer = (id: string) => {
-    setCandidates((prev) => prev.map((c) => (c.id === id ? { ...c, referred: true } : c)));
+  const refer = async (id: string) => {
+    const { error } = await supabase.rpc("mark_bypass_referred", { p_id: id });
+    if (error) {
+      toast.error("Handshake failed: " + error.message);
+      return;
+    }
     setHandshake(
       `> handshake_init(0x${crypto.randomUUID().replace(/-/g, "").slice(0, 16)})\n` +
       `> bridging candidate → verified.employee[hash:0x${Math.random().toString(16).slice(2, 10)}]\n` +
@@ -743,6 +755,7 @@ function BypassPanel() {
     );
     setTimeout(() => setHandshake(null), 6000);
   };
+
 
   return (
     <Panel
@@ -764,11 +777,13 @@ function BypassPanel() {
           />
           <Button
             onClick={push}
+            disabled={busy}
             className={cn("w-full", mono)}
             style={{ background: NEON, color: BG }}
           >
-            OPEN_TO_BYPASS()
+            {busy ? "PUSHING..." : "OPEN_TO_BYPASS()"}
           </Button>
+
         </div>
 
         {/* Employed side */}
@@ -851,29 +866,84 @@ function StatsBar() {
 }
 
 // ============================================================
-// SEED POSTS
+// MAIN PAGE — owns realtime subscriptions & data fetch
 // ============================================================
-const SEED_POSTS: GrindPost[] = [
-  {
-    id: "seed1",
-    body: "Applied to SI firm at 14:03:07. Auto-reject email at 14:03:19. Twelve. Seconds. The algorithm didn't even pretend to read.",
-    tags: ["Instant Rejection", "AI Assessment Choke"],
-    ts: new Date(Date.now() - 45 * 60e3).toISOString(),
-  },
-  {
-    id: "seed2",
-    body: "Round 7. 'Culture fit.' They asked me to whiteboard leftpad. Ghosted 3 weeks later.",
-    tags: ["7-Round Interview Traumatic Stress", "Ghosted 30 Days"],
-    ts: new Date(Date.now() - 6 * 3600e3).toISOString(),
-  },
-];
+type ShameRowDb = {
+  company: string;
+  ats_score: number;
+  ghost_days: number;
+  rejection_velocity: number;
+};
+type PostRowDb = { id: string; body: string; tags: string[] | null; image_url: string | null; created_at: string };
+type BypassRowDb = { id: string; candidate_profile: string; referred: boolean; created_at: string };
 
-// ============================================================
-// MAIN PAGE
-// ============================================================
 function TheGrindPage() {
   const [active, setActive] = useState<NavKey>("grind");
-  const [posts, setPosts] = useState<GrindPost[]>(SEED_POSTS);
+  const [posts, setPosts] = useState<GrindPost[]>([]);
+  const [shame, setShame] = useState<ShameRow[]>([]);
+  const [candidates, setCandidates] = useState<BypassCandidate[]>([]);
+
+  const mapPost = (r: PostRowDb): GrindPost => ({
+    id: r.id,
+    body: r.body,
+    tags: r.tags ?? [],
+    image: r.image_url ?? undefined,
+    ts: r.created_at,
+  });
+  const mapShame = (r: ShameRowDb): ShameRow => ({
+    name: r.company,
+    ats: r.ats_score,
+    ghost: r.ghost_days,
+    velocity: r.rejection_velocity,
+  });
+  const mapCand = (r: BypassRowDb): BypassCandidate => ({
+    id: r.id,
+    profile: r.candidate_profile,
+    referred: r.referred,
+    ts: r.created_at,
+  });
+
+  // Initial load + realtime
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      const [p, s, b] = await Promise.all([
+        supabase.from("grind_posts").select("*").order("created_at", { ascending: false }).limit(50),
+        supabase.from("shame_metrics").select("*").order("ats_score", { ascending: false }),
+        supabase.from("bypass_referrals").select("*").order("created_at", { ascending: false }).limit(30),
+      ]);
+      if (!alive) return;
+      if (p.data) setPosts(p.data.map(mapPost));
+      if (s.data) setShame(s.data.map(mapShame));
+      if (b.data) setCandidates(b.data.map(mapCand));
+    })();
+
+    const channel = supabase
+      .channel("thegrind_live")
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "grind_posts" }, (payload) => {
+        setPosts((prev) => [mapPost(payload.new as PostRowDb), ...prev]);
+      })
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "shame_metrics" }, (payload) => {
+        const row = mapShame(payload.new as ShameRowDb);
+        setShame((prev) => prev.map((r) => (r.name === row.name ? row : r)));
+      })
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "shame_metrics" }, (payload) => {
+        setShame((prev) => [...prev, mapShame(payload.new as ShameRowDb)]);
+      })
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "bypass_referrals" }, (payload) => {
+        setCandidates((prev) => [mapCand(payload.new as BypassRowDb), ...prev]);
+      })
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "bypass_referrals" }, (payload) => {
+        const row = mapCand(payload.new as BypassRowDb);
+        setCandidates((prev) => prev.map((c) => (c.id === row.id ? row : c)));
+      })
+      .subscribe();
+
+    return () => {
+      alive = false;
+      supabase.removeChannel(channel);
+    };
+  }, []);
 
   return (
     <div className="min-h-screen flex flex-col lg:flex-row" style={{ background: BG }}>
@@ -885,7 +955,7 @@ function TheGrindPage() {
             #TheGrind_Portal
           </h1>
           <p className={cn("text-xs mt-1", mono)} style={{ color: GRAY }}>
-            {"// underground terminal for the algorithmically-rejected class."}
+            {"// underground terminal for the algorithmically-rejected class · live via realtime"}
           </p>
         </header>
 
@@ -899,20 +969,21 @@ function TheGrindPage() {
         <StatsBar />
 
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-          <FeedPanel posts={posts} onPost={(p) => setPosts((prev) => [p, ...prev])} />
+          <FeedPanel posts={posts} onPost={() => {}} />
           <GhostTrackerPanel />
           <div className="xl:col-span-2">
-            <ShamePanel />
+            <ShamePanel rows={shame} />
           </div>
           <div className="xl:col-span-2">
-            <BypassPanel />
+            <BypassPanel candidates={candidates} />
           </div>
         </div>
 
         <footer className={cn("mt-8 text-center text-[10px]", mono)} style={{ color: GRAY }}>
-          drinkedin.me/thegrind :: v0.1.0-noir :: no PII stored :: all state client-side
+          drinkedin.me/thegrind :: v0.2.0-live :: no PII stored :: streaming via realtime
         </footer>
       </main>
     </div>
   );
 }
+
