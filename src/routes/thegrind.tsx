@@ -64,6 +64,7 @@ type GrindPost = {
   tags: string[];
   image?: string;
   ts: string;
+  sample?: boolean;
 };
 
 type ShameRow = {
