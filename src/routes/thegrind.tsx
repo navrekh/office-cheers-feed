@@ -1020,7 +1020,10 @@ function TheGrindPage() {
           .limit(30),
       ]);
       if (!alive) return;
-      if (p.data) setPosts(p.data.map(mapPost));
+      if (p.data) {
+        const real = p.data.map(mapPost);
+        setPosts((prev) => [...real, ...prev.filter((x) => x.sample)]);
+      }
       if (s.data) setShame(s.data.map(mapShame));
       if (b.data && b.data.length > 0) setCandidates(b.data.map(mapCand));
     })();
