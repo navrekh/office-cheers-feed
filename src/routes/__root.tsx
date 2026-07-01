@@ -116,22 +116,126 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
             "@graph": [
               {
                 "@type": "Organization",
+                "@id": `${SITE_URL}/#organization`,
                 name: siteName,
+                alternateName: ["DrinkedIn.me", "Drinked In", "The Anti-LinkedIn"],
                 url: `${SITE_URL}/`,
-                logo: `${SITE_URL}/favicon.png`,
-                sameAs: ["https://twitter.com/drinkedin"],
+                logo: {
+                  "@type": "ImageObject",
+                  url: `${SITE_URL}/favicon.png`,
+                  width: 512,
+                  height: 512,
+                },
+                image: ogImage,
+                description:
+                  "Anti-LinkedIn parody social network for anonymous workplace confessions, satirical corporate humor, and verified happy hours.",
+                foundingDate: "2025",
+                knowsAbout: [
+                  "workplace culture",
+                  "corporate satire",
+                  "anonymous social networks",
+                  "burnout",
+                  "job search humor",
+                  "LinkedIn parody",
+                ],
+                sameAs: [
+                  "https://twitter.com/drinkedin",
+                  "https://www.drinkedin.me",
+                ],
               },
               {
                 "@type": "WebSite",
+                "@id": `${SITE_URL}/#website`,
                 name: siteName,
                 url: `${SITE_URL}/`,
                 description:
-                  "Parody social platform for anonymous workplace confessions and verified local happy hours.",
+                  "Anonymous workplace confessions, satirical corporate feed, and verified happy hours. The anti-LinkedIn.",
+                publisher: { "@id": `${SITE_URL}/#organization` },
+                inLanguage: "en",
+                potentialAction: {
+                  "@type": "SearchAction",
+                  target: {
+                    "@type": "EntryPoint",
+                    urlTemplate: `${SITE_URL}/?q={search_term_string}`,
+                  },
+                  "query-input": "required name=search_term_string",
+                },
+              },
+              {
+                "@type": "WebApplication",
+                "@id": `${SITE_URL}/#webapp`,
+                name: siteName,
+                url: `${SITE_URL}/`,
+                applicationCategory: "SocialNetworkingApplication",
+                operatingSystem: "Web",
+                browserRequirements: "Requires JavaScript. Requires a modern browser.",
+                description:
+                  "Anonymous social feed for corporate workers. Post confessions, track burnout on #TheGrind, and share a Spy Badge profile.",
+                offers: {
+                  "@type": "Offer",
+                  price: "0",
+                  priceCurrency: "USD",
+                },
+                featureList: [
+                  "Anonymous confessions feed",
+                  "#TheGrind burnout portal",
+                  "PII scrubber for screenshots",
+                  "Spy Badge shareable profile",
+                  "Anonymous peer voting on survival metrics",
+                  "Real-time reply notifications",
+                ],
+              },
+              {
+                "@type": "FAQPage",
+                "@id": `${SITE_URL}/#faq`,
+                mainEntity: [
+                  {
+                    "@type": "Question",
+                    name: "What is DrinkedIn?",
+                    acceptedAnswer: {
+                      "@type": "Answer",
+                      text: "DrinkedIn is a satirical, anti-LinkedIn social network where corporate workers post anonymous workplace confessions, track burnout on #TheGrind, and share a Spy Badge profile. It is a parody platform not affiliated with LinkedIn.",
+                    },
+                  },
+                  {
+                    "@type": "Question",
+                    name: "Is DrinkedIn actually anonymous?",
+                    acceptedAnswer: {
+                      "@type": "Answer",
+                      text: "Yes. Posts and votes on your Spy Badge are identity-isolated — public views show only anonymous handles, and voting never captures user data.",
+                    },
+                  },
+                  {
+                    "@type": "Question",
+                    name: "Can I post about my real company?",
+                    acceptedAnswer: {
+                      "@type": "Answer",
+                      text: "No. A composer-side filter blocks real company names and suggests satirical archetypes like 'Big 4 Auditor' or 'FAANG PM' instead. This keeps content legally safe and universally relatable.",
+                    },
+                  },
+                  {
+                    "@type": "Question",
+                    name: "What is #TheGrind?",
+                    acceptedAnswer: {
+                      "@type": "Answer",
+                      text: "#TheGrind is DrinkedIn's layoff-era survival portal — a dashboard with a PII scrubber for screenshots, a Ghost Tracker for job applications, a Shame Index leaderboard by corporate archetype, and a Direct Bypass anonymous referral sandbox.",
+                    },
+                  },
+                  {
+                    "@type": "Question",
+                    name: "How is DrinkedIn different from LinkedIn or Glassdoor?",
+                    acceptedAnswer: {
+                      "@type": "Answer",
+                      text: "LinkedIn is performative career theater. Glassdoor is anonymous but dry. DrinkedIn is the funny, satirical middle — anonymous confessions with humor as the primary format, plus tools for surviving the job market.",
+                    },
+                  },
+                ],
               },
             ],
           }),
         },
       ],
+
     };
   },
   shellComponent: RootShell,

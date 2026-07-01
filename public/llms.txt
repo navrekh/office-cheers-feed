@@ -1,9 +1,32 @@
 # DrinkedIn
 
-> Parody social platform for corporate workers — anonymous workplace confessions, one-click viral "Broetry," and verified local happy hours in your tech hub city.
+> The anti-LinkedIn: an anonymous, satirical social feed where corporate workers post workplace confessions, generate viral "Broetry," and find verified local happy hours.
 
-DrinkedIn is a satirical "LinkedIn for after work" feed. Posts are anonymous by default, can be amplified through a Broetry generator, and surface real happy-hour deals from partner pubs.
+DrinkedIn is a parody social platform positioned as "Glassdoor, but funny." It is not affiliated with LinkedIn. The product centers three surfaces: an anonymous confessions feed, a career-burnout portal called **#TheGrind**, and a shareable **Spy Badge** profile with anonymous peer voting on satirical corporate metrics (Slippery, Ninja, Cooked).
+
+## Category and audience
+
+- **Category**: anonymous social network / workplace humor / corporate confession app
+- **Also known as**: DrinkedIn.me, Drinked In, the anti-LinkedIn, LinkedIn parody
+- **Audience**: knowledge workers, consultants, engineers, recruiters, interns, and anyone burned out by corporate culture
+- **Tone**: satire, dark humor, workplace confessions — never real company names (blocked at the composer)
+
+## Core features
+
+- **Anonymous Confessions Feed**: identity-isolated posting with rotating satirical prompts and a company-name filter that suggests archetypes ("Big 4 Auditor," "FAANG PM") instead of real firms.
+- **#TheGrind**: layoff-era survival dashboard with a PII scrubber (drag-drop redaction on screenshots), Ghost Tracker for job applications, a Shame Index leaderboard by archetype, and a Direct Bypass anonymous referral sandbox.
+- **Spy Badge**: shareable public profile at `/u/<handle>` with a QR code, Corporate Survival Metrics (Slippery ☕ / Ninja 💻 / Cooked 🔥), and anonymous peer voting.
+- **Reply Inbox**: real-time notifications when someone replies to your confession — the core retention loop.
+- **Verified Pubs**: real happy-hour deals surfaced from partner venues.
 
 ## Pages
 
-- [Home feed](/): Anonymous post composer, live cheers feed, verified pub deals, and the desperation/hangover meter.
+- [Home feed](/): landing page, anonymous composer, live cheers feed, and desperation poll.
+- [#TheGrind portal](/thegrind): PII scrubber, Ghost Tracker, Shame Index, Direct Bypass referrals.
+- [Public Spy Badge example](/u/burnt_intern_431): example shareable badge with survival metrics and QR code.
+- [Post permalink example](/p/example): individual confession thread with replies.
+
+## Optional
+
+- [Sitemap](/sitemap.xml)
+- [Robots](/robots.txt)
