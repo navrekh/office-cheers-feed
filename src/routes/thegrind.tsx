@@ -603,10 +603,14 @@ function ShamePanel({ rows }: { rows: ShameRow[] }) {
   return (
     <Panel
       title="WITCH & SI :: Shame Index"
-      subtitle="Real-time corporate accountability leaderboard."
+      subtitle="Anonymous, satirical archetypes — community sentiment only, not factual claims about any real company."
       accent={AMBER}
     >
+      <div className="mb-3 border rounded-sm px-3 py-2 text-[10px] leading-relaxed" style={{ borderColor: BORDER, background: "rgba(255,176,32,0.06)", color: GRAY }}>
+        ⚠️ SATIRE // Rows are fictional archetypes ("Tier-1 IT Consultancy", "Big 4 Auditor", etc.). Any resemblance to real firms is coincidental. Metrics reflect anonymous user sentiment, not verified data.
+      </div>
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_220px] gap-4">
+
         <div className="overflow-x-auto border rounded-sm" style={{ borderColor: BORDER }}>
           <table className="w-full text-xs">
             <thead style={{ background: BG }}>
