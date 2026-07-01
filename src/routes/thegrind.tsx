@@ -94,17 +94,27 @@ const SEED_CANDIDATES: BypassCandidate[] = [
     id: "c1",
     profile:
       "Backend / Go+Rust · gRPC · 8y distributed systems · k8s operator author · 40M QPS load handled",
-    ts: new Date(Date.now() - 3600e3).toISOString(),
+    ts: "2026-01-01T00:00:00.000Z",
     referred: false,
   },
   {
     id: "c2",
     profile:
       "ML/Infra · PyTorch · CUDA kernel opt · trained 7B param model · MLOps @ hyperscaler",
-    ts: new Date(Date.now() - 7200e3).toISOString(),
+    ts: "2026-01-01T00:00:00.000Z",
     referred: false,
   },
 ];
+
+// Renders a locale-formatted time only after mount to avoid SSR/CSR hydration mismatch.
+function ClientTime({ iso, mode = "datetime" }: { iso: string; mode?: "datetime" | "time" }) {
+  const [text, setText] = useState("");
+  useEffect(() => {
+    const d = new Date(iso);
+    setText(mode === "time" ? d.toLocaleTimeString() : d.toLocaleString());
+  }, [iso, mode]);
+  return <span suppressHydrationWarning>{text}</span>;
+}
 
 // ============================================================
 // HELPERS
