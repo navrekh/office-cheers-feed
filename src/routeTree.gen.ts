@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as ThegrindRouteImport } from './routes/thegrind'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as MerchantDashboardRouteImport } from './routes/merchant-dashboard'
 import { Route as HqAdminRouteImport } from './routes/hq-admin'
@@ -18,6 +19,11 @@ import { Route as TrackTicketRouteImport } from './routes/track.$ticket'
 import { Route as PPostIdRouteImport } from './routes/p.$postId'
 import { Route as ApiPublicWebhooksRazorpayRouteImport } from './routes/api/public/webhooks/razorpay'
 
+const ThegrindRoute = ThegrindRouteImport.update({
+  id: '/thegrind',
+  path: '/thegrind',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ProfileRoute = ProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
@@ -65,6 +71,7 @@ export interface FileRoutesByFullPath {
   '/hq-admin': typeof HqAdminRoute
   '/merchant-dashboard': typeof MerchantDashboardRoute
   '/profile': typeof ProfileRoute
+  '/thegrind': typeof ThegrindRoute
   '/p/$postId': typeof PPostIdRoute
   '/track/$ticket': typeof TrackTicketRoute
   '/u/$handle': typeof UHandleRoute
@@ -75,6 +82,7 @@ export interface FileRoutesByTo {
   '/hq-admin': typeof HqAdminRoute
   '/merchant-dashboard': typeof MerchantDashboardRoute
   '/profile': typeof ProfileRoute
+  '/thegrind': typeof ThegrindRoute
   '/p/$postId': typeof PPostIdRoute
   '/track/$ticket': typeof TrackTicketRoute
   '/u/$handle': typeof UHandleRoute
@@ -86,6 +94,7 @@ export interface FileRoutesById {
   '/hq-admin': typeof HqAdminRoute
   '/merchant-dashboard': typeof MerchantDashboardRoute
   '/profile': typeof ProfileRoute
+  '/thegrind': typeof ThegrindRoute
   '/p/$postId': typeof PPostIdRoute
   '/track/$ticket': typeof TrackTicketRoute
   '/u/$handle': typeof UHandleRoute
@@ -98,6 +107,7 @@ export interface FileRouteTypes {
     | '/hq-admin'
     | '/merchant-dashboard'
     | '/profile'
+    | '/thegrind'
     | '/p/$postId'
     | '/track/$ticket'
     | '/u/$handle'
@@ -108,6 +118,7 @@ export interface FileRouteTypes {
     | '/hq-admin'
     | '/merchant-dashboard'
     | '/profile'
+    | '/thegrind'
     | '/p/$postId'
     | '/track/$ticket'
     | '/u/$handle'
@@ -118,6 +129,7 @@ export interface FileRouteTypes {
     | '/hq-admin'
     | '/merchant-dashboard'
     | '/profile'
+    | '/thegrind'
     | '/p/$postId'
     | '/track/$ticket'
     | '/u/$handle'
@@ -129,6 +141,7 @@ export interface RootRouteChildren {
   HqAdminRoute: typeof HqAdminRoute
   MerchantDashboardRoute: typeof MerchantDashboardRoute
   ProfileRoute: typeof ProfileRoute
+  ThegrindRoute: typeof ThegrindRoute
   PPostIdRoute: typeof PPostIdRoute
   TrackTicketRoute: typeof TrackTicketRoute
   UHandleRoute: typeof UHandleRoute
@@ -137,6 +150,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/thegrind': {
+      id: '/thegrind'
+      path: '/thegrind'
+      fullPath: '/thegrind'
+      preLoaderRoute: typeof ThegrindRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/profile': {
       id: '/profile'
       path: '/profile'
@@ -201,6 +221,7 @@ const rootRouteChildren: RootRouteChildren = {
   HqAdminRoute: HqAdminRoute,
   MerchantDashboardRoute: MerchantDashboardRoute,
   ProfileRoute: ProfileRoute,
+  ThegrindRoute: ThegrindRoute,
   PPostIdRoute: PPostIdRoute,
   TrackTicketRoute: TrackTicketRoute,
   UHandleRoute: UHandleRoute,
