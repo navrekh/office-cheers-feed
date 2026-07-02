@@ -24,4 +24,5 @@ export type Comment = {
   author_name: string;
   body_text: string;
   created_at: string;
+  parent_id?: string | null;
 };
