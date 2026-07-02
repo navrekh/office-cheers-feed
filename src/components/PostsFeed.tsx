@@ -992,6 +992,7 @@ export default function PostsFeed() {
         </div>
       </div>
 
+      <LiveActivityStrip />
 
       {merged === null ? (
         <div className="grid place-items-center py-10">
