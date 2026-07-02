@@ -84,12 +84,7 @@ import GlobalTimezoneMatrix from "@/components/GlobalTimezoneMatrix";
 import MidnightLeakDigest from "@/components/MidnightLeakDigest";
 import GlobalEscapeSimulator from "@/components/GlobalEscapeSimulator";
 import TrendingEscapeClusters from "@/components/TrendingEscapeClusters";
-// Home-view secondary modules now live behind a lazy drawer to keep the main feed clean.
-// Lazy-imported so the drawer shell + its 13 sub-tools stay out of the initial bundle.
-const MoreToolsDrawer = lazy(() => import("@/components/MoreToolsDrawer"));
 import { WorkplaceSelectorCard } from "@/components/WorkplaceSelectorCard";
-import { VisitorTeaser } from "@/components/VisitorTeaser";
-import { FirstRunCoachmark } from "@/components/FirstRunCoachmark";
 import { LandingHero } from "@/components/LandingHero";
 
 import { ProximityAdDispatcher } from "@/components/ProximityAdDispatcher";
@@ -1539,18 +1534,6 @@ function Index() {
               toast("🔔 Tech park alerts cleared! You are fully caught up with the pod.");
             }} />
             <NavItem
-              icon={<span className="text-base leading-none">🪪</span>}
-              label="My Badge"
-              onClick={() => {
-                if (!user) {
-                  setAuthReason("Sign in to open your Spy ID Badge.");
-                  setAuthModalOpen(true);
-                  return;
-                }
-                navigate({ to: "/profile" });
-              }}
-            />
-            <NavItem
               icon={<span className="text-base leading-none">💀</span>}
               label="#TheGrind"
               onClick={() => navigate({ to: "/thegrind" })}
@@ -1581,16 +1564,6 @@ function Index() {
       </header>
 
       <EmergencyDealOverlay />
-      <FirstRunCoachmark
-        onClaim={() => {
-          if (user) {
-            navigate({ to: "/profile" });
-          } else {
-            setAuthReason("Sign in to claim your Spy Badge.");
-            setAuthModalOpen(true);
-          }
-        }}
-      />
       
 
 

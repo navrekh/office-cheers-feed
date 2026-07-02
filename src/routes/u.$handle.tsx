@@ -4,7 +4,7 @@ import { ArrowLeft, Linkedin, Github, Twitter, Globe, Share2, Download, Copy } f
 import { toast } from "sonner";
 import { getPublicProfile, type PublicProfile } from "@/lib/profiles.functions";
 import { PublicTestimonials } from "@/components/PublicTestimonials";
-import { SurvivalMetrics } from "@/components/SurvivalMetrics";
+
 import { SITE_URL } from "@/config";
 
 export const Route = createFileRoute("/u/$handle")({
@@ -144,9 +144,8 @@ function ProfileView() {
             </div>
           </div>
 
-          <div className="mt-6">
-            <SurvivalMetrics handle={profile.handle} />
-          </div>
+
+
 
 
           {availableSocials.length > 0 && (
