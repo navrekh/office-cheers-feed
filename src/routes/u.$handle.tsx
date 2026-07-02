@@ -147,6 +147,7 @@ function ProfileView() {
                 <p className="mt-1 text-xs text-white/60">🍺 {profile.pub_name}</p>
               )}
               {profile.bio && <p className="mt-3 text-sm text-white/80 whitespace-pre-wrap">{profile.bio}</p>}
+            </div>
           </div>
 
           <WatchButton
@@ -154,6 +155,7 @@ function ProfileView() {
             postCount={topPosts.length > 0 ? topPosts.length : null}
             joinedAt={(profile as { created_at?: string | null }).created_at ?? null}
           />
+
 
 
 
