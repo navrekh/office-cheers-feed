@@ -244,6 +244,7 @@ export type Database = {
           id: string
           latitude: number | null
           longitude: number | null
+          parent_id: string | null
           post_id: string
           user_id: string | null
         }
@@ -255,6 +256,7 @@ export type Database = {
           id?: string
           latitude?: number | null
           longitude?: number | null
+          parent_id?: string | null
           post_id: string
           user_id?: string | null
         }
@@ -266,10 +268,18 @@ export type Database = {
           id?: string
           latitude?: number | null
           longitude?: number | null
+          parent_id?: string | null
           post_id?: string
           user_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "comments_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "comments"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "comments_post_id_fkey"
             columns: ["post_id"]
@@ -420,6 +430,38 @@ export type Database = {
         }
         Relationships: []
       }
+      post_reactions: {
+        Row: {
+          created_at: string
+          emoji: string
+          id: string
+          post_id: string
+          session_key: string
+        }
+        Insert: {
+          created_at?: string
+          emoji: string
+          id?: string
+          post_id: string
+          session_key: string
+        }
+        Update: {
+          created_at?: string
+          emoji?: string
+          id?: string
+          post_id?: string
+          session_key?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "post_reactions_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       post_reports: {
         Row: {
           created_at: string
@@ -556,6 +598,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          archetype: Database["public"]["Enums"]["app_archetype"] | null
           avatar_url: string | null
           bio: string | null
           created_at: string
@@ -583,6 +626,7 @@ export type Database = {
           whatsapp_number: string | null
         }
         Insert: {
+          archetype?: Database["public"]["Enums"]["app_archetype"] | null
           avatar_url?: string | null
           bio?: string | null
           created_at?: string
@@ -610,6 +654,7 @@ export type Database = {
           whatsapp_number?: string | null
         }
         Update: {
+          archetype?: Database["public"]["Enums"]["app_archetype"] | null
           avatar_url?: string | null
           bio?: string | null
           created_at?: string
@@ -917,6 +962,16 @@ export type Database = {
           pinned: boolean
         }[]
       }
+      get_profile_top_posts: {
+        Args: { p_handle: string; p_limit?: number }
+        Returns: {
+          body_text: string
+          cheers_count: number
+          comment_count: number
+          created_at: string
+          id: string
+        }[]
+      }
       get_public_profile: {
         Args: { p_handle: string }
         Returns: {
@@ -1010,6 +1065,13 @@ export type Database = {
       }
     }
     Enums: {
+      app_archetype:
+        | "burnt_intern"
+        | "middle_manager"
+        | "founders_pet"
+        | "layoff_survivor"
+        | "faang_ghost"
+        | "startup_zombie"
       app_role: "employee" | "merchant" | "admin"
     }
     CompositeTypes: {
@@ -1138,6 +1200,14 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      app_archetype: [
+        "burnt_intern",
+        "middle_manager",
+        "founders_pet",
+        "layoff_survivor",
+        "faang_ghost",
+        "startup_zombie",
+      ],
       app_role: ["employee", "merchant", "admin"],
     },
   },
