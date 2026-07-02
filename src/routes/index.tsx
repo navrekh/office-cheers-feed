@@ -1620,11 +1620,7 @@ function Index() {
               )}
 
               {user ? (
-                <>
-                  <DossierHero />
-                  {/* HIGH-CURIOSITY HOOK: who decoded your dossier */}
-                  <VisitorTeaser userId={user.id} />
-                </>
+                <DossierHero />
               ) : (
                 // Full-bleed break-out of the max-w-3xl main so the hero fills the viewport.
                 <div className="relative left-1/2 -translate-x-1/2 w-screen max-w-[100vw] overflow-x-hidden">
@@ -1678,12 +1674,6 @@ function Index() {
                 </div>
               </section>
 
-              {/* 🧰 Everything else — lazy-loaded drawer */}
-              <ErrorBoundary label="ToolsDrawer" message="Toolbelt is reconnecting…">
-                <Suspense fallback={null}>
-                  <MoreToolsDrawer />
-                </Suspense>
-              </ErrorBoundary>
             </>
           )}
 
