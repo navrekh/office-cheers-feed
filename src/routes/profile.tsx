@@ -458,6 +458,32 @@ function ProfileEditor() {
                 />
               </Field>
 
+              <Field label="Archetype" hint="Pick your corporate persona. Auto-tags your posts and unlocks tribe filters.">
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                  {ARCHETYPES.map((a) => {
+                    const active = form.archetype === a.key;
+                    return (
+                      <button
+                        key={a.key}
+                        type="button"
+                        onClick={() => setArchetype(active ? null : a.key)}
+                        className={`rounded-lg border px-3 py-2 text-left transition ${
+                          active
+                            ? "border-amber-400 bg-amber-500/15 text-amber-100"
+                            : "border-white/10 bg-black/40 text-white/70 hover:border-amber-400/40 hover:text-white"
+                        }`}
+                      >
+                        <div className="flex items-center gap-1.5 text-sm font-bold">
+                          <span>{a.emoji}</span>
+                          <span>{a.label}</span>
+                        </div>
+                        <div className="mt-0.5 text-[10.5px] leading-tight text-white/50">{a.blurb}</div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </Field>
+
               <div>
                 <h3 className="text-[11px] font-bold uppercase tracking-[0.25em] text-amber-400">▸ Networking vault</h3>
                 <p className="mt-1 text-[11px] text-zinc-400">
