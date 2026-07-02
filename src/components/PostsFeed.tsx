@@ -199,6 +199,7 @@ function PostActions({
   }
 
   return (
+    <>
     <div
       className={`mt-3 flex items-center gap-2 flex-wrap pt-2 border-t transition-colors duration-300 ${
         copied ? "border-emerald-400/60" : "border-white/5"
