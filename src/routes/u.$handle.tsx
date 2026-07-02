@@ -69,7 +69,7 @@ const SOCIALS: Array<{ key: keyof PublicProfile; label: string; Icon: typeof Lin
 ];
 
 function ProfileView() {
-  const { profile } = Route.useLoaderData();
+  const { profile, topPosts } = Route.useLoaderData();
   const params = Route.useParams();
   const profileUrl = `${SITE_URL}/u/${params.handle}`;
   const name = profile.display_name || `@${profile.handle}`;
