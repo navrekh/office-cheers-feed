@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { getPublicProfile, type PublicProfile } from "@/lib/profiles.functions";
 import { getProfileTopPosts, type TopPost } from "@/lib/topPosts.functions";
 import { PublicTestimonials } from "@/components/PublicTestimonials";
+import WatchButton from "@/components/WatchButton";
 import { formatDistanceToNow } from "date-fns";
 
 import { SITE_URL } from "@/config";
