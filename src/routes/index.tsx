@@ -152,7 +152,7 @@ function Index() {
     }, 800);
   }, [user]);
 
-  async function addComment(postId: string, text: string) {
+  async function addComment(postId: string, text: string, parentId?: string | null) {
     const trimmed = text.trim();
     if (!trimmed || !user) return;
     const alias = corporateCodename(user.email) || pick(RANDOM_COMMENT_NAMES);
@@ -162,7 +162,8 @@ function Index() {
       author_name: alias,
       body_text: trimmed,
       created_at: new Date().toISOString(),
-    };
+      parent_id: parentId ?? null,
+    } as Comment;
     setCommentsByPost((prev) => ({
       ...prev,
       [postId]: [...(prev[postId] || []), optimistic],
@@ -175,6 +176,7 @@ function Index() {
         author_name: alias,
         author_alias: alias,
         user_id: user.id,
+        parent_id: parentId ?? null,
       })
       .select()
       .single();
