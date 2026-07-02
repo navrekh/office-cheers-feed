@@ -4,8 +4,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/useAuth";
 import { detectCompanyNames } from "@/lib/companyFilter";
 import { toast } from "sonner";
-import { getSelectedCity } from "@/lib/cityStore";
-import { broadcastTyping } from "@/lib/presence";
+const getSelectedCity = () => "Global";
+const broadcastTyping = () => {};
 
 const COMPANY_TAGS = [
   "TCS", "Infosys", "Wipro", "Capgemini", "Cognizant", "HCLTech",
