@@ -9,8 +9,6 @@ import {
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
 import { Toaster } from "@/components/ui/sonner";
-import { I18nProvider } from "@/lib/i18n";
-import FloatingMaskCta from "@/components/FloatingMaskCta";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
@@ -263,12 +261,9 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <I18nProvider>
-        {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-        <Outlet />
-        <FloatingMaskCta />
-        <Toaster richColors position="bottom-center" theme="dark" />
-      </I18nProvider>
+      {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
+      <Outlet />
+      <Toaster richColors position="bottom-center" theme="dark" />
     </QueryClientProvider>
   );
 }
