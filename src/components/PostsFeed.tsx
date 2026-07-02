@@ -1,11 +1,25 @@
 import { useEffect, useState, useCallback, useRef, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Hash, AtSign, Loader2, ImageOff, CornerDownRight } from "lucide-react";
+import { Hash, AtSign, Loader2, ImageOff, CornerDownRight, Flame, Clock } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/useAuth";
 import { downloadShareCard } from "@/lib/shareCard";
+import MultiReactions from "@/components/MultiReactions";
 const usePanicState = () => false;
+
+const AUTO_SHARE_KEY = "drinkedin_autoshared_v1";
+function markAutoShared(postId: string): boolean {
+  if (typeof window === "undefined") return true;
+  try {
+    const raw = window.localStorage.getItem(AUTO_SHARE_KEY);
+    const seen: Record<string, true> = raw ? JSON.parse(raw) : {};
+    if (seen[postId]) return false;
+    seen[postId] = true;
+    window.localStorage.setItem(AUTO_SHARE_KEY, JSON.stringify(seen));
+    return true;
+  } catch { return true; }
+}
 
 function randInt(min: number, max: number) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
