@@ -238,6 +238,41 @@ export function LandingHero({ onSignIn: _onSignIn, onDecode: _onDecode }: { onSi
         </div>
       </div>
 
+      {/* ============= ENTER THE GRIND ============= */}
+      <div className="mt-8 sm:mt-10 -mx-4 sm:-mx-6 lg:-mx-10 overflow-hidden">
+        <div className="relative border-y border-red-500/20 bg-gradient-to-r from-red-950/30 via-neutral-950 to-amber-950/20 px-4 py-8 sm:px-6 sm:py-10 lg:px-10">
+          <div className="pointer-events-none absolute inset-0 [background-image:radial-gradient(rgba(220,38,38,0.07)_1px,transparent_1px)] [background-size:3px_3px]" />
+          <div className="relative flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 min-w-0">
+            <div className="min-w-0 flex-1">
+              <div className="inline-flex items-center gap-2 border border-red-500/40 bg-red-500/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.18em] text-red-300 mb-3" style={monoFont}>
+                <span className="size-1.5 rounded-full bg-red-500 animate-pulse" />
+                Layoff season is here
+              </div>
+              <h2 className="text-[1.5rem] sm:text-[1.875rem] lg:text-[2.25rem] uppercase leading-[1.05] tracking-tight text-amber-50 break-words" style={headingFont}>
+                Got the "strategic re-skilling" email?
+              </h2>
+              <p className="mt-3 max-w-xl text-[13px] sm:text-[15px] leading-relaxed text-neutral-300 break-words">
+                You're not alone. Post your rejection receipts, track ghost recruiters, and shame ATS villains — anonymously. <span className="font-semibold text-amber-200">No real names. No consequences.</span>
+              </p>
+            </div>
+            <div className="shrink-0 flex flex-col sm:flex-row gap-3">
+              <Link
+                to="/thegrind"
+                className="group inline-flex items-center justify-center gap-2 rounded-md bg-amber-400 px-6 py-3.5 text-[12px] font-black uppercase tracking-[0.12em] text-neutral-950 hover:bg-amber-300 transition shadow-xl shadow-amber-500/20"
+                style={headingFont}
+              >
+                Enter the Grind
+                <ArrowRight className="size-4 group-hover:translate-x-1 transition-transform" />
+              </Link>
+              <span className="inline-flex items-center justify-center gap-1.5 text-[11px] text-neutral-500" style={monoFont}>
+                <span className="size-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                214 grinders online now
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <style>{`
         @keyframes slideInFromTop {
           0%   { opacity: 0; transform: translateY(-14px) scale(0.98); }
