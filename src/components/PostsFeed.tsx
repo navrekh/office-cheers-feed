@@ -1,11 +1,25 @@
 import { useEffect, useState, useCallback, useRef, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Hash, AtSign, Loader2, ImageOff, CornerDownRight } from "lucide-react";
+import { Hash, AtSign, Loader2, ImageOff, CornerDownRight, Flame, Clock } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/useAuth";
 import { downloadShareCard } from "@/lib/shareCard";
+import MultiReactions from "@/components/MultiReactions";
 const usePanicState = () => false;
+
+const AUTO_SHARE_KEY = "drinkedin_autoshared_v1";
+function markAutoShared(postId: string): boolean {
+  if (typeof window === "undefined") return true;
+  try {
+    const raw = window.localStorage.getItem(AUTO_SHARE_KEY);
+    const seen: Record<string, true> = raw ? JSON.parse(raw) : {};
+    if (seen[postId]) return false;
+    seen[postId] = true;
+    window.localStorage.setItem(AUTO_SHARE_KEY, JSON.stringify(seen));
+    return true;
+  } catch { return true; }
+}
 
 function randInt(min: number, max: number) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -185,6 +199,7 @@ function PostActions({
   }
 
   return (
+    <>
     <div
       className={`mt-3 flex items-center gap-2 flex-wrap pt-2 border-t transition-colors duration-300 ${
         copied ? "border-emerald-400/60" : "border-white/5"
@@ -254,6 +269,27 @@ function PostActions({
       >
         {copied ? "✅ Copied!" : "🔗 Share"}
       </button>
+      </div>
+      {/* Multi-emoji reactions — anonymous, one per session per emoji */}
+      <MultiReactions
+        postId={postId}
+        onMilestone={(total) => {
+          if (total === 10 && markAutoShared(postId)) {
+            toast("🚀 This one's going viral — grab the card and post it to your story?", {
+              duration: 8000,
+              action: {
+                label: "📸 Download",
+                onClick: async () => {
+                  try {
+                    await downloadShareCard({ author: authorName, body: bodyText, postId });
+                    toast.success("Card saved — go flex it.");
+                  } catch { toast.error("Couldn't generate card."); }
+                },
+              },
+            });
+          }
+        }}
+      />
       <style>{`
         @keyframes foam-float {
           0% { opacity: 0; transform: translate(-50%, 0) scale(0.6); }
@@ -261,7 +297,7 @@ function PostActions({
           100% { opacity: 0; transform: translate(-50%, -28px) scale(1.2); }
         }
       `}</style>
-    </div>
+    </>
   );
 }
 
@@ -858,14 +894,26 @@ export default function PostsFeed() {
     return () => window.removeEventListener("drinkedin:godmode-surge-post", onSurge);
   }, []);
 
+  const [sortMode, setSortMode] = useState<"new" | "trending">("new");
 
-  // Merge real + simulated weekend posts, sorted newest-first
+  // Merge real + simulated posts, sort by chosen mode
   const merged: FeedPost[] | null =
     posts === null
       ? null
-      : [...simPosts, ...posts].sort(
-          (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-        );
+      : (() => {
+          const all = [...simPosts, ...posts];
+          if (sortMode === "trending") {
+            const now = Date.now();
+            const score = (p: FeedPost) => {
+              const hours = Math.max(0.5, (now - new Date(p.created_at).getTime()) / 3_600_000);
+              return (p.cheers_count + 1) / Math.pow(hours, 1.5);
+            };
+            return all.sort((a, b) => score(b) - score(a));
+          }
+          return all.sort(
+            (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+          );
+        })();
 
   return (
     <div
@@ -877,15 +925,36 @@ export default function PostsFeed() {
         border: "1px solid #1f1f1f",
       }}
     >
-      <div className="flex items-center justify-between mb-3">
+      <div className="flex items-center justify-between mb-3 gap-2 flex-wrap">
         <h3 className="text-[10px] uppercase tracking-[0.24em] font-bold text-cyan-300/90">
           📡 Live Breakroom Feed
         </h3>
-        <span className="text-[9px] uppercase tracking-wider text-emerald-300/80 font-bold flex items-center gap-1">
-          <span className="size-1.5 rounded-full bg-emerald-400 animate-pulse" />
-          Live
-        </span>
+        <div className="flex items-center gap-1">
+          <button
+            type="button"
+            onClick={() => setSortMode("new")}
+            className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider transition ${
+              sortMode === "new"
+                ? "border-cyan-400/60 bg-cyan-500/15 text-cyan-100"
+                : "border-white/10 bg-white/[0.03] text-white/50 hover:text-white/80"
+            }`}
+          >
+            <Clock className="size-3" /> New
+          </button>
+          <button
+            type="button"
+            onClick={() => setSortMode("trending")}
+            className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider transition ${
+              sortMode === "trending"
+                ? "border-red-400/60 bg-red-500/15 text-red-100"
+                : "border-white/10 bg-white/[0.03] text-white/50 hover:text-white/80"
+            }`}
+          >
+            <Flame className="size-3" /> Trending
+          </button>
+        </div>
       </div>
+
 
       {merged === null ? (
         <div className="grid place-items-center py-10">

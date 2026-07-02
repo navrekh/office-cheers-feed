@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Input } from "@/components/ui/input";
-import { Send, MessageCircle } from "lucide-react";
+import { Send, MessageCircle, X, CornerDownRight } from "lucide-react";
 
 export type DrawerComment = {
   id: string;
@@ -9,6 +9,7 @@ export type DrawerComment = {
   author_name: string;
   body_text: string;
   created_at: string;
+  parent_id?: string | null;
 };
 
 type Props = {
@@ -17,7 +18,7 @@ type Props = {
   postTitle: string | null;
   postId: string | null;
   comments: DrawerComment[];
-  onSubmit: (postId: string, text: string) => Promise<void> | void;
+  onSubmit: (postId: string, text: string, parentId?: string | null) => Promise<void> | void;
   signedIn: boolean;
   onRequireAuth: () => void;
 };
@@ -34,16 +35,12 @@ function initials(name: string) {
   return name.split(" ").map((n) => n[0]).slice(0, 2).join("").toUpperCase() || "??";
 }
 
-// Rotating reply prompts so the drawer never opens to a dead-air input.
 const REPLY_PROMPTS = [
   "Drop an office reply anonymously... 🤫",
   "Co-sign, roast, or escalate — your call.",
   "What would you Slack back if HR wasn't watching?",
   "Hot take? Spicy take? Lukewarm take? Send it.",
   "Validate the suffering. Or pile on.",
-  "Reply with the meme this deserves.",
-  "What's the petty version of this story?",
-  "Drop the receipt your manager doesn't know exists.",
 ];
 
 export default function CommentsDrawer({
@@ -58,22 +55,20 @@ export default function CommentsDrawer({
 }: Props) {
   const [text, setText] = useState("");
   const [sending, setSending] = useState(false);
+  const [replyTo, setReplyTo] = useState<{ id: string; author: string } | null>(null);
   const [promptIdx, setPromptIdx] = useState(() => Math.floor(Math.random() * REPLY_PROMPTS.length));
   const listRef = useRef<HTMLDivElement | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
 
-  // Reset composer + auto-focus when a post opens
   useEffect(() => {
     setText("");
+    setReplyTo(null);
     if (open && postId) {
-      // Delay so the sheet finishes mounting before we focus
       const t = window.setTimeout(() => inputRef.current?.focus(), 180);
       return () => window.clearTimeout(t);
     }
   }, [postId, open]);
 
-  // Rotate placeholder every 4.5s while the input is empty so a fresh
-  // nudge is always waiting for the lurker hovering over the drawer.
   useEffect(() => {
     if (!open || text) return;
     const id = window.setInterval(() => {
@@ -82,7 +77,6 @@ export default function CommentsDrawer({
     return () => window.clearInterval(id);
   }, [open, text]);
 
-  // Auto-scroll on new comment
   const last = comments[comments.length - 1]?.id;
   useEffect(() => {
     if (!open) return;
@@ -90,10 +84,16 @@ export default function CommentsDrawer({
     if (el) el.scrollTop = el.scrollHeight;
   }, [last, open]);
 
-  const sorted = useMemo(
-    () => [...comments].sort((a, b) => a.created_at.localeCompare(b.created_at)),
-    [comments]
-  );
+  // Build a threaded tree: parents in chronological order, replies grouped under.
+  const tree = useMemo(() => {
+    const sorted = [...comments].sort((a, b) => a.created_at.localeCompare(b.created_at));
+    const parents = sorted.filter((c) => !c.parent_id);
+    const kids: Record<string, DrawerComment[]> = {};
+    for (const c of sorted) {
+      if (c.parent_id) (kids[c.parent_id] ||= []).push(c);
+    }
+    return { parents, kids };
+  }, [comments]);
 
   async function handle(e: FormEvent) {
     e.preventDefault();
@@ -106,11 +106,17 @@ export default function CommentsDrawer({
     }
     setSending(true);
     try {
-      await onSubmit(postId, trimmed);
+      await onSubmit(postId, trimmed, replyTo?.id ?? null);
       setText("");
+      setReplyTo(null);
     } finally {
       setSending(false);
     }
+  }
+
+  function startReply(c: DrawerComment) {
+    setReplyTo({ id: c.id, author: c.author_name });
+    inputRef.current?.focus();
   }
 
   return (
@@ -129,8 +135,22 @@ export default function CommentsDrawer({
           </SheetDescription>
         </SheetHeader>
 
-        {/* Composer pinned at top of drawer */}
         <form onSubmit={handle} className="px-4 pt-3 pb-3 border-b border-amber-500/10 bg-zinc-950/60">
+          {replyTo && (
+            <div className="mb-2 flex items-center justify-between gap-2 rounded-md bg-amber-500/10 border border-amber-500/20 px-2 py-1">
+              <span className="text-[10.5px] text-amber-200 truncate">
+                ↳ replying to <b>{replyTo.author}</b>
+              </span>
+              <button
+                type="button"
+                onClick={() => setReplyTo(null)}
+                className="shrink-0 text-amber-200/70 hover:text-amber-100"
+                aria-label="Cancel reply"
+              >
+                <X className="size-3.5" />
+              </button>
+            </div>
+          )}
           <div className="flex items-center gap-2">
             <div className="size-8 shrink-0 rounded-full bg-amber-500/20 grid place-items-center text-[11px] font-bold text-amber-200">
               {signedIn ? "🤫" : "🔒"}
@@ -140,7 +160,7 @@ export default function CommentsDrawer({
                 ref={inputRef}
                 value={text}
                 onChange={(e) => setText(e.target.value)}
-                placeholder={REPLY_PROMPTS[promptIdx]}
+                placeholder={replyTo ? `Reply to ${replyTo.author}…` : REPLY_PROMPTS[promptIdx]}
                 disabled={!postId || sending}
                 className="h-9 rounded-full bg-background pr-10 text-sm"
               />
@@ -161,37 +181,25 @@ export default function CommentsDrawer({
           )}
         </form>
 
-        <div
-          ref={listRef}
-          className="flex-1 overflow-y-auto px-4 py-3 space-y-3"
-        >
-          {sorted.length === 0 ? (
+        <div ref={listRef} className="flex-1 overflow-y-auto px-4 py-3 space-y-3">
+          {tree.parents.length === 0 ? (
             <p className="text-xs text-muted-foreground italic text-center py-10">
               Crickets in the breakroom. Be the first to weigh in. 🦗
             </p>
           ) : (
             <ul className="space-y-2.5">
-              {sorted.map((c) => (
-                <li
-                  key={c.id}
-                  className="flex items-start gap-2 animate-in fade-in slide-in-from-bottom-1 duration-200"
-                >
-                  <div className="size-8 shrink-0 rounded-full bg-primary/20 grid place-items-center text-[11px] font-bold text-primary">
-                    {initials(c.author_name)}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="bg-card border border-border rounded-2xl rounded-tl-sm px-3 py-2">
-                      <div className="flex items-baseline gap-2">
-                        <span className="text-xs font-semibold truncate">{c.author_name}</span>
-                        <span className="text-[10px] text-muted-foreground shrink-0">
-                          {timeAgo(c.created_at)}
-                        </span>
-                      </div>
-                      <p className="text-sm leading-snug mt-0.5 whitespace-pre-wrap break-words">
-                        {c.body_text}
-                      </p>
-                    </div>
-                  </div>
+              {tree.parents.map((c) => (
+                <li key={c.id} className="animate-in fade-in slide-in-from-bottom-1 duration-200">
+                  <CommentRow c={c} onReply={() => startReply(c)} />
+                  {tree.kids[c.id]?.length ? (
+                    <ul className="mt-2 ml-8 space-y-2 border-l border-amber-500/15 pl-3">
+                      {tree.kids[c.id].map((k) => (
+                        <li key={k.id} className="animate-in fade-in slide-in-from-bottom-1 duration-200">
+                          <CommentRow c={k} nested onReply={() => startReply(c)} />
+                        </li>
+                      ))}
+                    </ul>
+                  ) : null}
                 </li>
               ))}
             </ul>
@@ -199,5 +207,32 @@ export default function CommentsDrawer({
         </div>
       </SheetContent>
     </Sheet>
+  );
+}
+
+function CommentRow({ c, nested = false, onReply }: { c: DrawerComment; nested?: boolean; onReply: () => void }) {
+  return (
+    <div className="flex items-start gap-2">
+      <div className={`shrink-0 rounded-full grid place-items-center font-bold ${nested ? "size-6 bg-amber-500/15 text-amber-200 text-[9.5px]" : "size-8 bg-primary/20 text-primary text-[11px]"}`}>
+        {initials(c.author_name)}
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className={`bg-card border border-border rounded-2xl rounded-tl-sm px-3 py-2 ${nested ? "text-[12.5px]" : ""}`}>
+          <div className="flex items-baseline gap-2">
+            {nested && <CornerDownRight className="size-3 text-amber-400/60 shrink-0" />}
+            <span className="text-xs font-semibold truncate">{c.author_name}</span>
+            <span className="text-[10px] text-muted-foreground shrink-0">{timeAgo(c.created_at)}</span>
+          </div>
+          <p className="text-sm leading-snug mt-0.5 whitespace-pre-wrap break-words">{c.body_text}</p>
+        </div>
+        <button
+          type="button"
+          onClick={onReply}
+          className="mt-1 ml-1 text-[10.5px] text-muted-foreground hover:text-amber-300 font-semibold uppercase tracking-wider"
+        >
+          Reply
+        </button>
+      </div>
+    </div>
   );
 }

@@ -42,6 +42,17 @@ export const Route = createFileRoute("/profile")({
   component: ProfileEditor,
 });
 
+type Archetype = "burnt_intern" | "middle_manager" | "founders_pet" | "layoff_survivor" | "faang_ghost" | "startup_zombie";
+
+const ARCHETYPES: { key: Archetype; label: string; emoji: string; blurb: string }[] = [
+  { key: "burnt_intern", label: "Burnt Intern", emoji: "☕", blurb: "Bottom of the ladder, top of the group chat." },
+  { key: "middle_manager", label: "Middle Manager", emoji: "📊", blurb: "Sandwiched between OKRs and vibes." },
+  { key: "founders_pet", label: "Founder's Pet", emoji: "🐕", blurb: "Employee #4, unlimited PTO, taken 0 days." },
+  { key: "layoff_survivor", label: "Layoff Survivor", emoji: "🪦", blurb: "Made it through Q1. Barely." },
+  { key: "faang_ghost", label: "FAANG Ghost", emoji: "👻", blurb: "Golden handcuffs, silent Slack." },
+  { key: "startup_zombie", label: "Startup Zombie", emoji: "🧟", blurb: "Series A dreams, unpaid overtime." },
+];
+
 type ProfileRow = {
   id: string;
   handle: string | null;
@@ -52,6 +63,7 @@ type ProfileRow = {
   github_url: string | null;
   twitter_url: string | null;
   website_url: string | null;
+  archetype: Archetype | null;
 };
 
 const EMPTY: Omit<ProfileRow, "id"> = {
@@ -63,6 +75,7 @@ const EMPTY: Omit<ProfileRow, "id"> = {
   github_url: "",
   twitter_url: "",
   website_url: "",
+  archetype: null,
 };
 
 const HANDLE_RE = /^[a-zA-Z0-9_]{3,24}$/;
@@ -98,7 +111,7 @@ function ProfileEditor() {
       const [{ data, error }, postsRes] = await Promise.all([
         (supabase as any)
           .from("profiles")
-          .select("id, handle, display_name, bio, avatar_url, linkedin_url, github_url, twitter_url, website_url")
+          .select("id, handle, display_name, bio, avatar_url, linkedin_url, github_url, twitter_url, website_url, archetype")
           .eq("id", user.id)
           .maybeSingle(),
         (supabase as any)
@@ -119,6 +132,7 @@ function ProfileEditor() {
           github_url: data.github_url ?? "",
           twitter_url: data.twitter_url ?? "",
           website_url: data.website_url ?? "",
+          archetype: (data.archetype as Archetype | null) ?? null,
         });
       }
       const rows: any[] = postsRes?.data ?? [];
@@ -131,8 +145,12 @@ function ProfileEditor() {
     })();
   }, [user, authLoading]);
 
-  function setField<K extends keyof typeof EMPTY>(k: K, v: string) {
+  function setField<K extends keyof typeof EMPTY>(k: K, v: (typeof EMPTY)[K]) {
     setForm((f) => ({ ...f, [k]: v }));
+  }
+
+  function setArchetype(a: Archetype | null) {
+    setForm((f) => ({ ...f, archetype: a }));
   }
 
   async function save(e: React.FormEvent) {
@@ -154,6 +172,7 @@ function ProfileEditor() {
       github_url: sanitizeUrl(form.github_url || ""),
       twitter_url: sanitizeUrl(form.twitter_url || ""),
       website_url: sanitizeUrl(form.website_url || ""),
+      archetype: form.archetype,
     };
     const { error } = await (supabase as any)
       .from("profiles")
@@ -437,6 +456,32 @@ function ProfileEditor() {
                   rows={3}
                   className="w-full rounded-md border border-amber-500/20 bg-black/60 px-3 py-2 text-sm outline-none focus:border-amber-400"
                 />
+              </Field>
+
+              <Field label="Archetype" hint="Pick your corporate persona. Auto-tags your posts and unlocks tribe filters.">
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                  {ARCHETYPES.map((a) => {
+                    const active = form.archetype === a.key;
+                    return (
+                      <button
+                        key={a.key}
+                        type="button"
+                        onClick={() => setArchetype(active ? null : a.key)}
+                        className={`rounded-lg border px-3 py-2 text-left transition ${
+                          active
+                            ? "border-amber-400 bg-amber-500/15 text-amber-100"
+                            : "border-white/10 bg-black/40 text-white/70 hover:border-amber-400/40 hover:text-white"
+                        }`}
+                      >
+                        <div className="flex items-center gap-1.5 text-sm font-bold">
+                          <span>{a.emoji}</span>
+                          <span>{a.label}</span>
+                        </div>
+                        <div className="mt-0.5 text-[10.5px] leading-tight text-white/50">{a.blurb}</div>
+                      </button>
+                    );
+                  })}
+                </div>
               </Field>
 
               <div>
