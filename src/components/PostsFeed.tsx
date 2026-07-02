@@ -894,14 +894,26 @@ export default function PostsFeed() {
     return () => window.removeEventListener("drinkedin:godmode-surge-post", onSurge);
   }, []);
 
+  const [sortMode, setSortMode] = useState<"new" | "trending">("new");
 
-  // Merge real + simulated weekend posts, sorted newest-first
+  // Merge real + simulated posts, sort by chosen mode
   const merged: FeedPost[] | null =
     posts === null
       ? null
-      : [...simPosts, ...posts].sort(
-          (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-        );
+      : (() => {
+          const all = [...simPosts, ...posts];
+          if (sortMode === "trending") {
+            const now = Date.now();
+            const score = (p: FeedPost) => {
+              const hours = Math.max(0.5, (now - new Date(p.created_at).getTime()) / 3_600_000);
+              return (p.cheers_count + 1) / Math.pow(hours, 1.5);
+            };
+            return all.sort((a, b) => score(b) - score(a));
+          }
+          return all.sort(
+            (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+          );
+        })();
 
   return (
     <div
@@ -913,15 +925,36 @@ export default function PostsFeed() {
         border: "1px solid #1f1f1f",
       }}
     >
-      <div className="flex items-center justify-between mb-3">
+      <div className="flex items-center justify-between mb-3 gap-2 flex-wrap">
         <h3 className="text-[10px] uppercase tracking-[0.24em] font-bold text-cyan-300/90">
           📡 Live Breakroom Feed
         </h3>
-        <span className="text-[9px] uppercase tracking-wider text-emerald-300/80 font-bold flex items-center gap-1">
-          <span className="size-1.5 rounded-full bg-emerald-400 animate-pulse" />
-          Live
-        </span>
+        <div className="flex items-center gap-1">
+          <button
+            type="button"
+            onClick={() => setSortMode("new")}
+            className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider transition ${
+              sortMode === "new"
+                ? "border-cyan-400/60 bg-cyan-500/15 text-cyan-100"
+                : "border-white/10 bg-white/[0.03] text-white/50 hover:text-white/80"
+            }`}
+          >
+            <Clock className="size-3" /> New
+          </button>
+          <button
+            type="button"
+            onClick={() => setSortMode("trending")}
+            className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider transition ${
+              sortMode === "trending"
+                ? "border-red-400/60 bg-red-500/15 text-red-100"
+                : "border-white/10 bg-white/[0.03] text-white/50 hover:text-white/80"
+            }`}
+          >
+            <Flame className="size-3" /> Trending
+          </button>
+        </div>
       </div>
+
 
       {merged === null ? (
         <div className="grid place-items-center py-10">
