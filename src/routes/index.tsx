@@ -93,8 +93,6 @@ import { FirstRunCoachmark } from "@/components/FirstRunCoachmark";
 import { LandingHero } from "@/components/LandingHero";
 
 import { ProximityAdDispatcher } from "@/components/ProximityAdDispatcher";
-import DesperationPoll from "@/components/DesperationPoll";
-import DesperationPollModal from "@/components/DesperationPollModal";
 import BroetryMemeCard from "@/components/BroetryMemeCard";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import GodModeDeck from "@/components/GodModeDeck";
@@ -168,8 +166,6 @@ import RecentEscapesTicker from "@/components/RecentEscapesTicker";
 import PanicButton from "@/components/PanicButton";
 import HubSelector from "@/components/HubSelector";
 import BurnoutLeaderboard from "@/components/BurnoutLeaderboard";
-import LocalShoutbox from "@/components/LocalShoutbox";
-import RallyBoard from "@/components/RallyBoard";
 import PostComposer from "@/components/PostComposer";
 import PostsFeed from "@/components/PostsFeed";
 import WeekendBoundaryModule from "@/components/WeekendBoundaryModule";
@@ -220,7 +216,7 @@ export const Route = createFileRoute("/")({
 
 
 
-type ViewKey = "home" | "pubs" | "messages" | "notifications" | "rally" | "polls" | "tools";
+type ViewKey = "home" | "pubs" | "messages" | "notifications" | "tools";
 
 const PENDING_DRAFT_KEY = "drinkedin.pendingDraft.v1";
 type PendingDraft = {
@@ -1709,72 +1705,15 @@ function Index() {
                 </div>
               </section>
 
-              {/* Pulse check now AFTER the feed so the feed dominates the fold */}
-              <HomeSection
-                eyebrow="📊 PULSE CHECK"
-                title="Today's Desperation Poll"
-                blurb="Vote in 2 seconds. See how cooked the rest of the office is."
-              >
-                <ErrorBoundary label="Poll" message="Poll engine is rebooting…">
-                  <DesperationPoll
-                    onSignUp={(reason) => requireAuth(reason ?? "Drop an anonymous confession — sign in once and you're masked.")}
-                  />
-                </ErrorBoundary>
-              </HomeSection>
-
-
-
-
-              {/* 💬 Rally + chat — kept inline (real-time engagement) */}
-              <HomeSection
-                eyebrow="💬 BREAKROOM CHAT"
-                title="Rally & Local Shoutbox"
-                blurb="Coordinate a real-life happy hour. Or just yell into the void."
-              >
-                <ErrorBoundary label="Rally" message="Rally is reconnecting…">
-                  <RallyBoard requireAuth={requireAuth} />
-                </ErrorBoundary>
-                <div className="h-3" />
-                <ErrorBoundary label="Shoutbox" message="Chat is reconnecting…">
-                  <LocalShoutbox requireAuth={requireAuth} variant="hero" />
-                </ErrorBoundary>
-              </HomeSection>
-
               {/* 🧰 Everything else — lazy-loaded drawer */}
               <ErrorBoundary label="ToolsDrawer" message="Toolbelt is reconnecting…">
                 <Suspense fallback={null}>
                   <MoreToolsDrawer />
                 </Suspense>
               </ErrorBoundary>
-
-
-              {/* Poll modal stays globally mounted */}
-              <DesperationPollModal
-                onSignUp={(reason) => requireAuth(reason ?? "Drop an anonymous confession — sign in once and you're masked.")}
-              />
             </>
           )}
 
-          {view === "polls" && (
-            <SubPageShell title="📊 Quick Pulse Check" subtitle="Today's Desperation Index · 50-Poll Roulette" onBack={() => setView("home")}>
-              <ErrorBoundary label="Poll" message="Poll engine is rebooting…">
-                <DesperationPoll
-                  onSignUp={(reason) => requireAuth(reason ?? "Drop an anonymous confession — sign in once and you're masked.")}
-                />
-              </ErrorBoundary>
-            </SubPageShell>
-          )}
-
-          {view === "rally" && (
-            <SubPageShell title="💬 Rally & Shoutbox" subtitle="Chat with the breakroom in real time" onBack={() => setView("home")}>
-              <ErrorBoundary label="Rally" message="Rally is reconnecting…">
-                <RallyBoard requireAuth={requireAuth} />
-              </ErrorBoundary>
-              <ErrorBoundary label="Shoutbox" message="Chat is reconnecting…">
-                <LocalShoutbox requireAuth={requireAuth} variant="hero" />
-              </ErrorBoundary>
-            </SubPageShell>
-          )}
 
           {view === "tools" && (
             <SubPageShell title="🍻 Pub Tools" subtitle="Roasts, leaderboards & gimmicks" onBack={() => setView("home")}>
