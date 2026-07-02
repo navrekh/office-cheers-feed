@@ -406,7 +406,7 @@ function Index() {
           setAuthReason("Sign in to drop a reply 💬");
           setAuthModalOpen(true);
         }}
-        onSubmit={(pid, text) => addComment(pid, text)}
+        onSubmit={(pid, text, parentId) => addComment(pid, text, parentId)}
       />
 
       {/* silence unused profile warning */}
