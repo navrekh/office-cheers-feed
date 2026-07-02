@@ -18,10 +18,19 @@ function jitter(base: number, spread: number) {
 }
 
 export default function LiveActivityStrip() {
-  const [online, setOnline] = useState<number>(() => 34 + Math.floor(Math.random() * 22));
-  const [lastPostSec, setLastPostSec] = useState<number>(() => 5 + Math.floor(Math.random() * 40));
-  const [typing, setTyping] = useState<string>(() => TYPING_LINES[0]);
+  // Deterministic initial state so SSR HTML matches first client render.
+  // We randomize on mount to avoid hydration mismatches.
+  const [online, setOnline] = useState<number>(42);
+  const [lastPostSec, setLastPostSec] = useState<number>(12);
+  const [typing, setTyping] = useState<string>(TYPING_LINES[0]);
   const [typingVisible, setTypingVisible] = useState(true);
+
+  // Randomize once after mount (client-only) — safe for hydration.
+  useEffect(() => {
+    setOnline(34 + Math.floor(Math.random() * 22));
+    setLastPostSec(5 + Math.floor(Math.random() * 40));
+  }, []);
+
 
   // Online count drift
   useEffect(() => {

@@ -86,7 +86,11 @@ export default function PostComposer({
   const [popover, setPopover] = useState<Suggestion[] | null>(null);
   const [popoverTrigger, setPopoverTrigger] = useState<"#" | "@" | null>(null);
   const [focused, setFocused] = useState(false);
-  const [promptIdx, setPromptIdx] = useState(() => Math.floor(Math.random() * COMPOSER_PROMPTS.length));
+  const [promptIdx, setPromptIdx] = useState(0);
+  // Randomize starting prompt after mount so SSR HTML matches first client render.
+  useEffect(() => {
+    setPromptIdx(Math.floor(Math.random() * COMPOSER_PROMPTS.length));
+  }, []);
   // Rotate the placeholder every 4.5s while the textarea is empty + unfocused
   // so a fresh prompt is waiting whenever a new lurker glances at the composer.
   useEffect(() => {
