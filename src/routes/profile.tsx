@@ -42,6 +42,17 @@ export const Route = createFileRoute("/profile")({
   component: ProfileEditor,
 });
 
+type Archetype = "burnt_intern" | "middle_manager" | "founders_pet" | "layoff_survivor" | "faang_ghost" | "startup_zombie";
+
+const ARCHETYPES: { key: Archetype; label: string; emoji: string; blurb: string }[] = [
+  { key: "burnt_intern", label: "Burnt Intern", emoji: "☕", blurb: "Bottom of the ladder, top of the group chat." },
+  { key: "middle_manager", label: "Middle Manager", emoji: "📊", blurb: "Sandwiched between OKRs and vibes." },
+  { key: "founders_pet", label: "Founder's Pet", emoji: "🐕", blurb: "Employee #4, unlimited PTO, taken 0 days." },
+  { key: "layoff_survivor", label: "Layoff Survivor", emoji: "🪦", blurb: "Made it through Q1. Barely." },
+  { key: "faang_ghost", label: "FAANG Ghost", emoji: "👻", blurb: "Golden handcuffs, silent Slack." },
+  { key: "startup_zombie", label: "Startup Zombie", emoji: "🧟", blurb: "Series A dreams, unpaid overtime." },
+];
+
 type ProfileRow = {
   id: string;
   handle: string | null;
@@ -52,6 +63,7 @@ type ProfileRow = {
   github_url: string | null;
   twitter_url: string | null;
   website_url: string | null;
+  archetype: Archetype | null;
 };
 
 const EMPTY: Omit<ProfileRow, "id"> = {
@@ -63,6 +75,7 @@ const EMPTY: Omit<ProfileRow, "id"> = {
   github_url: "",
   twitter_url: "",
   website_url: "",
+  archetype: null,
 };
 
 const HANDLE_RE = /^[a-zA-Z0-9_]{3,24}$/;
