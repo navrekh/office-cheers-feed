@@ -6,6 +6,41 @@ import { toast } from "sonner";
 import { useAuth } from "@/lib/useAuth";
 import { downloadShareCard } from "@/lib/shareCard";
 import MultiReactions from "@/components/MultiReactions";
+import LiveActivityStrip from "@/components/LiveActivityStrip";
+
+// Deterministic "top reply teaser" for cards with no real replies yet — gives
+// every card a hook line so scanners see the conversation shape at a glance.
+const REPLY_TEASERS = [
+  "🫠 this is my exact Monday, saving it",
+  "💀 you just described my skip-level",
+  "🔥 send this to my VP anonymously please",
+  "🥲 reading this on my third coffee, felt",
+  "👻 my manager wrote this about me probably",
+  "😂 the CEO sent this in an all-hands unironically",
+  "🫡 taking a mental health week after reading this",
+  "🚀 quit reading, now quit your job",
+  "🪦 buried my career next to this comment",
+  "☕ this is why the coffee machine is my therapist",
+];
+const TEASER_PERSONAS = [
+  "Anon_Deloitte_M4",
+  "PIP_Refugee_22",
+  "Slack_DM_Therapist",
+  "Bench_Warmer_Bro",
+  "Meta_E5_Refugee",
+  "Zomato_Eng_GGN",
+  "OKR_Ghost_Q4",
+];
+function teaserFor(id: string): { persona: string; text: string } | null {
+  let h = 0;
+  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0;
+  // ~78% of cards get a teaser; the rest feel "brand new, no replies yet"
+  if (h % 100 < 22) return null;
+  return {
+    persona: TEASER_PERSONAS[h % TEASER_PERSONAS.length],
+    text: REPLY_TEASERS[(h >>> 3) % REPLY_TEASERS.length],
+  };
+}
 const usePanicState = () => false;
 
 const AUTO_SHARE_KEY = "drinkedin_autoshared_v1";
