@@ -1,17 +1,22 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { QRCodeCanvas } from "qrcode.react";
-import { ArrowLeft, Linkedin, Github, Twitter, Globe, Share2, Download, Copy } from "lucide-react";
+import { ArrowLeft, Linkedin, Github, Twitter, Globe, Share2, Download, Copy, Flame } from "lucide-react";
 import { toast } from "sonner";
 import { getPublicProfile, type PublicProfile } from "@/lib/profiles.functions";
+import { getProfileTopPosts, type TopPost } from "@/lib/topPosts.functions";
 import { PublicTestimonials } from "@/components/PublicTestimonials";
+import { formatDistanceToNow } from "date-fns";
 
 import { SITE_URL } from "@/config";
 
 export const Route = createFileRoute("/u/$handle")({
   loader: async ({ params }) => {
-    const profile = await getPublicProfile({ data: { handle: params.handle } });
+    const [profile, topPosts] = await Promise.all([
+      getPublicProfile({ data: { handle: params.handle } }),
+      getProfileTopPosts({ data: { handle: params.handle } }).catch(() => [] as TopPost[]),
+    ]);
     if (!profile) throw notFound();
-    return { profile };
+    return { profile, topPosts };
   },
   head: ({ params, loaderData }) => {
     const p = loaderData?.profile as PublicProfile | undefined;
