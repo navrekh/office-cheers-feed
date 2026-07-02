@@ -60,11 +60,17 @@ export default function CommentsDrawer({
   const [sending, setSending] = useState(false);
   const [promptIdx, setPromptIdx] = useState(() => Math.floor(Math.random() * REPLY_PROMPTS.length));
   const listRef = useRef<HTMLDivElement | null>(null);
+  const inputRef = useRef<HTMLInputElement | null>(null);
 
-  // Reset composer when post changes
+  // Reset composer + auto-focus when a post opens
   useEffect(() => {
     setText("");
-  }, [postId]);
+    if (open && postId) {
+      // Delay so the sheet finishes mounting before we focus
+      const t = window.setTimeout(() => inputRef.current?.focus(), 180);
+      return () => window.clearTimeout(t);
+    }
+  }, [postId, open]);
 
   // Rotate placeholder every 4.5s while the input is empty so a fresh
   // nudge is always waiting for the lurker hovering over the drawer.
@@ -131,6 +137,7 @@ export default function CommentsDrawer({
             </div>
             <div className="flex-1 relative">
               <Input
+                ref={inputRef}
                 value={text}
                 onChange={(e) => setText(e.target.value)}
                 placeholder={REPLY_PROMPTS[promptIdx]}

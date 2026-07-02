@@ -284,16 +284,24 @@ function Index() {
           </ErrorBoundary>
 
           <section className="rounded-2xl bg-neutral-950/40 border border-neutral-900/50 backdrop-blur-[14px] overflow-hidden">
-            <header className="flex items-center justify-between px-4 py-2.5 border-b border-neutral-900/60 bg-neutral-950/60">
+            <header className="flex items-center justify-between px-4 py-2.5 border-b border-neutral-900/60 bg-neutral-950/60 gap-3 flex-wrap">
               <div className="flex items-center gap-2">
                 <span className="size-2 rounded-full bg-emerald-400 animate-pulse" />
                 <h2 className="text-sm font-bold tracking-wide uppercase">
                   🍻 Live Breakroom Feed
                 </h2>
               </div>
-              <span className="text-[10px] font-bold tracking-[0.18em] text-amber-300/80">
-                LIVE · ANON
-              </span>
+              <div className="flex items-center gap-2">
+                <Link
+                  to="/thegrind"
+                  className="inline-flex items-center gap-1.5 rounded-full border border-red-500/40 bg-red-500/10 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.14em] text-red-300 hover:bg-red-500/20 transition"
+                >
+                  💀 #TheGrind →
+                </Link>
+                <span className="text-[10px] font-bold tracking-[0.18em] text-amber-300/80">
+                  LIVE · ANON
+                </span>
+              </div>
             </header>
             <div id="feed" className="p-3 sm:p-4 scroll-mt-20">
               <ErrorBoundary label="Feed" message="Feed is reconnecting…">
