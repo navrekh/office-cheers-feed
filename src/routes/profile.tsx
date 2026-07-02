@@ -381,16 +381,33 @@ function ProfileEditor() {
                 ▸ Dossier — editable
               </h2>
 
-              <Field label="Handle" hint="Public URL slug. 3–24 letters / numbers / underscores.">
-                <div className="flex items-center rounded-md border border-amber-500/20 bg-black/60 focus-within:border-amber-400">
-                  <span className="pl-3 text-xs text-amber-400/60">drinkedin.me/u/</span>
-                  <input
-                    value={form.handle ?? ""}
-                    onChange={(e) => setField("handle", e.target.value.replace(/\s/g, ""))}
-                    placeholder="agent_42"
-                    maxLength={24}
-                    className="flex-1 bg-transparent px-1 py-2 text-sm outline-none"
-                  />
+              <Field label="Handle" hint="Public URL slug. 3–24 letters / numbers / underscores. Roll the dice if you want a fresh anon alias — then it's yours forever.">
+                <div className="flex items-center gap-2">
+                  <div className="flex flex-1 items-center rounded-md border border-amber-500/20 bg-black/60 focus-within:border-amber-400">
+                    <span className="pl-3 text-xs text-amber-400/60">drinkedin.me/u/</span>
+                    <input
+                      value={form.handle ?? ""}
+                      onChange={(e) => setField("handle", e.target.value.replace(/\s/g, ""))}
+                      placeholder="agent_42"
+                      maxLength={24}
+                      className="flex-1 bg-transparent px-1 py-2 text-sm outline-none"
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const packs = ["burnt","ghost","stealth","silent","salty","void","panic","glitch","after","cold"];
+                      const roles = ["intern","pm","dev","lead","staff","cto","ops","qa","scout","ninja"];
+                      const n = Math.floor(Math.random() * 900) + 100;
+                      const h = `${packs[Math.floor(Math.random()*packs.length)]}_${roles[Math.floor(Math.random()*roles.length)]}_${n}`;
+                      setField("handle", h);
+                      toast(`🎲 Rolled: @${h} — save to lock it in.`);
+                    }}
+                    className="shrink-0 rounded-md border border-amber-500/40 bg-amber-500/15 px-3 py-2 text-[11px] font-bold uppercase tracking-widest text-amber-200 hover:bg-amber-500/25"
+                    title="Roll a random anonymous handle"
+                  >
+                    🎲 Roll
+                  </button>
                 </div>
               </Field>
 
