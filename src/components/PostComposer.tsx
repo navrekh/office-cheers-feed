@@ -204,10 +204,67 @@ export default function PostComposer({
       });
       return;
     }
-    if (!requireAuth("Sign in to post — your mask stays on, just need a session.")) return;
-    const uid = user?.id;
-    if (!uid) return;
 
+    const HUBS = ["TCS", "Infosys", "Wipro", "Capgemini", "Cognizant", "HCL", "Accenture", "Deloitte", "Google", "Meta", "Amazon", "Microsoft"];
+    const ROLES = ["Dev", "Survivor", "Refugee", "Lead", "Intern", "PM", "Ghost", "Zombie", "Martyr", "Scout"];
+    const hub = HUBS[Math.floor(Math.random() * HUBS.length)];
+    const role = ROLES[Math.floor(Math.random() * ROLES.length)];
+    const baseAlias = `Anon_${hub}_${role}`;
+    const alias = mood ? `${baseAlias} [${mood}]` : baseAlias;
+    const headline = `Anonymous · ${getSelectedCity()}`;
+    const trimmed = body.trim();
+
+    // GUEST POSTING: signed-out visitors can drop ONE confession before signup.
+    // Attachments require an account (storage RLS).
+    if (!user) {
+      if (file) {
+        // Only text guest posts allowed; nudge to auth for media
+        if (!requireAuth("Sign in to attach a photo or video.")) return;
+        return;
+      }
+      const guestKey = "drinkedin_guest_post_used";
+      if (typeof window !== "undefined" && window.localStorage.getItem(guestKey)) {
+        requireAuth("You've used your free drop 🎯 — sign in (10 sec) to keep posting.");
+        return;
+      }
+      if (trimmed.length < 10) {
+        toast.error("Confession must be at least 10 characters.");
+        return;
+      }
+      setSubmitting(true);
+      try {
+        const { error } = await (supabase as any).from("posts").insert({
+          author_name: alias,
+          author_headline: headline + " · Guest",
+          body_text: trimmed,
+          user_id: null,
+          post_type: "guest",
+          attached_visual_url: null,
+          media_type: null,
+          tags: extractedTags,
+        });
+        if (error) throw error;
+        try { window.localStorage.setItem(guestKey, "1"); } catch {}
+        setBody("");
+        updateMood(null);
+        toast.success("Live in the breakroom. Sign in to keep dropping.", {
+          duration: 6000,
+          action: {
+            label: "Sign in",
+            onClick: () => requireAuth("Keep posting — sign in (no work email needed)."),
+          },
+        });
+        onPosted?.();
+        window.dispatchEvent(new CustomEvent("drinkedin:post-created"));
+      } catch (e: any) {
+        toast.error("Couldn't post", { description: e?.message ?? "Try again in a moment." });
+      } finally {
+        setSubmitting(false);
+      }
+      return;
+    }
+
+    const uid = user.id;
 
     setSubmitting(true);
     try {
@@ -221,22 +278,14 @@ export default function PostComposer({
           .from("post_media")
           .upload(path, file, { cacheControl: "3600", upsert: false, contentType: file.type });
         if (upErr) throw upErr;
-        attached_visual_url = path; // store the storage path; sign on read
+        attached_visual_url = path;
         mtype = mediaType;
       }
-
-      const HUBS = ["TCS", "Infosys", "Wipro", "Capgemini", "Cognizant", "HCL", "Accenture", "Deloitte", "Google", "Meta", "Amazon", "Microsoft"];
-      const ROLES = ["Dev", "Survivor", "Refugee", "Lead", "Intern", "PM", "Ghost", "Zombie", "Martyr", "Scout"];
-      const hub = HUBS[Math.floor(Math.random() * HUBS.length)];
-      const role = ROLES[Math.floor(Math.random() * ROLES.length)];
-      const baseAlias = `Anon_${hub}_${role}`;
-      const alias = mood ? `${baseAlias} [${mood}]` : baseAlias;
-      const headline = `Anonymous · ${getSelectedCity()}`;
 
       const { error } = await (supabase as any).from("posts").insert({
         author_name: alias,
         author_headline: headline,
-        body_text: body.trim(),
+        body_text: trimmed,
         user_id: uid,
         post_type: "user",
         attached_visual_url,
