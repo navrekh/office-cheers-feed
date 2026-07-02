@@ -1121,12 +1121,35 @@ export default function PostsFeed() {
                     </div>
                   ))}
 
+                  {teaser && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        try {
+                          window.dispatchEvent(new CustomEvent("drinkedin:open-comments", { detail: { postId: p.id } }));
+                        } catch {}
+                      }}
+                      className="mt-2.5 ml-1 w-full text-left rounded-lg border border-white/5 bg-white/[0.02] hover:bg-white/[0.05] hover:border-white/10 p-2.5 transition"
+                    >
+                      <div className="flex items-center gap-1.5 text-[10.5px] font-bold text-white/70">
+                        <CornerDownRight className="size-3" />
+                        {teaser.persona}
+                        <span className="font-normal text-muted-foreground">· top reply</span>
+                      </div>
+                      <p className="mt-1 text-[12.5px] text-foreground/85 leading-snug line-clamp-2">{teaser.text}</p>
+                      <span className="mt-1 inline-block text-[10px] font-bold text-cyan-300/80">
+                        Tap to read more →
+                      </span>
+                    </button>
+                  )}
+
                   <PostActions postId={p.id} authorName={p.author_name} bodyText={p.body_text} isUserOwned={p.isUserOwned} replyCount={(replies[p.id] ?? []).length} commentCount={(p as { comment_count?: number | null }).comment_count ?? null} />
                 </div>
               </div>
             </li>
+            );
+          })}
 
-          ))}
         </ul>
       )}
     </div>
