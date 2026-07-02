@@ -4,6 +4,7 @@ import { Hash, AtSign, Loader2, ImageOff, CornerDownRight } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/useAuth";
+import { downloadShareCard } from "@/lib/shareCard";
 const usePanicState = () => false;
 
 function randInt(min: number, max: number) {
@@ -231,6 +232,19 @@ function PostActions({
       </button>
       <button
         type="button"
+        onClick={async () => {
+          try {
+            await downloadShareCard({ author: authorName, body: bodyText, postId });
+            toast.success("📸 Confession card downloaded — post it anywhere.");
+          } catch { toast.error("Couldn't generate card."); }
+        }}
+        className="px-3 py-1 rounded-full text-[11px] font-bold border border-fuchsia-400/30 bg-fuchsia-500/[0.06] text-fuchsia-200 hover:bg-fuchsia-500/[0.14] hover:border-fuchsia-300/60 transition-all"
+        title="Download a shareable PNG"
+      >
+        📸 Card
+      </button>
+      <button
+        type="button"
         onClick={onShare}
         className={`px-3 py-1 rounded-full text-[11px] font-bold border transition-all duration-200 ${
           copied
@@ -238,7 +252,7 @@ function PostActions({
             : "border-white/15 bg-white/[0.03] text-white/70 hover:bg-white/[0.08] hover:border-white/25"
         }`}
       >
-        {copied ? "✅ Copied to Clipboard!" : "🔗 Share Leak"}
+        {copied ? "✅ Copied!" : "🔗 Share"}
       </button>
       <style>{`
         @keyframes foam-float {
