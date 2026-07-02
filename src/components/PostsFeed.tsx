@@ -949,9 +949,9 @@ export default function PostsFeed() {
             (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
           );
         })();
-      <LiveActivityStrip />
 
   return (
+
 
     <div
       className="rounded-2xl p-4 shadow-xl"
