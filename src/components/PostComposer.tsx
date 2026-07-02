@@ -436,10 +436,10 @@ export default function PostComposer({
           type="button"
           onClick={submit}
           disabled={submitting || (!body.trim() && !file)}
-          className="inline-flex items-center gap-2 rounded-xl px-4 py-2 text-[12px] font-extrabold text-amber-950 bg-gradient-to-r from-amber-400 via-amber-300 to-amber-400 shadow-[0_0_18px_rgba(251,191,36,0.45)] hover:brightness-110 disabled:opacity-60 disabled:cursor-not-allowed transition whitespace-normal break-words leading-tight"
+          className={`inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-[13px] font-black uppercase tracking-[0.14em] text-amber-950 bg-gradient-to-r from-amber-400 via-amber-300 to-amber-400 shadow-[0_0_22px_rgba(251,191,36,0.55)] hover:brightness-110 disabled:opacity-60 disabled:cursor-not-allowed transition-all ${body.trim() && !submitting ? "scale-[1.03] animate-pulse" : ""}`}
         >
           {submitting ? <Loader2 className="size-4 animate-spin" /> : <Send className="size-4" />}
-          {submitting ? "Posting…" : "Post"}
+          {submitting ? "Dropping…" : body.trim() ? "Drop It" : "Post"}
         </button>
       </div>
     </div>

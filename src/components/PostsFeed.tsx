@@ -937,8 +937,8 @@ export default function PostsFeed() {
                     </div>
                   )}
 
-                  <div className="text-[10px] text-muted-foreground mb-1.5">
-                    {formatDistanceToNow(new Date(p.created_at), { addSuffix: true })}
+                  <div className="text-[10px] text-muted-foreground/80 mb-1.5 font-mono tabular-nums tracking-tight">
+                    ▮ {formatDistanceToNow(new Date(p.created_at), { addSuffix: true }).toUpperCase()}
                   </div>
                   <RichBody text={p.body_text} />
 
