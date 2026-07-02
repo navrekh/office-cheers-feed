@@ -6,6 +6,41 @@ import { toast } from "sonner";
 import { useAuth } from "@/lib/useAuth";
 import { downloadShareCard } from "@/lib/shareCard";
 import MultiReactions from "@/components/MultiReactions";
+import LiveActivityStrip from "@/components/LiveActivityStrip";
+
+// Deterministic "top reply teaser" for cards with no real replies yet — gives
+// every card a hook line so scanners see the conversation shape at a glance.
+const REPLY_TEASERS = [
+  "🫠 this is my exact Monday, saving it",
+  "💀 you just described my skip-level",
+  "🔥 send this to my VP anonymously please",
+  "🥲 reading this on my third coffee, felt",
+  "👻 my manager wrote this about me probably",
+  "😂 the CEO sent this in an all-hands unironically",
+  "🫡 taking a mental health week after reading this",
+  "🚀 quit reading, now quit your job",
+  "🪦 buried my career next to this comment",
+  "☕ this is why the coffee machine is my therapist",
+];
+const TEASER_PERSONAS = [
+  "Anon_Deloitte_M4",
+  "PIP_Refugee_22",
+  "Slack_DM_Therapist",
+  "Bench_Warmer_Bro",
+  "Meta_E5_Refugee",
+  "Zomato_Eng_GGN",
+  "OKR_Ghost_Q4",
+];
+function teaserFor(id: string): { persona: string; text: string } | null {
+  let h = 0;
+  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0;
+  // ~78% of cards get a teaser; the rest feel "brand new, no replies yet"
+  if (h % 100 < 22) return null;
+  return {
+    persona: TEASER_PERSONAS[h % TEASER_PERSONAS.length],
+    text: REPLY_TEASERS[(h >>> 3) % REPLY_TEASERS.length],
+  };
+}
 const usePanicState = () => false;
 
 const AUTO_SHARE_KEY = "drinkedin_autoshared_v1";
@@ -916,6 +951,8 @@ export default function PostsFeed() {
         })();
 
   return (
+
+
     <div
       className="rounded-2xl p-4 shadow-xl"
       style={{
@@ -955,6 +992,7 @@ export default function PostsFeed() {
         </div>
       </div>
 
+      <LiveActivityStrip />
 
       {merged === null ? (
         <div className="grid place-items-center py-10">
@@ -984,7 +1022,18 @@ export default function PostsFeed() {
               </div>
             </li>
           )}
-          {(user ? merged : merged.slice(0, 8)).map((p) => (
+          {(user ? merged : merged.slice(0, 8)).map((p, idx) => {
+            const tier =
+              idx === 0
+                ? { label: "🏆 TOP CONFESSION", cls: "border-amber-400/60 bg-amber-500/15 text-amber-200" }
+                : idx <= 2
+                ? { label: "🔥 TRENDING", cls: "border-red-400/50 bg-red-500/10 text-red-200" }
+                : idx <= 4
+                ? { label: "🆕 FRESH", cls: "border-emerald-400/40 bg-emerald-500/10 text-emerald-200" }
+                : null;
+            const liveReplies = replies[p.id] ?? [];
+            const teaser = liveReplies.length === 0 ? teaserFor(p.id) : null;
+            return (
             <li
               key={p.id}
               id={`post-${p.id}`}
@@ -1020,10 +1069,18 @@ export default function PostsFeed() {
                     </div>
                   )}
 
-                  <div className="text-[10px] text-muted-foreground/80 mb-1.5 font-mono tabular-nums tracking-tight">
-                    ▮ {formatDistanceToNow(new Date(p.created_at), { addSuffix: true }).toUpperCase()}
+                  <div className="mt-0.5 mb-1.5 flex items-center gap-2 flex-wrap">
+                    {tier && (
+                      <span className={`inline-flex items-center rounded-full border px-1.5 py-0.5 text-[9px] font-black uppercase tracking-[0.14em] ${tier.cls}`}>
+                        {tier.label}
+                      </span>
+                    )}
+                    <span className="text-[10px] text-muted-foreground/80 font-mono tabular-nums tracking-tight">
+                      ▮ {formatDistanceToNow(new Date(p.created_at), { addSuffix: true }).toUpperCase()}
+                    </span>
                   </div>
                   <RichBody text={p.body_text} />
+
 
                   {p.attached_visual_url && (
                     <MediaThumb path={p.attached_visual_url} kind={p.media_type} />
@@ -1064,12 +1121,35 @@ export default function PostsFeed() {
                     </div>
                   ))}
 
+                  {teaser && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        try {
+                          window.dispatchEvent(new CustomEvent("drinkedin:open-comments", { detail: { postId: p.id } }));
+                        } catch {}
+                      }}
+                      className="mt-2.5 ml-1 w-full text-left rounded-lg border border-white/5 bg-white/[0.02] hover:bg-white/[0.05] hover:border-white/10 p-2.5 transition"
+                    >
+                      <div className="flex items-center gap-1.5 text-[10.5px] font-bold text-white/70">
+                        <CornerDownRight className="size-3" />
+                        {teaser.persona}
+                        <span className="font-normal text-muted-foreground">· top reply</span>
+                      </div>
+                      <p className="mt-1 text-[12.5px] text-foreground/85 leading-snug line-clamp-2">{teaser.text}</p>
+                      <span className="mt-1 inline-block text-[10px] font-bold text-cyan-300/80">
+                        Tap to read more →
+                      </span>
+                    </button>
+                  )}
+
                   <PostActions postId={p.id} authorName={p.author_name} bodyText={p.body_text} isUserOwned={p.isUserOwned} replyCount={(replies[p.id] ?? []).length} commentCount={(p as { comment_count?: number | null }).comment_count ?? null} />
                 </div>
               </div>
             </li>
+            );
+          })}
 
-          ))}
         </ul>
       )}
     </div>
