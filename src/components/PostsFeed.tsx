@@ -4,7 +4,7 @@ import { Hash, AtSign, Loader2, ImageOff, CornerDownRight } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/useAuth";
-import { usePanicState } from "@/lib/usePanicState";
+const usePanicState = () => false;
 
 function randInt(min: number, max: number) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
