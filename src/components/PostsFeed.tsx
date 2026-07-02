@@ -951,8 +951,8 @@ export default function PostsFeed() {
         })();
       <LiveActivityStrip />
 
-
   return (
+
     <div
       className="rounded-2xl p-4 shadow-xl"
       style={{
