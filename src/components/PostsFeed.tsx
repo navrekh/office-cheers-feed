@@ -268,6 +268,27 @@ function PostActions({
       >
         {copied ? "✅ Copied!" : "🔗 Share"}
       </button>
+      </div>
+      {/* Multi-emoji reactions — anonymous, one per session per emoji */}
+      <MultiReactions
+        postId={postId}
+        onMilestone={(total) => {
+          if (total === 10 && markAutoShared(postId)) {
+            toast("🚀 This one's going viral — grab the card and post it to your story?", {
+              duration: 8000,
+              action: {
+                label: "📸 Download",
+                onClick: async () => {
+                  try {
+                    await downloadShareCard({ author: authorName, body: bodyText, postId });
+                    toast.success("Card saved — go flex it.");
+                  } catch { toast.error("Couldn't generate card."); }
+                },
+              },
+            });
+          }
+        }}
+      />
       <style>{`
         @keyframes foam-float {
           0% { opacity: 0; transform: translate(-50%, 0) scale(0.6); }
@@ -275,7 +296,7 @@ function PostActions({
           100% { opacity: 0; transform: translate(-50%, -28px) scale(1.2); }
         }
       `}</style>
-    </div>
+    </>
   );
 }
 
