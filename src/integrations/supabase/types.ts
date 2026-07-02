@@ -521,30 +521,6 @@ export type Database = {
         }
         Relationships: []
       }
-      profile_metric_votes: {
-        Row: {
-          created_at: string
-          id: string
-          metric: string
-          owner_id: string
-          voter_key: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          metric: string
-          owner_id: string
-          voter_key: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          metric?: string
-          owner_id?: string
-          voter_key?: string
-        }
-        Relationships: []
-      }
       profile_testimonials: {
         Row: {
           author_id: string | null
@@ -575,36 +551,6 @@ export type Database = {
           pinned?: boolean
           status?: string
           updated_at?: string
-        }
-        Relationships: []
-      }
-      profile_visits: {
-        Row: {
-          created_at: string
-          id: string
-          owner_id: string
-          via: string
-          visitor_handle: string | null
-          visitor_id: string | null
-          visitor_session: string | null
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          owner_id: string
-          via?: string
-          visitor_handle?: string | null
-          visitor_id?: string | null
-          visitor_session?: string | null
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          owner_id?: string
-          via?: string
-          visitor_handle?: string | null
-          visitor_id?: string | null
-          visitor_session?: string | null
         }
         Relationships: []
       }
@@ -905,15 +851,6 @@ export type Database = {
         }
         Returns: boolean
       }
-      cast_metric_vote: {
-        Args: { p_handle: string; p_metric: string; p_session: string }
-        Returns: {
-          already_voted: boolean
-          cooked: number
-          ninja: number
-          slippery: number
-        }[]
-      }
       cast_poll_vote: {
         Args: { p_choice: string; p_hub: string }
         Returns: {
@@ -969,14 +906,6 @@ export type Database = {
           danger: number
           thread: number
           total: number
-        }[]
-      }
-      get_profile_metrics: {
-        Args: { p_handle: string }
-        Returns: {
-          cooked: number
-          ninja: number
-          slippery: number
         }[]
       }
       get_profile_testimonials: {
@@ -1042,15 +971,6 @@ export type Database = {
           isOneToOne: false
           isSetofReturn: true
         }
-      }
-      record_profile_visit: {
-        Args: { p_handle: string; p_via?: string }
-        Returns: {
-          is_new: boolean
-          owner_display: string
-          owner_id: string
-          visitor_handle: string
-        }[]
       }
       report_post: { Args: { p_post_id: string }; Returns: undefined }
       submit_testimonial: {
