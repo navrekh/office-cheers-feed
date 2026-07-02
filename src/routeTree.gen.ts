@@ -11,13 +11,9 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as ThegrindRouteImport } from './routes/thegrind'
 import { Route as ProfileRouteImport } from './routes/profile'
-import { Route as MerchantDashboardRouteImport } from './routes/merchant-dashboard'
-import { Route as HqAdminRouteImport } from './routes/hq-admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as UHandleRouteImport } from './routes/u.$handle'
-import { Route as TrackTicketRouteImport } from './routes/track.$ticket'
 import { Route as PPostIdRouteImport } from './routes/p.$postId'
-import { Route as ApiPublicWebhooksRazorpayRouteImport } from './routes/api/public/webhooks/razorpay'
 
 const ThegrindRoute = ThegrindRouteImport.update({
   id: '/thegrind',
@@ -27,16 +23,6 @@ const ThegrindRoute = ThegrindRouteImport.update({
 const ProfileRoute = ProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const MerchantDashboardRoute = MerchantDashboardRouteImport.update({
-  id: '/merchant-dashboard',
-  path: '/merchant-dashboard',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const HqAdminRoute = HqAdminRouteImport.update({
-  id: '/hq-admin',
-  path: '/hq-admin',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -49,103 +35,48 @@ const UHandleRoute = UHandleRouteImport.update({
   path: '/u/$handle',
   getParentRoute: () => rootRouteImport,
 } as any)
-const TrackTicketRoute = TrackTicketRouteImport.update({
-  id: '/track/$ticket',
-  path: '/track/$ticket',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const PPostIdRoute = PPostIdRouteImport.update({
   id: '/p/$postId',
   path: '/p/$postId',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiPublicWebhooksRazorpayRoute =
-  ApiPublicWebhooksRazorpayRouteImport.update({
-    id: '/api/public/webhooks/razorpay',
-    path: '/api/public/webhooks/razorpay',
-    getParentRoute: () => rootRouteImport,
-  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/hq-admin': typeof HqAdminRoute
-  '/merchant-dashboard': typeof MerchantDashboardRoute
   '/profile': typeof ProfileRoute
   '/thegrind': typeof ThegrindRoute
   '/p/$postId': typeof PPostIdRoute
-  '/track/$ticket': typeof TrackTicketRoute
   '/u/$handle': typeof UHandleRoute
-  '/api/public/webhooks/razorpay': typeof ApiPublicWebhooksRazorpayRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/hq-admin': typeof HqAdminRoute
-  '/merchant-dashboard': typeof MerchantDashboardRoute
   '/profile': typeof ProfileRoute
   '/thegrind': typeof ThegrindRoute
   '/p/$postId': typeof PPostIdRoute
-  '/track/$ticket': typeof TrackTicketRoute
   '/u/$handle': typeof UHandleRoute
-  '/api/public/webhooks/razorpay': typeof ApiPublicWebhooksRazorpayRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/hq-admin': typeof HqAdminRoute
-  '/merchant-dashboard': typeof MerchantDashboardRoute
   '/profile': typeof ProfileRoute
   '/thegrind': typeof ThegrindRoute
   '/p/$postId': typeof PPostIdRoute
-  '/track/$ticket': typeof TrackTicketRoute
   '/u/$handle': typeof UHandleRoute
-  '/api/public/webhooks/razorpay': typeof ApiPublicWebhooksRazorpayRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths:
-    | '/'
-    | '/hq-admin'
-    | '/merchant-dashboard'
-    | '/profile'
-    | '/thegrind'
-    | '/p/$postId'
-    | '/track/$ticket'
-    | '/u/$handle'
-    | '/api/public/webhooks/razorpay'
+  fullPaths: '/' | '/profile' | '/thegrind' | '/p/$postId' | '/u/$handle'
   fileRoutesByTo: FileRoutesByTo
-  to:
-    | '/'
-    | '/hq-admin'
-    | '/merchant-dashboard'
-    | '/profile'
-    | '/thegrind'
-    | '/p/$postId'
-    | '/track/$ticket'
-    | '/u/$handle'
-    | '/api/public/webhooks/razorpay'
-  id:
-    | '__root__'
-    | '/'
-    | '/hq-admin'
-    | '/merchant-dashboard'
-    | '/profile'
-    | '/thegrind'
-    | '/p/$postId'
-    | '/track/$ticket'
-    | '/u/$handle'
-    | '/api/public/webhooks/razorpay'
+  to: '/' | '/profile' | '/thegrind' | '/p/$postId' | '/u/$handle'
+  id: '__root__' | '/' | '/profile' | '/thegrind' | '/p/$postId' | '/u/$handle'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  HqAdminRoute: typeof HqAdminRoute
-  MerchantDashboardRoute: typeof MerchantDashboardRoute
   ProfileRoute: typeof ProfileRoute
   ThegrindRoute: typeof ThegrindRoute
   PPostIdRoute: typeof PPostIdRoute
-  TrackTicketRoute: typeof TrackTicketRoute
   UHandleRoute: typeof UHandleRoute
-  ApiPublicWebhooksRazorpayRoute: typeof ApiPublicWebhooksRazorpayRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -164,20 +95,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProfileRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/merchant-dashboard': {
-      id: '/merchant-dashboard'
-      path: '/merchant-dashboard'
-      fullPath: '/merchant-dashboard'
-      preLoaderRoute: typeof MerchantDashboardRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/hq-admin': {
-      id: '/hq-admin'
-      path: '/hq-admin'
-      fullPath: '/hq-admin'
-      preLoaderRoute: typeof HqAdminRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/': {
       id: '/'
       path: '/'
@@ -192,13 +109,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof UHandleRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/track/$ticket': {
-      id: '/track/$ticket'
-      path: '/track/$ticket'
-      fullPath: '/track/$ticket'
-      preLoaderRoute: typeof TrackTicketRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/p/$postId': {
       id: '/p/$postId'
       path: '/p/$postId'
@@ -206,26 +116,15 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PPostIdRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/public/webhooks/razorpay': {
-      id: '/api/public/webhooks/razorpay'
-      path: '/api/public/webhooks/razorpay'
-      fullPath: '/api/public/webhooks/razorpay'
-      preLoaderRoute: typeof ApiPublicWebhooksRazorpayRouteImport
-      parentRoute: typeof rootRouteImport
-    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  HqAdminRoute: HqAdminRoute,
-  MerchantDashboardRoute: MerchantDashboardRoute,
   ProfileRoute: ProfileRoute,
   ThegrindRoute: ThegrindRoute,
   PPostIdRoute: PPostIdRoute,
-  TrackTicketRoute: TrackTicketRoute,
   UHandleRoute: UHandleRoute,
-  ApiPublicWebhooksRazorpayRoute: ApiPublicWebhooksRazorpayRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
