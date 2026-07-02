@@ -111,7 +111,7 @@ function ProfileEditor() {
       const [{ data, error }, postsRes] = await Promise.all([
         (supabase as any)
           .from("profiles")
-          .select("id, handle, display_name, bio, avatar_url, linkedin_url, github_url, twitter_url, website_url")
+          .select("id, handle, display_name, bio, avatar_url, linkedin_url, github_url, twitter_url, website_url, archetype")
           .eq("id", user.id)
           .maybeSingle(),
         (supabase as any)
@@ -132,6 +132,7 @@ function ProfileEditor() {
           github_url: data.github_url ?? "",
           twitter_url: data.twitter_url ?? "",
           website_url: data.website_url ?? "",
+          archetype: (data.archetype as Archetype | null) ?? null,
         });
       }
       const rows: any[] = postsRes?.data ?? [];
@@ -144,8 +145,12 @@ function ProfileEditor() {
     })();
   }, [user, authLoading]);
 
-  function setField<K extends keyof typeof EMPTY>(k: K, v: string) {
+  function setField<K extends keyof typeof EMPTY>(k: K, v: (typeof EMPTY)[K]) {
     setForm((f) => ({ ...f, [k]: v }));
+  }
+
+  function setArchetype(a: Archetype | null) {
+    setForm((f) => ({ ...f, archetype: a }));
   }
 
   async function save(e: React.FormEvent) {
@@ -167,6 +172,7 @@ function ProfileEditor() {
       github_url: sanitizeUrl(form.github_url || ""),
       twitter_url: sanitizeUrl(form.twitter_url || ""),
       website_url: sanitizeUrl(form.website_url || ""),
+      archetype: form.archetype,
     };
     const { error } = await (supabase as any)
       .from("profiles")
