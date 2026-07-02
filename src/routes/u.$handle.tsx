@@ -199,7 +199,7 @@ function ProfileView() {
               <Flame className="h-3.5 w-3.5" /> Receipts · Top confessions
             </h2>
             <ul className="mt-3 space-y-3">
-              {topPosts.map((p) => (
+              {topPosts.map((p: TopPost) => (
                 <li key={p.id} className="rounded-lg border border-white/5 bg-black/40 p-3">
                   <p className="text-sm text-white/90 whitespace-pre-wrap break-words">
                     {p.body_text.length > 240 ? p.body_text.slice(0, 240) + "…" : p.body_text}
