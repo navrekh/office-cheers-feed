@@ -1022,7 +1022,18 @@ export default function PostsFeed() {
               </div>
             </li>
           )}
-          {(user ? merged : merged.slice(0, 8)).map((p) => (
+          {(user ? merged : merged.slice(0, 8)).map((p, idx) => {
+            const tier =
+              idx === 0
+                ? { label: "🏆 TOP CONFESSION", cls: "border-amber-400/60 bg-amber-500/15 text-amber-200" }
+                : idx <= 2
+                ? { label: "🔥 TRENDING", cls: "border-red-400/50 bg-red-500/10 text-red-200" }
+                : idx <= 4
+                ? { label: "🆕 FRESH", cls: "border-emerald-400/40 bg-emerald-500/10 text-emerald-200" }
+                : null;
+            const liveReplies = replies[p.id] ?? [];
+            const teaser = liveReplies.length === 0 ? teaserFor(p.id) : null;
+            return (
             <li
               key={p.id}
               id={`post-${p.id}`}
