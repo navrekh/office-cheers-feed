@@ -193,6 +193,28 @@ function ProfileView() {
           </div>
         </div>
 
+        {topPosts && topPosts.length > 0 && (
+          <section className="mt-6 rounded-2xl border border-white/10 bg-zinc-900/40 p-5 sm:p-6">
+            <h2 className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.22em] text-amber-400">
+              <Flame className="h-3.5 w-3.5" /> Receipts · Top confessions
+            </h2>
+            <ul className="mt-3 space-y-3">
+              {topPosts.map((p) => (
+                <li key={p.id} className="rounded-lg border border-white/5 bg-black/40 p-3">
+                  <p className="text-sm text-white/90 whitespace-pre-wrap break-words">
+                    {p.body_text.length > 240 ? p.body_text.slice(0, 240) + "…" : p.body_text}
+                  </p>
+                  <div className="mt-2 flex items-center gap-3 text-[10.5px] text-white/50 font-mono uppercase tracking-wider">
+                    <span>🍻 {p.cheers_count}</span>
+                    <span>💬 {p.comment_count}</span>
+                    <span className="ml-auto">{formatDistanceToNow(new Date(p.created_at), { addSuffix: true })}</span>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
         <PublicTestimonials handle={profile.handle} ownerName={name} />
 
         <div className="mt-6 text-center text-xs text-white/50">
