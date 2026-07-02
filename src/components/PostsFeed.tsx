@@ -1069,10 +1069,18 @@ export default function PostsFeed() {
                     </div>
                   )}
 
-                  <div className="text-[10px] text-muted-foreground/80 mb-1.5 font-mono tabular-nums tracking-tight">
-                    ▮ {formatDistanceToNow(new Date(p.created_at), { addSuffix: true }).toUpperCase()}
+                  <div className="mt-0.5 mb-1.5 flex items-center gap-2 flex-wrap">
+                    {tier && (
+                      <span className={`inline-flex items-center rounded-full border px-1.5 py-0.5 text-[9px] font-black uppercase tracking-[0.14em] ${tier.cls}`}>
+                        {tier.label}
+                      </span>
+                    )}
+                    <span className="text-[10px] text-muted-foreground/80 font-mono tabular-nums tracking-tight">
+                      ▮ {formatDistanceToNow(new Date(p.created_at), { addSuffix: true }).toUpperCase()}
+                    </span>
                   </div>
                   <RichBody text={p.body_text} />
+
 
                   {p.attached_visual_url && (
                     <MediaThumb path={p.attached_visual_url} kind={p.media_type} />
